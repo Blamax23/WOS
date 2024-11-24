@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Homemade+Apple&display=swap');
+
+html {
+    font-size: 14px;
+    font-family: "Montserrat", sans-serif;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    margin: 0;
+    margin-bottom: 60px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.navbar {
+    font-family: "Montserrat", sans-serif;
+    padding: 2.5vh 0;
+    border-bottom: 1px solid rgb(98, 106, 115);
+}
+
+.navbar-collapse {
+    margin: 0 5vw;
+    display: flex;
+    justify-content: space-between;
+}
+
+.sections {
+    display: flex;
+    justify-content: space-between;
+    width: 53%;
+}
+
+.user-space {
+    width: 40%;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+}
+
+.pages{
+    width: 50%;
+    display: flex;
+    align-items: center;
+}
+
+.pages li:hover{
+
+}
+
+.logo {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    list-style: none;
+    padding: 0;
+}
+
+.nav-item{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.nav-item a {
+    text-decoration: none;
+    color: black;
+}
+
+.nav-item a i {
+    font-size: 1.5rem;
+
+}
+
+.navbar-brand{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.logo a img{
+    height :7vh;
+}
+
+.formSearch {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.searchSneakers {
+    height: 4vh;
+    width: 25vw;
+    visibility: hidden;
+    cursor: default;
+    right: 0; /* Aligné à droite du bouton */
+    transform: translateX(100%); /* Commence complètement caché */
+    transition: transform 0.3s ease-out, visibility 0.3s;
+    opacity: 0;
+}
+
+    .searchSneakers.visible {
+        visibility: visible;
+        transform: translateX(0); /* Revient à sa position normale */
+        opacity: 1;
+    }
+
+    .searchSneakers.closing {
+        transform: translateX(100%);
+        animation: slideOut 0.3s ease-in-out;
+        opacity: 0;
+    }
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.btnSearch{
+    border: none;
+    background-color: white;
+    align-items: center;
+    padding-left: 1vw;
+    z-index: 2;
+}
+
+.btnSearch i{
+    font-size: 1.7em;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    line-height: 60px;
+}
+

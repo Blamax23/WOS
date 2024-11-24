@@ -1,0 +1,141 @@
+﻿@using WOS.Model;
+
+@model AccountViewModel;
+
+@{
+    ViewData["Title"] = "Compte";
+    // On controle si le User est un client ou un admin et on le convertit
+    Client client = null;
+    Admin admin = null;
+    if (Model.User is Client)
+    {
+        client = (Client)Model.User;
+    }
+    else if (Model.User is Admin)
+    {
+        admin = (Admin)Model.User;
+    }
+
+}
+
+<link rel="stylesheet" href="~/css/account/index.css" asp-append-version="true" />
+
+<div>
+    <div class="head-account">
+        <h1>Mon compte</h1>
+        <a asp-controller="Account" asp-action="LogOut">Déconnexion</a>
+    </div>
+    <div class="account">
+        @if (admin != null)
+        {
+            <div class="nav-account">
+                <ul>
+                    <li class="linkProfile">Profil</li>
+                    <li class="linkCommande">Commandes</li>
+                    <li class="linkProducts">Produits</li>
+                </ul>
+            </div>
+            <div class="info-account">
+                <h2>Profil</h2>
+                <div class="user-zone">
+                    <div class="name-zone">
+                        <p>Nom : @admin.Nom</p>
+                        <p>Prénom : @admin.Prenom</p>
+                    </div>
+                    <div class="email-zone">
+                        <p>Email : @admin.Email</p>
+                    </div>
+                </div>
+                <form method="post" asp-controller="Account" asp-action="UpdateInfo" class="formUpdateInfo">
+                    <label for="nom">Nom : </label>
+                    <input type="text" name="nom" id="nom" value="@admin.Nom" />
+                    <br />
+                    <label for="prenom">Prénom : </label>
+                    <input type="text" name="prenom" id="prenom" value="@admin.Prenom" />
+                    <br />
+                    <label for="email">Email : </label>
+                    <input type="email" name="email" id="email" value="@admin.Email" />
+                    <br />
+                    <label for="password">Mot de passe actuel : </label>
+                    <input type="password" name="password" id="password" />
+                    <br />
+                    <label for="newPassword">Nouveau mot de passe : </label>
+                    <input type="password" name="newPassword" id="newPassword" />
+                    <br />
+                    <input type="submit" value="Modifier" />
+                </form>
+            </div>
+            <div class="info-commandes">
+                <div class="head-commandes">
+                    <h2>Commandes</h2>
+                    <a asp-controller="Account" asp-action="AddCommande">Ajouter une commande</a>
+                </div>
+                @if (Model.Commandes.Count > 0)
+                {
+                    @foreach (var commande in Model.Commandes)
+                    {
+                        <div class="commande">
+                            <div class="picture-zone-commande">
+                                <img src="@commande.LignesCommande.FirstOrDefault().Produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url" class="imagePresCommande" />
+                            </div>
+                            <div class="info-zone-commande">
+                                <div class="title-zone-info">
+                                    <h3>@commande.LignesCommande.FirstOrDefault().Produit.Nom</h3>
+                                </div>
+                                <div class="detail-zone-info">
+                                    <div class="date-commande">
+                                        <p>Date : @commande.DateCommande</p>
+                                    </div>
+                                    <div class="statut-commande">
+                                        <p>Statut : @commande.Statut</p>
+                                    </div>
+                                    <div class="total-commande">
+                                        <p>Total : @commande.MontantTotal €</p>
+                                    </div>
+                                </div>
+                                <div class="list-produits">
+                                    <ul>
+                                        @foreach (var ligne in commande.LignesCommande)
+                                        {
+                                            <li>@ligne.Produit.Nom</li>
+                                        }
+                                    </ul>
+                                </div>
+                                <a asp-controller="Account" asp-action="GetCommande" asp-route-id="@commande.Id">Voir</a>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>Vous n'avez pas encore de commandes.</p>
+                }
+            </div>
+            <div class="info-products">
+                <div class="head-product">
+                    <h2>Produits</h2>
+                    <a asp-controller="Account" asp-action="AddProduct">Ajouter un produit</a>
+                </div>
+            </div>
+        }
+        else if (client != null)
+        {
+
+        }
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('.nav-account li').click(function () {
+            // Récupérer l'index de l'élément cliqué
+            const index = $(this).index();
+
+            // Masquer toutes les sections
+            $('.info-account, .info-commandes, .info-products').removeClass('active');
+
+            // Afficher la section correspondante
+            $('.info-account, .info-commandes, .info-products').eq(index).addClass('active');
+        });
+    });
+</script>

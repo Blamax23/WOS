@@ -1,0 +1,40 @@
+﻿@using WOS.Model;
+
+@model LogInViewModel;
+
+@{
+    ViewData["Title"] = "Connexion";
+}
+
+<link rel="stylesheet" href="~/css/account/signin.css" asp-append-version="true" />
+
+<div class="content">
+    <!-- Formulaire d'inscription -->
+    <div class="signin">
+        <h1>Connexion</h1>
+        <form method="post" asp-controller="Account" asp-action="LogIn" class="form-signin" novalidate>
+            <div class="input-zone">
+                @if (Model.ErrorMessage != null)
+                {
+                    <div class="error error-gen @Model.ErrorMessage">
+                        <p>@Model.ErrorMessage</p>
+                    </div>
+                }
+                <div class="input-zone input-email">
+                    <label for="email">Email</label>
+                    <input class="input" type="email" name="email" id="email" value="@(Model.Email != null ? Model.Email : "")" />
+                    <p class="error error-email" style="display:@(ViewData["ErrorEmail"] != null ? "block" : "none");">@ViewData["ErrorEmail"]</p>
+                </div>
+                <div class="input-zone input-password">
+                    <label for="password">Mot de passe</label>
+                    <input class="input" type="password" name="password" id="password" value="@(Model.MotDePasse != null ? Model.MotDePasse : "")" />
+                    <p class="error error-password" style="display:@(ViewData["ErrorPassword"] != null ? "block" : "none");">@ViewData["ErrorPassword"]</p>
+                </div>
+                <div class="submit-zone">
+                    <input type="submit" class="submit-btn" value="Se connecter" />
+                </div>
+            </div>
+        </form>
+        <a class="redirect-login" asp-controller="Account" asp-action="SignIn">Inscrivez-vous !</a>
+    </div>
+</div>

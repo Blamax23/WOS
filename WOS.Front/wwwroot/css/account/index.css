@@ -1,0 +1,33 @@
+/* Cacher les sections par défaut */
+.info-account, .info-commandes, .info-products {
+    display: none; /* Masquer par défaut */
+    opacity: 0; /* Initialement transparent */
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Animation */
+    transform: translateY(20px); /* Décalage initial pour l'effet de glissement */
+}
+
+    /* Classe pour afficher une section */
+    .info-account.active, .info-commandes.active, .info-products.active {
+        display: block; /* Affiche la div */
+        opacity: 1; /* Rétablit l'opacité */
+        transform: translateY(0); /* Position normale */
+    }
+
+/* Style de base pour le menu */
+.nav-account ul {
+    display: flex;
+    list-style: none;
+    gap: 10px;
+}
+
+.nav-account li {
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+    .nav-account li:hover {
+        background-color: #f0f0f0;
+    }

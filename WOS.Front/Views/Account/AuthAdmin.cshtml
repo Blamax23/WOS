@@ -1,0 +1,21 @@
+﻿@using WOS.Model;
+
+@model Admin;
+
+@{
+    ViewData["Title"] = "Authentification Administrateur";
+}
+
+<link rel="stylesheet" href="~/css/account/authAdmin.css" asp-append-version="true" />
+
+<div class="content">
+    <div class="form-zone">
+        <h1>Authentification</h1>
+        <p>Veuillez entrer le code reçu par mail.</p>
+        <form method="post" asp-action="VerifyCodeAdmin" asp-controller="Account" class="formAuthAdmin">
+            <input type="text" name="code" id="code" class="input-code" />
+            <input type="hidden" name="id" value="@Model.Id" />
+            <input type="submit" value="Valider" class="btn-submit"/>
+        </form>
+    </div>
+</div>

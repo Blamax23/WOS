@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WOS.Front</title>
+    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <div class="sections">
+                        <div class="pages">
+                            <ul class="navbar-nav flex-grow-1">
+                                <li class="nav-item">
+                                    <a class="nav-link nav-pages text-dark" asp-area="" asp-controller="Home" asp-action="Index">Accueil</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-pages text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Sneakers</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-pages text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">FAQ</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-pages text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Contact</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="logo">
+                            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/src/WosLogos/logoWosBlack.png" /></a>
+                        </div>
+                    </div>
+                    <div class="user-space">
+                        <ul class="user-nav navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <form method="post" class="formSearch" asp-controller="Chaussure" asp-action="SearchSneakers">
+                                    <input type="search" name="search" class="searchSneakers" id="search" placeholder="Rechercher" />
+                                    <a class="nav-link btnSearch"><i class="bi iconSearch bi-search"></i></a>
+                                </form>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="bi bi-heart"></i></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="bi bi-bag"></i></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Index"><i class="bi bi-person"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2024 - WOS.Front - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+<script>
+    $(".btnSearch").click(function () {
+        let inputSearch = $(".searchSneakers");
+        let iconSearch = $(".iconSearch");
+        if (!inputSearch.hasClass("visible")) {
+            inputSearch.removeClass("closing");
+            inputSearch.addClass("visible");
+            inputSearch.focus();
+            iconSearch.removeClass("bi-search");
+            iconSearch.addClass("bi-x-lg");
+        } else {
+            if (inputSearch.val().trim() !== "") {
+                $(".formSearch").submit();
+            }else{
+                inputSearch.removeClass("visible");
+                inputSearch.addClass("closing");
+                iconSearch.removeClass("bi-x-lg");
+                iconSearch.addClass("bi-search");
+            }            
+        }
+    });
+
+    function changeIcon(){
+        let inputSearch = $(".searchSneakers");
+        let iconSearch = $(".iconSearch");
+        if(inputSearch.val() == ""){
+            iconSearch.removeClass("bi-search");
+            iconSearch.addClass("bi-x-lg");
+        }else{
+            iconSearch.removeClass("bi-x-lg");
+            iconSearch.addClass("bi-search");
+        }
+    }
+
+    $(".searchSneakers").on("input", changeIcon);
+    $(".searchSneakers").on("focusout", changeIcon);
+</script>

@@ -1,0 +1,137 @@
+﻿@using WOS.Model;
+
+@{
+    ViewData["Title"] = "Ajouter un produit";
+}
+
+<div class="content">
+    <div class="form-zone">
+        <h1>Ajouter un produit</h1>
+        <form method="post" asp-action="AddProduct" asp-controller="Account">
+            <label for="nom">Nom : </label>
+            <input type="text" name="nom" id="nom" />
+            <br />
+            <label for="description">Description : </label>
+            <input type="text" name="description" id="description" />
+            <br />
+            <label for="prix">Prix : </label>
+            <input type="number" name="prix" id="prix" />
+            <br />
+            <label for="stock">Stock : </label>
+            <input type="number" name="stock" id="stock" />
+            <br />
+            <div class="upload-container" id="uploadContainer">
+                <div class="drop-area" id="dropArea">
+                    Glissez-déposez vos fichiers ici
+                </div>
+                <input type="file" name="photos" id="produitPhotos" accept=".jpeg, .jpg, .png" multiple style="display: none;" onchange="handleFiles(this.files)">
+            </div>
+            <div id="previewContainer" class="preview-container"></div>
+            <br />
+            <input type="submit" value="Ajouter" />
+        </form>
+    </div>
+</div>
+
+<script>
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('produitPhotos');
+    const previewContainer = document.getElementById('previewContainer');
+
+    // Utilisation de DataTransfer pour maintenir une liste de fichiers persistante
+    let dt = new DataTransfer();
+
+    // Empêche le comportement par défaut lors du dragover
+    dropArea.addEventListener('dragover', (event) => {
+        event.preventDefault();
+    });
+
+    // Gestion du drop des fichiers dans la zone de drop
+    dropArea.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const files = event.dataTransfer.files;
+        addFilesToDataTransfer(files); // Ajoute les fichiers
+    });
+
+    // Ouvre l'explorateur de fichiers lorsqu'on clique sur la zone de drop
+    dropArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Gestion de l'ajout de fichiers via l'explorateur de fichiers
+    fileInput.addEventListener('change', (event) => {
+        const files = fileInput.files;
+        addFilesToDataTransfer(files); // Ajoute les fichiers
+    });
+
+    function addFilesToDataTransfer(files) {
+        // Parcourt les nouveaux fichiers et les ajoute à DataTransfer sans réinitialiser
+        [...files].forEach(file => {
+            dt.items.add(file);
+            previewFile(file); // Ajoute un aperçu du fichier
+        });
+        updateInputFiles(); // Mets à jour l'input avec les nouveaux fichiers
+    }
+
+    function makeItemResponsive(item) {
+        if (item.tagName === 'IMG') {
+            item.classList.add('img-fluid');
+        } else if (item.tagName === 'VIDEO') {
+            item.classList.add('video-fluid');
+        }
+        item.style.maxWidth = '100%';
+        item.style.height = 'auto';
+    }
+
+    function previewFile(file) {
+        const fileReader = new FileReader();
+        fileReader.onload = () => {
+            const fileContainer = document.createElement('div');
+            fileContainer.classList.add('file-container');
+
+            // Affichage de l'aperçu du fichier
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = fileReader.result;
+                makeItemResponsive(img);
+                fileContainer.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = fileReader.result;
+                makeItemResponsive(video);
+                fileContainer.appendChild(video);
+            }
+
+            // Ajoute une icône de suppression
+            const deleteIcon = document.createElement('i');
+            deleteIcon.className = "bi bi-trash delete-icon";
+            deleteIcon.onclick = () => {
+                fileContainer.remove();
+                removeFile(file); // Supprime le fichier si on clique sur la poubelle
+            };
+            fileContainer.appendChild(deleteIcon);
+
+            // Ajoute l'aperçu dans la zone dédiée
+            previewContainer.appendChild(fileContainer);
+        };
+        fileReader.readAsDataURL(file);
+    }
+
+    function updateInputFiles() {
+        // Met à jour le fileInput avec les fichiers dans DataTransfer
+        fileInput.files = dt.files;
+    }
+
+    function removeFile(fileToRemove) {
+        // Supprime un fichier du DataTransfer
+        const newDataTransfer = new DataTransfer();
+        [...dt.files].forEach(file => {
+            if (file !== fileToRemove) {
+                newDataTransfer.items.add(file); // Ajoute les fichiers sauf celui à supprimer
+            }
+        });
+        dt = newDataTransfer; // Remplace l'ancien DataTransfer par le nouveau
+        updateInputFiles(); // Met à jour l'input
+    }
+</script>

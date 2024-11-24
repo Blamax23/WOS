@@ -1,0 +1,25 @@
+﻿@using WOS.Model;
+
+@model Client;
+
+@{
+    ViewData["Title"] = "Vérification de l'email";
+}
+
+<div class="content">
+    <!-- La vérification est réussie -->
+    <div class="center-screen">
+        <h1>Félicitations !</h1>
+        <p>Votre email a bien été vérifié. Vous pouvez accéder à tous nos produits !</p>
+        <!-- On vérifie si l'user est connecté -->
+        @if(User.Identity.IsAuthenticated)
+        {
+            <a asp-action="Index" asp-controller="Home">Retourner à l'accueil</a>
+        }
+        else
+        {
+            <a asp-action="Login" asp-controller="Account">Se connecter</a>
+        }
+    </div>
+
+</div>

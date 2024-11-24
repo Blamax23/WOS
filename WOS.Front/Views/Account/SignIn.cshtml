@@ -1,0 +1,70 @@
+﻿@using WOS.Model;
+
+@model SignInViewModel;
+
+@{
+    ViewData["Title"] = "Inscription";
+}
+
+<link rel="stylesheet" href="~/css/account/signin.css" asp-append-version="true" />
+
+<div class="content">
+    <!-- Formulaire d'inscription -->
+    <div class="signin">
+        <h1>Inscription</h1>
+        <form method="post" asp-controller="Account" asp-action="SignIn" class="form-signin" novalidate>
+            <div class="input-zone">
+                @if (Model.ErrorMessage != null)
+                {
+                    <div class="error error-gen">
+                        <p>@Model.ErrorMessage</p>
+                    </div>
+                }
+                <div class="input-zone input-nom">
+                    <label for="nom">Nom</label>
+                    <input class="input" type="text" name="nom" id="nom" value="@(Model.Client.Nom != null ? Model.Client.Nom : "")" />
+                    <p class="error error-lastname" style="display:@(ViewData["ErrorLastName"] != null ? "block" : "none");">Le nom est obligatoire.</p>
+                </div>
+                <div class="input-zone input-prenom">
+                    <label for="prenom">Prénom</label>
+                    <input class="input" type="text" name="prenom" id="prenom" value="@(Model.Client.Prenom != null ? Model.Client.Prenom : "")" />
+                    <p class="error error-firstname" style="display:@(ViewData["ErrorFirstName"] != null ? "block" : "none");">Le prénom est obligatoire.</p>
+                </div>
+                <div class="input-zone input-email">
+                    <label for="email">Email</label>
+                    <input class="input" type="email" name="email" id="email" value="@(Model.Client.Email != null ? Model.Client.Email : "")" />
+                    <p class="error error-email" style="display:@(ViewData["ErrorEmail"] != null ? "block" : "none");">L'email est obligatoire.</p>
+                </div>
+                <div class="input-zone input-password">
+                    <label for="password">Mot de passe</label>
+                    <input class="input" type="password" name="password" id="password" value="@(Model.Client.MotDePasse != null ? Model.Client.MotDePasse : "")" />
+                    <p class="error error-password" style="display:@(ViewData["ErrorPassword"] != null ? "block" : "none");">Le mot de passe est obligatoire.</p>
+                </div>
+            </div>
+            <div class="submit-zone">
+                <input type="submit" class="submit-btn" value="S'inscrire" />
+            </div>
+        </form>
+        <a class="redirect-login" asp-controller="Account" asp-action="LogIn">Vous avez déjà un compte ?</a>
+    </div>
+</div>
+
+<script>
+    // On récupère tous les inputs
+    let inputs = $(".input");
+
+    // On ajoute un écouteur d'événement sur chaque input
+    inputs.each(function () {
+        $(this).on("input", function () {
+            // On récupère l'input
+            let input = $(this);
+
+            // On récupère la balise p de classe error dans la même div
+            let error = input.parent().find(".error");
+
+            // On cache le message d'erreur avec le display none
+            error.css("display", "none");
+        });
+    });
+</script>
+

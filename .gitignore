@@ -1,0 +1,43 @@
+# Fichiers binaires et build
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.log
+*.vs/
+
+# Fichiers spécifiques à Visual Studio
+.vs/
+.vscode/
+.vscode/settings.json
+
+# Fichiers spécifiques à ASP.NET
+wwwroot/lib/
+
+# Bases de données locales (SQLite ou autre)
+*.db
+*.db-shm
+*.db-wal
+
+# Fichiers de configuration sensibles
+secrets.json
+appsettings.Development.json
+
+# Fichiers de publication
+publish/
+dist/
+
+# Paquets NuGet
+*.nupkg
+packages/
+.nuget/
+
+# Fichiers spécifiques aux tests
+TestResults/
+coverage/
