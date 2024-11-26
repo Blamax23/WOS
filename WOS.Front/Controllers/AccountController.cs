@@ -89,6 +89,88 @@ namespace WOS.Front.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpPost]
+        [Route("update")]
+        public async Task<IActionResult> UpdateProfile(string nom, string prenom, string email, string password, string newPassword)
+        {
+            // On modifie le profil si les informations ont changé
+            var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            Client client = _clientSrv.GetClientByEmail(userEmail);
+            if (client == null)
+            {
+                Admin admin = _adminSrv.GetAdminByEmail(userEmail);
+                // On effectue le contrôle avec les focntions statiques sur chaque champ s'il n'est pas null
+                if(IsEmailValid(email) == false)
+                {
+                    var result = WhichPartIsMissingEmail(email);
+                    ViewBag.ErrorMessage = result;
+                    return RedirectToAction("Index");
+                }
+
+                if(IsFirstNameValid(prenom) == false)
+                {
+                    ViewBag.ErrorMessage = "Le prénom est obligatoire";
+                    return RedirectToAction("Index");
+                }
+
+                if(IsNameValid(nom) == false)
+                {
+                    ViewBag.ErrorMessage = "Le nom est obligatoire";
+                    return RedirectToAction("Index");
+                }
+
+                if(IsPasswordValid(newPassword) == false)
+                {
+                    ViewBag.ErrorMessage = "Le nouveau mot de passe doit contenir au moins 8 caractères";
+                    return RedirectToAction("Index");
+                }
+
+                if(HashPassword(password) != admin.MotDePasse)
+                {
+                    ViewBag.ErrorMessage = "Le mot de passe actuel est incorrect";
+                    return RedirectToAction("Index");
+                }
+                if (admin == null)
+                {
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    return RedirectToAction("LogIn");
+                }
+                if (admin.Nom != nom && nom != null)
+                    admin.Nom = nom;
+                if (admin.Prenom != prenom && prenom != null)
+                    admin.Prenom = prenom;
+                if (admin.Email != email && email != null)
+                    admin.Email = email;
+                if(password != null)
+                {
+                    if(newPassword != null && admin.MotDePasse == HashPassword(password))
+                    {
+                        admin.AncienMotDePasse = admin.MotDePasse;
+                        admin.MotDePasse = HashPassword(newPassword);
+                    }
+                    
+                    if(newPassword == null && HashPassword(password) == admin.MotDePasse)
+                        _adminSrv.UpdateAdmin(admin);
+                }
+            }
+            else
+            {
+                if (client.Nom != nom)
+                    client.Nom = nom;
+                if (client.Prenom != prenom)
+                    client.Prenom = prenom;
+                if (client.Email != email)
+                    client.Email = email;
+                if (client.MotDePasse != HashPassword(password))
+                {
+                    client.AncienMotDePasse = client.MotDePasse;
+                    client.MotDePasse = HashPassword(password);
+                }
+                _clientSrv.UpdateClient(client);
+            }
+            return RedirectToAction("Index");
+        }
+
         #endregion
 
         #region SignIn

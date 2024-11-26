@@ -20,11 +20,6 @@ obj/
 # Fichiers spécifiques à ASP.NET
 wwwroot/lib/
 
-# Bases de données locales (SQLite ou autre)
-*.db
-*.db-shm
-*.db-wal
-
 # Fichiers de configuration sensibles
 secrets.json
 appsettings.Development.json

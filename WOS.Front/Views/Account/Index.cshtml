@@ -20,7 +20,7 @@
 
 <link rel="stylesheet" href="~/css/account/index.css" asp-append-version="true" />
 
-<div>
+<div class="content">
     <div class="head-account">
         <h1>Mon compte</h1>
         <a asp-controller="Account" asp-action="LogOut">Déconnexion</a>
@@ -28,93 +28,128 @@
     <div class="account">
         @if (admin != null)
         {
-            <div class="nav-account">
-                <ul>
-                    <li class="linkProfile">Profil</li>
-                    <li class="linkCommande">Commandes</li>
-                    <li class="linkProducts">Produits</li>
-                </ul>
-            </div>
-            <div class="info-account">
-                <h2>Profil</h2>
-                <div class="user-zone">
-                    <div class="name-zone">
-                        <p>Nom : @admin.Nom</p>
-                        <p>Prénom : @admin.Prenom</p>
-                    </div>
-                    <div class="email-zone">
-                        <p>Email : @admin.Email</p>
-                    </div>
+            <div class="side-nav" id="sideNav">
+                <div class="nav-account">
+                    <ul>
+                        <li class="linkProfile" data-section="info-account">Profil</li>
+                        <li class="linkCommande" data-section="info-commandes">Commandes</li>
+                        <li class="linkProducts" data-section="info-products">Produits</li>
+                    </ul>
                 </div>
-                <form method="post" asp-controller="Account" asp-action="UpdateInfo" class="formUpdateInfo">
-                    <label for="nom">Nom : </label>
-                    <input type="text" name="nom" id="nom" value="@admin.Nom" />
-                    <br />
-                    <label for="prenom">Prénom : </label>
-                    <input type="text" name="prenom" id="prenom" value="@admin.Prenom" />
-                    <br />
-                    <label for="email">Email : </label>
-                    <input type="email" name="email" id="email" value="@admin.Email" />
-                    <br />
-                    <label for="password">Mot de passe actuel : </label>
-                    <input type="password" name="password" id="password" />
-                    <br />
-                    <label for="newPassword">Nouveau mot de passe : </label>
-                    <input type="password" name="newPassword" id="newPassword" />
-                    <br />
-                    <input type="submit" value="Modifier" />
-                </form>
             </div>
-            <div class="info-commandes">
-                <div class="head-commandes">
-                    <h2>Commandes</h2>
-                    <a asp-controller="Account" asp-action="AddCommande">Ajouter une commande</a>
-                </div>
-                @if (Model.Commandes.Count > 0)
-                {
-                    @foreach (var commande in Model.Commandes)
-                    {
-                        <div class="commande">
-                            <div class="picture-zone-commande">
-                                <img src="@commande.LignesCommande.FirstOrDefault().Produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url" class="imagePresCommande" />
+
+            <div class="toggle-btn" id="toggleNav">
+                <i class="bi bi-caret-right-fill"></i>
+            </div>
+
+            <div class="info-sections">
+                <div class="info-account active">
+                    <form method="post" asp-controller="Account" asp-action="UpdateProfile" class="formUpdateInfo">
+                        <div class="head-profile">
+                            <h2>Profil</h2>
+                            <div class="whenForm hidden">
+                                <button type="button" class="cancel-update">Annuler</button>
+                                <button type="submit" class="user-actions">Modifier</button>
                             </div>
-                            <div class="info-zone-commande">
-                                <div class="title-zone-info">
-                                    <h3>@commande.LignesCommande.FirstOrDefault().Produit.Nom</h3>
-                                </div>
-                                <div class="detail-zone-info">
-                                    <div class="date-commande">
-                                        <p>Date : @commande.DateCommande</p>
-                                    </div>
-                                    <div class="statut-commande">
-                                        <p>Statut : @commande.Statut</p>
-                                    </div>
-                                    <div class="total-commande">
-                                        <p>Total : @commande.MontantTotal €</p>
-                                    </div>
-                                </div>
-                                <div class="list-produits">
-                                    <ul>
-                                        @foreach (var ligne in commande.LignesCommande)
-                                        {
-                                            <li>@ligne.Produit.Nom</li>
-                                        }
-                                    </ul>
-                                </div>
-                                <a asp-controller="Account" asp-action="GetCommande" asp-route-id="@commande.Id">Voir</a>
+                            <div class="whenInfos">
+                                <button type="button" class="user-actions">Modifier</button>
                             </div>
                         </div>
+                        <div class="user-zone">
+                            <div class="name-zone">
+                                <p><strong>Nom :</strong> @admin.Nom</p>
+                                <p><strong>Prénom :</strong>  @admin.Prenom</p>
+                            </div>
+                            <div class="email-zone">
+                                <p><strong>Email :</strong>  @admin.Email</p>
+                            </div>
+                        </div>
+                        <div class="form-zone hidden">
+                            <div class="consignes">
+                                <p>Vous pouvez modifier vos informations personnelles ici. <br />Si vous souhaitez changer vos informations publiques, renseignez seulement le mot de passe actuel.<br /> Si vous souhaitez changer de mot de passe, renseignez le mot de passe actuel ainsi que le nouveau.</p>
+                            </div>
+                            <div class="inputs">
+                                <div class="zone-input name-zone">
+                                    <div class="input name-input">
+                                        <label for="nom">Nom : </label>
+                                        <input type="text" name="nom" id="nom" value="@admin.Nom" />
+                                    </div>
+                                    <div class="input firstname-input">
+                                        <label for="prenom">Prénom : </label>
+                                        <input type="text" name="prenom" id="prenom" value="@admin.Prenom" />
+                                    </div>
+                                </div>
+                                <div class="zone-input email-zone">
+                                    <div class="input email-input">
+                                        <label for="email">Email : </label>
+                                        <input type="email" name="email" id="email" value="@admin.Email" />
+                                    </div>
+                                </div>
+                                <div class="zone-input password-zone">
+                                    <div class="input password-input">
+                                        <label for="password">Mot de passe actuel : </label>
+                                        <input type="password" name="password" id="password" />
+                                    </div>
+                                    <div class="input newPassword-input">
+                                        <label for="newPassword">Nouveau mot de passe : </label>
+                                        <input type="password" name="newPassword" id="newPassword" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="info-commandes">
+                    <div class="head-commandes">
+                        <h2>Commandes</h2>
+                        <a asp-controller="Account" asp-action="AddCommande">Ajouter une commande</a>
+                    </div>
+                    @if (Model.Commandes.Count > 0)
+                    {
+                        @foreach (var commande in Model.Commandes)
+                        {
+                            <div class="commande">
+                                <div class="picture-zone-commande">
+                                    <img src="@commande.LignesCommande.FirstOrDefault().Produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url" class="imagePresCommande" />
+                                </div>
+                                <div class="info-zone-commande">
+                                    <div class="title-zone-info">
+                                        <h3>@commande.LignesCommande.FirstOrDefault().Produit.Nom</h3>
+                                    </div>
+                                    <div class="detail-zone-info">
+                                        <div class="date-commande">
+                                            <p>Date : @commande.DateCommande</p>
+                                        </div>
+                                        <div class="statut-commande">
+                                            <p>Statut : @commande.Statut</p>
+                                        </div>
+                                        <div class="total-commande">
+                                            <p>Total : @commande.MontantTotal €</p>
+                                        </div>
+                                    </div>
+                                    <div class="list-produits">
+                                        <ul>
+                                            @foreach (var ligne in commande.LignesCommande)
+                                            {
+                                                <li>@ligne.Produit.Nom</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                    <a asp-controller="Account" asp-action="GetCommande" asp-route-id="@commande.Id">Voir</a>
+                                </div>
+                            </div>
+                        }
                     }
-                }
-                else
-                {
-                    <p>Vous n'avez pas encore de commandes.</p>
-                }
-            </div>
-            <div class="info-products">
-                <div class="head-product">
-                    <h2>Produits</h2>
-                    <a asp-controller="Account" asp-action="AddProduct">Ajouter un produit</a>
+                    else
+                    {
+                        <p>Vous n'avez pas encore de commandes.</p>
+                    }
+                </div>
+                <div class="info-products">
+                    <div class="head-product">
+                        <h2>Produits</h2>
+                        <a asp-controller="Account" asp-action="AddProduct">Ajouter un produit</a>
+                    </div>
                 </div>
             </div>
         }
@@ -126,16 +161,137 @@
 </div>
 
 <script>
-    $(document).ready(function () {
-        $('.nav-account li').click(function () {
-            // Récupérer l'index de l'élément cliqué
-            const index = $(this).index();
+     function ShowFormUpdateProfile() {
+        const formZone = $('.form-zone');
+        const userZone = $('.user-zone');
+        const btnForm = $(".whenForm");
+        const btnInfo = $(".whenInfos");
 
-            // Masquer toutes les sections
-            $('.info-account, .info-commandes, .info-products').removeClass('active');
+        if (formZone.hasClass('hidden')) {
+            formZone.removeClass('hidden');
+            userZone.addClass('hidden');
+            btnForm.removeClass('hidden');
+            btnInfo.addClass('hidden');
+        } else {
+            formZone.addClass('hidden');
+            userZone.removeClass('hidden');
+            btnForm.addClass('hidden');
+            btnInfo.removeClass('hidden');
+        }
 
-            // Afficher la section correspondante
-            $('.info-account, .info-commandes, .info-products').eq(index).addClass('active');
+        const inputs = formZone.find('input');
+        inputs.each((index, input) => {
+            input.value = input.defaultValue;
         });
+    }
+
+    function CloseFormUpdateProfile() {
+        const formZone = $('.form-zone');
+        const userZone = $('.user-zone');
+        const btnForm = $(".whenForm");
+        const btnInfo = $(".whenInfos");
+
+        formZone.addClass('hidden');
+        userZone.removeClass('hidden');
+        btnForm.addClass('hidden');
+        btnInfo.removeClass('hidden');
+
+        const inputs = formZone.find('input');
+        inputs.each((index, input) => {
+            input.value = input.defaultValue;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('toggleNav');
+        const sideNav = document.getElementById('sideNav');
+        const menuItems = sideNav.querySelectorAll('li');
+
+        // Gestion du toggle menu
+        toggleBtn.addEventListener('click', () => {
+            sideNav.classList.toggle('active');
+        });
+
+        // Fermeture du menu si clic hors du menu
+        document.addEventListener('click', (event) => {
+            if (!sideNav.contains(event.target) && !toggleBtn.contains(event.target)) {
+                sideNav.classList.remove('active');
+            }
+        });
+
+        // Gestion des sections
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const sectionId = item.getAttribute('data-section');
+
+                // Masquer toutes les sections
+                document.querySelectorAll('.info-sections > div').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                // Afficher la section sélectionnée
+                document.querySelector(`.${sectionId}`).classList.add('active');
+
+                // Fermer le menu sur mobile
+                sideNav.classList.remove('active');
+            });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('toggleNav');
+        const sideNav = document.getElementById('sideNav');
+
+        toggleBtn.addEventListener('click', () => {
+            sideNav.classList.toggle('active');
+        });
+
+        // Fermer le menu si on clique en dehors
+        document.addEventListener('click', (event) => {
+            if (!sideNav.contains(event.target)) {
+                sideNav.classList.remove('active');
+            }
+        });
+
+        // Gestion des clics sur les éléments du menu
+        const menuItems = document.querySelectorAll('.side-nav li');
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                CloseFormUpdateProfile();
+                // Action personnalisée selon la classe de l'élément
+                switch (true) {
+                    case item.classList.contains('linkProfile'):
+                        console.log('Navigation vers le profil');
+                        break;
+                    case item.classList.contains('linkCommande'):
+                        console.log('Navigation vers les commandes');
+                        break;
+                    case item.classList.contains('linkProducts'):
+                        console.log('Navigation vers les produits');
+                        break;
+                }
+
+                // Fermer le menu après la sélection
+                sideNav.classList.remove('active');
+            });
+        });
+    });
+</script>
+
+<script>
+    // On récupère le bouton modifier
+    const btnUpdate = $('.user-actions');
+    const btnCancel = $('.cancel-update');
+
+    // On ajoute un gestionnaire de click sur btnUpdate
+    btnUpdate.on('click', () => {
+        // On récupère la zone de formulaire
+        ShowFormUpdateProfile();
+    });
+
+    btnCancel.on('click', () => {
+        ShowFormUpdateProfile();
     });
 </script>

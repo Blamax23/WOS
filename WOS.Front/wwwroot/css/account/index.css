@@ -1,3 +1,9 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
 /* Cacher les sections par défaut */
 .info-account, .info-commandes, .info-products {
     display: none; /* Masquer par défaut */
@@ -14,20 +20,240 @@
     }
 
 /* Style de base pour le menu */
-.nav-account ul {
+
+.account {
     display: flex;
-    list-style: none;
-    gap: 10px;
+    flex-grow: 1;
 }
 
-.nav-account li {
-    cursor: pointer;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
+/* Navigation latérale - Version Desktop */
+.side-nav {
+    width: 250px;
+    background-color: rgb(98, 106, 115);
+    color: white;
+    transition: transform 0.3s ease;
 }
 
-    .nav-account li:hover {
-        background-color: #f0f0f0;
+    .side-nav .nav-account ul {
+        list-style-type: none;
+        padding: 0;
     }
+
+        .side-nav .nav-account ul li {
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            .side-nav .nav-account ul li:hover {
+                background-color: #444;
+            }
+
+.toggle-btn {
+    display: none;
+}
+
+.info-sections {
+    flex-grow: 1;
+}
+
+/* Version Mobile */
+@media (max-width: 768px) {
+    .account {
+        flex-direction: column;
+    }
+
+    .side-nav {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+    }
+
+        .side-nav.active {
+            left: 0;
+        }
+
+    .toggle-btn {
+        display: block;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #333;
+        color: white;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1100;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+
+    .side-nav .nav-account ul li {
+        border-bottom: 1px solid #444;
+    }
+}
+
+/* Sections de contenu */
+.info-account, .info-commandes, .info-products {
+    display: none;
+}
+
+    .info-account.active {
+        display: block;
+    }
+
+
+.head-account {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5vh 5vw;
+    border-bottom: 1px solid rgb(98, 106, 115);
+    flex-shrink: 0;
+}
+
+    .head-account h1 {
+        font-size: 2.5em;
+        margin: 0;
+    }
+
+    .head-account a {
+        padding: 10px;
+        background-color: black;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+    }
+
+        .head-account a:hover {
+            background-color: red;
+            color: white;
+        }
+
+
+.info-account h2{
+    font-size: 2em;
+    margin: 0;
+}
+
+.user-zone{
+    display: flex;
+    justify-content: space-between;
+    width: 50%;
+    margin: 5vh 5vw;
+}
+
+    .user-zone .user-info{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+        .user-zone .user-info h3{
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .user-zone .user-info p{
+            margin: 0;
+        }
+
+    .head-profile{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5vh 5vw;
+        border-bottom: 1px solid rgb(98, 106, 115);
+        flex-shrink: 0;
+    }
+
+        .head-profile .user-actions {
+            padding: .5em 1em;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 5px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1em;
+            border: 2px solid black;
+        }
+
+        .head-profile .user-actions:hover {
+            background-color: white;
+            color: black;
+        }
+
+.form-zone{
+    padding: 5vh 5vw;
+}
+
+.inputs {
+    display: flex;
+    justify-content: space-between;
+}
+
+.zone-input{
+    display: flex;
+    flex-direction: column;
+}
+
+.input{
+    display: flex;
+    justify-content: space-between;
+    margin: 1vh 0;
+}
+
+.input input{
+    margin-left: 1vw;
+    border: 1px solid black;
+    padding: .5em;
+}
+
+.input label{
+    font-size: 1em;
+    margin: 0;
+    font-weight: bold;
+    padding: .5em 0em;
+}
+
+.hidden {
+    display: none;
+}
+
+.cancel-update{
+    padding: .5em 1em;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1em;
+    border: 2px solid red;
+}
+
+    .cancel-update:hover {
+        background-color: white;
+        color: red;
+    }
+
+.consignes{
+    /*On fait retourner le texte à la ligne s'il est trop long*/
+    word-wrap: break-word;
+}
