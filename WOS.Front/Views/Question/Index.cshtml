@@ -1,0 +1,163 @@
+﻿@using WOS.Model;
+
+@model List<Question>;
+
+@{
+    ViewData["Title"] = "Foire aux Questions";
+}
+
+<link rel="stylesheet" href="~/css/question/question.css" asp-append-version="true" />
+
+<div class="content">
+    <h2>Foire Aux Questions</h2>
+    <div class="tableau">
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="add-question-container">
+                <button id="btnAddQuestion" class="btn btnAddQuestion" onclick="toggleForm()">
+                    <div class="button-text">
+                        Ajouter une question
+                    </div>
+                    <div class="button-more">
+                        <i class="bi bi-plus-lg"></i>
+                    </div>
+                </button>
+                <form asp-action="AddQuestion" method="post" enctype="multipart/form-data" class="question-form" id="formAddQuestion" style="display: none;">
+                    <div class="question shadow-lg" style="margin: 0;">
+                        <div class="question-zone-form">
+                            <label for="question">Question</label>
+                            <input type="text" name="question" class="inputQuestion" required />
+                        </div>
+                        <div class="reponse-zone-form">
+                            <label for="reponse">Réponse</label>
+                            <textarea name="reponse" class="form-control inputReponse" required></textarea>
+                            <div class="btns-close">
+                                <button type="button" class="btn cancel-btn" onclick="toggleForm()">Annuler</button>
+                                <button type="submit" class="btn confirm-btn">Enregistrer</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        }
+        @if(Model.Count() == 0)
+        {
+            <div class="noquestion shadow-lg">
+                <h3>Aucune question n'a été postée pour le moment.</h3>
+            </div>
+        }
+        else
+        {
+            @for (var i = 0; i < Model.Count(); i++)
+            {
+                <div class="question shadow-lg">
+                    <div class="question-zone" id="question-@i">
+                        <h3>@Model[i].Intitule</h3>
+                        <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="reponse-zone" id="reponse-@i" style="display: none;">
+                        <p style="margin: 0;">@Model[i].Reponse</p>
+                        <div class="delete-zone">
+                            <button class="btn cancel-btn delete-btn" data-id="@Model[i].Id">Supprimer</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div id="modalDelete" class="modal">
+        <form method="post" asp-controller="Question" asp-action="DeleteQuestion" class="content-modal">
+            <i class="bi bi-exclamation-triangle-fill warning-icon"></i>
+            <input type="hidden" name="id" id="questionIdToDelete" />
+            <p class="warning-text">Êtes-vous sûr de vouloir supprimer cette actualité ?</p>
+            <div class="btns-delete">
+                <a class="btn cancel-btn close">Annuler</a>
+                <button type="submit" class="btn confirm-btn delete">Supprimer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        function toggleForm() {
+            var btn = document.getElementById("btnAddQuestion");
+            var form = document.getElementById("formAddQuestion");
+            if (form.style.display === "none") {
+                form.style.display = "block";
+                btn.style.display = "none";
+            } else {
+                form.style.display = "none";
+                btn.style.display = "flex";
+            }
+        }
+
+        var questions = document.querySelectorAll(".question-zone");
+
+        questions.forEach((question, index) => {
+            question.addEventListener('click', function () {
+                var reponse = document.querySelector(`#reponse-${index}`);
+                var icon = question.querySelector("i");
+                var reponses = document.querySelectorAll(".reponse-zone");
+                reponses.forEach((reponse, i) => {
+                    if (index != i) {
+                        reponse.style.display = "none";
+                        reponse.previousElementSibling.style.borderBottomLeftRadius = "5px";
+                        reponse.previousElementSibling.style.borderBottomRightRadius = "5px";
+                        reponse.previousElementSibling.querySelector("i").style.transform = "rotate(0deg)";
+                    }
+                })
+                // Toggle display for the corresponding answer
+                if (reponse.style.display === "none" || reponse.style.display === "") {
+                    reponse.style.display = "block";
+                    question.style.borderBottomLeftRadius = "0px";
+                    question.style.borderBottomRightRadius = "0px";
+
+                    reponse.style.borderBottomLeftRadius = "0px";
+                    reponse.style.borderBottomRightRadius = "0px";
+
+                    // Rotate the icon 90 degrees
+                    icon.style.transition = "transform 0.5s ease"; // Animation smooth
+                    icon.style.transform = "rotate(90deg)";
+                } else {
+                    reponse.style.display = "none";
+                    question.style.borderBottomLeftRadius = "5px";
+                    question.style.borderBottomRightRadius = "5px";
+
+                    // Rotate the icon back to 0 degrees
+                    icon.style.transform = "rotate(0deg)";
+                }
+            });
+        });
+
+        const deleteBtns = $(".delete-btn");
+        const modalDelete = $("#modalDelete");
+        const btnsDelete = modalDelete.find(".btns-delete");
+        const closeDeleteBtn = btnsDelete.find(".close");
+        const deleteActu = btnsDelete.find(".delete");
+
+        // Variable pour stocker l'ID de l'actualité courante
+        let currentActualiteId = null;
+
+        // Attacher les gestionnaires d'événements aux boutons de suppression
+        for (let i = 0; i < deleteBtns.length; i++) {
+            deleteBtns[i].addEventListener("click", function (event) {
+                const questionIdInput = document.getElementById("questionIdToDelete");
+                currentQuestionId = this.getAttribute("data-id");
+                questionIdInput.value = currentQuestionId;
+                // Stocker l'ID de l'actualité sélectionnée
+                currentActualiteId = this.id;
+                // Afficher le modal
+                modalDelete.css("display", "block");
+            });
+        }
+
+        // Gestionnaire de clic pour fermer le modal
+        closeDeleteBtn.on("click", function () {
+            modalDelete.css("display", "none");
+            // Réinitialiser l'ID courant
+            currentActualiteId = null;
+        });
+    </script>
+}

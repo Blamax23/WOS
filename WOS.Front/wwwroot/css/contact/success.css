@@ -1,0 +1,60 @@
+.content {
+    background-color: #f1f1f1;
+}
+
+.page-contact{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+.success {
+    display: block;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 15vh 0;
+}
+
+.bi-check2-circle {
+    display: block;
+    color: black;
+    font-size: 20vh;
+    height: min-content;
+    width: min-content;
+    margin: auto;
+}
+
+.success h1 {
+    font-size: 3em;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+}
+
+.success p {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin: 0;
+    text-align: center;
+}
+.btn-success {
+    display: block;
+    width: 20%;
+    height: 7vh;
+    margin: 5vh auto;
+    background-color: black;
+    color: white;
+    font-size: 1em;
+    font-weight: 700;
+    border-radius: 5px;
+    border: 2px solid black;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .btn-success:hover {
+        background-color: white;
+        color: black;
+        border: 2px solid black;
+    }

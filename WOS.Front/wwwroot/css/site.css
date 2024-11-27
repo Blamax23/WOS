@@ -31,6 +31,10 @@ body {
     font-family: "Montserrat", sans-serif;
 }
 
+.container {
+    background-color: #f1f1f1;
+}
+
 .navbar {
     font-family: "Montserrat", sans-serif;
     padding: 2.5vh 0;
@@ -182,4 +186,42 @@ body {
     white-space: nowrap;
     line-height: 60px;
 }
+
+.cancel-btn {
+    padding: .5em 1em;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1em;
+    border: 2px solid red;
+}
+
+    .cancel-btn:hover {
+        background-color: white;
+        color: red;
+    }
+
+.confirm-btn {
+    padding: .5em 1em;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1em;
+    border: 2px solid black;
+}
+
+    .confirm-btn:hover {
+        background-color: white;
+        color: black;
+    }
 

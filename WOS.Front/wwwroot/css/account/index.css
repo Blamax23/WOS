@@ -125,7 +125,7 @@
         margin: 0;
     }
 
-    .head-account a {
+    .head-account button {
         padding: 10px;
         background-color: black;
         color: white;
@@ -136,7 +136,7 @@
         text-decoration: none;
     }
 
-        .head-account a:hover {
+        .head-account button:hover {
             background-color: red;
             color: white;
         }

@@ -16,6 +16,8 @@
         admin = (Admin)Model.User;
     }
 
+    string errorMessage = ViewBag.ErrorMessage ?? string.Empty;
+
 }
 
 <link rel="stylesheet" href="~/css/account/index.css" asp-append-version="true" />
@@ -23,7 +25,9 @@
 <div class="content">
     <div class="head-account">
         <h1>Mon compte</h1>
-        <a asp-controller="Account" asp-action="LogOut">Déconnexion</a>
+        <form method="post" asp-controller="Account" asp-action="LogOut">
+            <button type="submit">Déconnexion</button>
+        </form>
     </div>
     <div class="account">
         @if (admin != null)
@@ -48,8 +52,8 @@
                         <div class="head-profile">
                             <h2>Profil</h2>
                             <div class="whenForm hidden">
-                                <button type="button" class="cancel-update">Annuler</button>
-                                <button type="submit" class="user-actions">Modifier</button>
+                                <button type="button" class="cancel-btn">Annuler</button>
+                                <button type="submit" class="user-actions confirm-btn">Modifier</button>
                             </div>
                             <div class="whenInfos">
                                 <button type="button" class="user-actions">Modifier</button>
@@ -66,6 +70,10 @@
                         </div>
                         <div class="form-zone hidden">
                             <div class="consignes">
+                                @if (ViewBag.ErrorMessage != null)
+                                {
+                                    <p>@ViewBag.ErrorMessage</p>
+                                }
                                 <p>Vous pouvez modifier vos informations personnelles ici. <br />Si vous souhaitez changer vos informations publiques, renseignez seulement le mot de passe actuel.<br /> Si vous souhaitez changer de mot de passe, renseignez le mot de passe actuel ainsi que le nouveau.</p>
                             </div>
                             <div class="inputs">
@@ -82,7 +90,7 @@
                                 <div class="zone-input email-zone">
                                     <div class="input email-input">
                                         <label for="email">Email : </label>
-                                        <input type="email" name="email" id="email" value="@admin.Email" />
+                                        <input type="text" name="email" id="email" value="@admin.Email" />
                                     </div>
                                 </div>
                                 <div class="zone-input password-zone">
@@ -161,7 +169,7 @@
 </div>
 
 <script>
-     function ShowFormUpdateProfile() {
+    function ShowFormUpdateProfile() {
         const formZone = $('.form-zone');
         const userZone = $('.user-zone');
         const btnForm = $(".whenForm");
@@ -172,17 +180,7 @@
             userZone.addClass('hidden');
             btnForm.removeClass('hidden');
             btnInfo.addClass('hidden');
-        } else {
-            formZone.addClass('hidden');
-            userZone.removeClass('hidden');
-            btnForm.addClass('hidden');
-            btnInfo.removeClass('hidden');
         }
-
-        const inputs = formZone.find('input');
-        inputs.each((index, input) => {
-            input.value = input.defaultValue;
-        });
     }
 
     function CloseFormUpdateProfile() {
@@ -283,7 +281,7 @@
 <script>
     // On récupère le bouton modifier
     const btnUpdate = $('.user-actions');
-    const btnCancel = $('.cancel-update');
+    const btnCancel = $('.cancel-btn');
 
     // On ajoute un gestionnaire de click sur btnUpdate
     btnUpdate.on('click', () => {
@@ -292,6 +290,13 @@
     });
 
     btnCancel.on('click', () => {
-        ShowFormUpdateProfile();
+        CloseFormUpdateProfile();
     });
+
+    let errorMessage = '@errorMessage';
+    console.log("Erreur : " + errorMessage);
+
+    if(errorMessage !== '') {
+        ShowFormUpdateProfile();
+    }
 </script>

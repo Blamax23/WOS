@@ -6,9 +6,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using WOS.Model;
 using WOS.Dal.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WOS.Front.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

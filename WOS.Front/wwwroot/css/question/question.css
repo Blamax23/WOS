@@ -1,0 +1,451 @@
+.content {
+    width: 100%;
+    min-height: 100vh;
+}
+
+    .content h2 {
+        padding: 5vh 5vw;
+        font-size: 2em;
+        padding-top: 5vh;
+        margin: 0;
+        font-weight: bold;
+        border-bottom: 1px solid black;
+    }
+
+.tableau{
+    width: 70%;
+    margin: 0 auto;
+}
+
+.add-question-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5vh 0;
+    width: 100%;
+    border-radius: 10px;
+    background-color: black;
+}
+
+.btnAddQuestion {
+    background-color: black;
+    border: 2px solid black;
+    border-radius: 7.5px;
+    padding: 1%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 10vh;
+    background-color: transparent;
+    font-weight: bold;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .btnAddQuestion:hover {
+        background-color: white;
+        color: black;
+        border: 2px solid black;
+    }
+
+.button-text {
+    width: 90%;
+    display: flex;
+    justify-content: center;
+    padding-left: 10%;
+}
+
+.button-more {
+    width: 10%;
+}
+
+.button-more i {
+    font-size: 3em;
+}
+
+.question-form{
+    width: 100%;
+}
+
+.question-zone-form {
+    display: flex;
+    flex-direction: column;
+    padding: .5em 0;
+    background-color: #f1f1f1;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.question-zone-form label{
+    font-size: 1em;
+    margin: 1vh 0;
+
+}
+
+    .question-zone-form input {
+        width: 70%;
+        padding: 1%;
+        border: 2px solid black;
+        border-radius: 5px;
+        background-color: transparent;
+        color: black;
+        font-size: 1em;
+    }
+
+.question-zone-form input::placeholder {
+    color: black;
+}
+
+.question-zone-form input:focus {
+    outline: none;
+    background-color: transparent;
+    color: black;
+    font-family: "Montserrat", sans-serif;
+}
+
+.reponse-zone-form {
+    display: flex;
+    flex-direction: column;
+    background-color: #f1f1f1;
+    padding: .5em 0;
+}
+
+.reponse-zone-form label {
+    font-size: 1em;
+    margin: 1vh 0;
+}
+
+.reponse-zone-form textarea {
+    width: 97%;
+    height: 20vh;
+    padding: 1%;
+    border-style: none;
+    border-radius: 5px;
+    border: 2px solid black;
+    background-color: transparent;
+    color: black;
+    resize: none;
+    font-size: 1.2em;
+}
+
+.reponse-zone-form textarea::placeholder {
+    font-family: "Montserrat", sans-serif;
+}
+
+    .reponse-zone-form textarea:focus {
+        outline: none;
+        background-color: transparent;
+        font-family: "Montserrat", sans-serif;
+        box-shadow: 0 0 0px black;
+    }
+
+.question {
+    width: 100%;
+    border-radius: 5px;
+    margin : 3em 0;
+}
+
+.question-zone {
+    display: flex;
+    justify-content: space-between;
+    padding: 1em 2em;
+    background-color: black;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.question-zone h3 {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 0;
+    font-size: 1.5em;
+    font-weight: bold;
+    height: 1.5em;
+}
+
+.question-zone i {
+    font-size: 2em;
+}
+
+.reponse-zone {
+    background-color: #d3d3d3;
+    cursor: pointer;
+}
+
+    .reponse-zone p {
+        margin: 0;
+        padding: 2em 2em 1em 2em;
+    }
+
+.delete-zone{
+    display: flex;
+    justify-content: right;
+}
+
+.cancel-btn{
+    text-decoration: none;
+    font-size: .8em;
+    margin: 1em 1em;
+}
+
+.confirm-btn{
+    text-decoration: none;
+    font-size: .8em;
+    margin: 1em 1em;
+}
+
+.rotate {
+    animation: rotation 0.5s linear forwards;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(90deg);
+    }
+}
+
+.rotateInverse {
+    animation: rotationInverse 0.5s linear forwards;
+}
+
+@keyframes rotationInverse {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(-90deg);
+    }
+}
+
+.btns-close{
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    width: 100%;
+    padding: 1em 0; 
+}
+
+.btns-close button{
+    margin: 0 .5em;
+}
+
+.noquestion{
+    display: flex;
+    justify-content: center;
+    height: 70vh;
+    font-size: 2em;
+    font-weight: bold;
+
+}
+
+.modal{
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.content-modal{
+    width: 40%;
+    background-color: #fefefe;
+    border: 3px solid red;
+    margin: 15% auto;
+    padding: 20px;
+}
+
+.warning-icon{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 5em;
+    color: red;
+}
+
+.warning-text{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+}
+
+.btns-delete{
+    display: flex;
+    justify-content: center;
+    margin-top: 2em;
+}
+
+    .btns-delete a {
+        font-size: 1em;
+        margin: 0 .5em;
+    }
+
+.btns-delete button{
+    font-size: 1em;
+    margin: 0 .5em;
+}
+
+@media (max-width: 1440px) {
+    .btnAddQuestion{
+        font-size: 2em;
+    }
+
+    .btns-close .btn {
+        font-size: 1.25em;
+    }
+
+    .reponse-zone {
+        font-size: 1.4em;
+    }
+}
+
+@media (max-width: 1025px){
+    .container{
+        margin-bottom: 25vh;
+    }
+
+    .btnAddQuestion{
+        font-size: 2.5em;
+    }
+
+    .question{
+        font-size: 1.25em;
+    }
+
+    .reponse-zone{
+        font-size: 1.25em;
+    }
+
+    .btns-close .btn{
+        font-size: 1.25em;
+    }
+}
+
+@media (max-width: 768px) {
+    .reponse-zone{
+        font-size: 1.4em;
+    }
+}
+
+@media (max-width: 476px) {
+    .btnAddQuestion {
+        font-size: 2em;
+        height: 7.5vh;
+    }
+}
+
+@media (max-width: 426px) {
+    .btnAddQuestion{
+        font-size: 2.2em;
+        height: 7.5vh;
+    }
+
+    .question-zone-form{
+        font-size: 1.5em;
+    }
+
+    .reponse-zone-form{
+        font-size: 1.5em;
+    }
+
+        .reponse-zone-form textarea {
+            padding: 2%;
+        }
+
+    .button-text{
+        font-size: 1.5em;
+    }
+
+    .question{
+        font-size: 1.5em;
+    }
+
+    .reponse-zone{
+        font-size: 1.5em;
+    }
+}
+
+@media (max-width: 376px) {
+    .btnAddQuestion {
+        font-size: 2em;
+    }
+
+    .question-zone-form {
+        font-size: 1.2em;
+    }
+
+    .reponse-zone-form {
+        font-size: 1.2em;
+    }
+
+    .reponse-zone-form textarea {
+        padding: 2%;
+    }
+
+    .button-text {
+        font-size: 1.75em;
+    }
+
+    .button-more i {
+        font-size: 3.5em;
+    }
+
+    .question {
+        font-size: 1.75em;
+    }
+
+    .reponse-zone {
+        font-size: 1.5em;
+    }
+}
+
+@media (max-width: 321px) {
+    .btnAddQuestion {
+        font-size: 1.75em;
+    }
+
+    .button-text {
+        font-size: 2em;
+    }
+}
+
+@media (min-width: 2100px) and (max-width: 2560px) {
+    .question-zone{
+        font-size: 1.25em;
+    }
+
+    .reponse-zone{
+        font-size:1.5em;
+    }
+
+    .question-zone-form {
+        font-size: 1.25em;
+    }
+
+    .reponse-zone-form {
+        font-size: 1.5em;
+    }
+
+    .btn{
+        font-size: 1em;
+    }
+
+    .btnAddQuestion {
+        font-size: 2.5em;
+    }
+}

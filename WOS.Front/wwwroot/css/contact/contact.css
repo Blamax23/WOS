@@ -1,0 +1,117 @@
+.content {
+    width: 50%;
+    margin: auto;
+    padding: 5vh 0;
+}
+
+.content h2{
+    font-size: 2em;
+    margin: 3vh 0;
+    text-align: center;
+}
+
+.page-contact {
+    width: 75%;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+}
+
+.form-contact {
+    width: 100%;
+}
+
+.send-zone {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+    .send-zone .infoEmail {
+        width: 48%;
+        margin: .5em 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .send-zone .infoEmail label {
+        margin: .5em 0;
+    }
+
+    .send-zone input {
+        width: 96%;
+        padding: .5em;
+        border: 2px solid black;
+        font-size: 1em;
+        border-radius: 5px;
+    }
+
+        .send-zone input:focus {
+            outline: none;
+        }
+
+/*.objetDiv{
+    position: relative;
+}
+
+.objetDiv input{
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+*/
+.content-zone {
+    margin: 1em 0;
+}
+
+.inputContenu {
+    height: 30vh;
+    min-height: 30vh;
+    border: 2px solid black;
+    width: 100%;
+    color: black;
+    font-size: 1em;
+    resize: vertical;
+    border-radius: 5px;
+    padding: .5em;
+}
+
+    .inputContenu::placeholder {
+        color: black;
+    }
+
+    .inputContenu:focus {
+        outline: none;
+        color: white;
+        border: 2px solid black;
+        color: black;
+        box-shadow: 0 0 0px black;
+    }
+
+.btn-send {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 2em 0;
+}
+
+    .btn-send button {
+        width: 40%;
+        height: 7vh;
+        background-color: black;
+        color: white;
+        font-size: 1.75em;
+        font-weight: 700;
+        border-radius: 5px;
+        border: 2px solid black;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-send button:hover {
+            background-color: white;
+            color: black;
+            border: 2px solid black;
+        }

@@ -28,6 +28,7 @@ namespace WOS.Dal.Context
         public DbSet<StatutCommande> StatutsCommande { get; set; }
         public DbSet<Avis> Avis { get; set; }
         public DbSet<Admin> Admins { get; set; }
+        public DbSet<Question> Questions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,6 +45,7 @@ namespace WOS.Dal.Context
             modelBuilder.ApplyConfiguration(new StatutCommandeMap());
             modelBuilder.ApplyConfiguration(new AvisMap());
             modelBuilder.ApplyConfiguration(new AdminMap());
+            modelBuilder.ApplyConfiguration(new QuestionMap());
         }
     }
 }

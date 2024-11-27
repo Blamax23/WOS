@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Contactez-nous !";
+}
+
+<link rel="stylesheet" href="~/css/contact/success.css" asp-append-version="true" />
+
+<div class="content">
+    <div class="page-contact shadow-lg text-center">
+        <div class="success">
+            <i class="bi bi-check2-circle"></i>
+            <h1>Merci pour votre message !</h1>
+            <p>Nous vous répondrons dans les plus brefs délais.</p>
+            <button class="btn btn-success" onclick="window.location.href = '@Url.Action("Index", "Home")'">Retour à l'accueil</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+    </script>
+}
+    

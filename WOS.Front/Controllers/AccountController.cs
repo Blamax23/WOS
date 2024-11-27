@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
 using System.Net.Mail;
 using System.Net;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace WOS.Front.Controllers
 {
@@ -100,57 +101,70 @@ namespace WOS.Front.Controllers
             {
                 Admin admin = _adminSrv.GetAdminByEmail(userEmail);
                 // On effectue le contrôle avec les focntions statiques sur chaque champ s'il n'est pas null
-                if(IsEmailValid(email) == false)
+                if (admin == null)
+                {
+                    ViewBag.ErrorMessage = "Nous n'avons trouvé aucun compte vous correspondant."; 
+                    return RedirectToAction("Index");
+                }
+                if (!IsEmailValid(email))
                 {
                     var result = WhichPartIsMissingEmail(email);
                     ViewBag.ErrorMessage = result;
                     return RedirectToAction("Index");
                 }
+                else
+                {
+                    if(email != admin.Email)
+                        admin.Email = email;
+                }
 
-                if(IsFirstNameValid(prenom) == false)
+                if (!IsFirstNameValid(prenom))
                 {
                     ViewBag.ErrorMessage = "Le prénom est obligatoire";
                     return RedirectToAction("Index");
                 }
+                else
+                {
+                    if(prenom != admin.Prenom)
+                        admin.Prenom = prenom;
+                }
 
-                if(IsNameValid(nom) == false)
+                if (!IsNameValid(nom))
                 {
                     ViewBag.ErrorMessage = "Le nom est obligatoire";
                     return RedirectToAction("Index");
                 }
-
-                if(IsPasswordValid(newPassword) == false)
+                else
                 {
-                    ViewBag.ErrorMessage = "Le nouveau mot de passe doit contenir au moins 8 caractères";
-                    return RedirectToAction("Index");
+                    if(nom != admin.Nom)
+                        admin.Nom = nom;
                 }
 
-                if(HashPassword(password) != admin.MotDePasse)
-                {
-                    ViewBag.ErrorMessage = "Le mot de passe actuel est incorrect";
-                    return RedirectToAction("Index");
-                }
-                if (admin == null)
-                {
-                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    return RedirectToAction("LogIn");
-                }
-                if (admin.Nom != nom && nom != null)
-                    admin.Nom = nom;
-                if (admin.Prenom != prenom && prenom != null)
-                    admin.Prenom = prenom;
-                if (admin.Email != email && email != null)
-                    admin.Email = email;
                 if(password != null)
                 {
-                    if(newPassword != null && admin.MotDePasse == HashPassword(password))
+                    if (HashPassword(password) != admin.MotDePasse)
                     {
-                        admin.AncienMotDePasse = admin.MotDePasse;
-                        admin.MotDePasse = HashPassword(newPassword);
+                        ViewBag.ErrorMessage = "Le mot de passe actuel est incorrect";
+                        return RedirectToAction("Index");
                     }
-                    
-                    if(newPassword == null && HashPassword(password) == admin.MotDePasse)
+                    else
+                    {
+                        if (newPassword != null)
+                        {
+                            if (!IsPasswordValid(newPassword))
+                            {
+                                ViewBag.ErrorMessage = "Le nouveau mot de passe doit contenir au moins 8 caractères";
+                                return RedirectToAction("Index");
+                            }
+                            else
+                            {
+                                admin.AncienMotDePasse = admin.MotDePasse;
+                                admin.MotDePasse = HashPassword(newPassword);
+                            }
+                        }
+
                         _adminSrv.UpdateAdmin(admin);
+                    }
                 }
             }
             else
@@ -467,7 +481,11 @@ namespace WOS.Front.Controllers
             string body = $"Votre code de connexion est : {code}";
             _authenticationSrv.SendEmail(admin.Email, subject, body);
 
-            return View(admin);
+            var returnUrl = HttpContext.Session.GetString("ReturnUrl");
+            if (returnUrl != null)
+                return Redirect(returnUrl);
+            else
+                return View(admin);
         }
 
         //[Authorize(Roles = "Admin")]

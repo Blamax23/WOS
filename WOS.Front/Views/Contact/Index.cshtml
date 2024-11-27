@@ -1,0 +1,36 @@
+﻿@using WOS.Model;
+
+@{
+    ViewData["Title"] = "Contactez-nous !";
+}
+
+<link rel="stylesheet" href="~/css/contact/contact.css" asp-append-version="true" />
+
+<div class="content">
+    <h2>Contactez-nous</h2>
+    <div class="page-contact shadow-lg">
+        <form action="@Url.Action("SendMessage", "Contact")" method="post" class="form form-contact">
+            <div class="send-zone">
+                <div class="infoEmail emailDiv">
+                    <label for="Email">E-mail</label>
+                    <input type="email" name="Email" id="contactEmail" class="inputEmail" required />
+                </div>
+                <div class="infoEmail objetDiv">
+                    <label for="Objet">Objet</label>
+                    <input type="text" name="Objet" id="contactObjet" class="inputObjet" required />
+                </div>
+            </div>
+            <div class="content-zone">
+                <textarea name="Contenu" class="form-control inputContenu" id="contactContent" required></textarea>
+            </div>
+            <div class="btn-send">
+                <button type="submit" class="btn">Envoyer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+    </script>
+}

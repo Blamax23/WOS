@@ -46,6 +46,7 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IAuthenticationSrv, AuthenticationSrv>();
 builder.Services.AddScoped<IProduitSrv, ProduitSrv>();
 builder.Services.AddScoped<ICommandeSrv, CommandeSrv>();
+builder.Services.AddScoped<IQuestionSrv, QuestionSrv>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

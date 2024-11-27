@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WOS.Front.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("[controller]")]
     public class ProductController : Controller
     {

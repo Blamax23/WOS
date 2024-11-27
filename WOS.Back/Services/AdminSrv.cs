@@ -20,7 +20,7 @@ namespace WOS.Back.Services
 
         public Admin GetAdmin(string email, string password)
         {
-            Admin admin = _context.Admins.FirstOrDefault(a => a.Email == email && a.MotDePasse == password);
+            Admin admin = _context.Admins.FirstOrDefault(a => a.Email == email && a.MotDePasse.ToLower() == password.ToLower());
 
             if (admin != null)
                 return admin;
