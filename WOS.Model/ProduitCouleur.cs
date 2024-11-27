@@ -61,4 +61,35 @@ namespace WOS.Model
         [Display(Name = "Or")]
         Or
     }
+
+    public static class ProduitCouleurExtensions
+    {
+        // Mapping couleur -> code hexadécimal
+        private static readonly Dictionary<ProduitCouleurEnum, string> ColorHexMap = new()
+    {
+        { ProduitCouleurEnum.Blanc, "#FFFFFF" },
+        { ProduitCouleurEnum.Noir, "#000000" },
+        { ProduitCouleurEnum.Bleu, "#0000FF" },
+        { ProduitCouleurEnum.Rouge, "#FF0000" },
+        { ProduitCouleurEnum.Vert, "#008000" },
+        { ProduitCouleurEnum.Jaune, "#FFFF00" },
+        { ProduitCouleurEnum.Orange, "#FFA500" },
+        { ProduitCouleurEnum.Violet, "#800080" },
+        { ProduitCouleurEnum.Rose, "#FFC0CB" },
+        { ProduitCouleurEnum.Marron, "#A52A2A" },
+        { ProduitCouleurEnum.Gris, "#808080" },
+        { ProduitCouleurEnum.Beige, "#F5F5DC" },
+        { ProduitCouleurEnum.Turquoise, "#40E0D0" },
+        { ProduitCouleurEnum.Kaki, "#BDB76B" },
+        { ProduitCouleurEnum.Argent, "#C0C0C0" },
+        { ProduitCouleurEnum.Or, "#FFD700" }
+    };
+
+        // Méthode pour récupérer le code hexadécimal
+        public static string GetHexCode(this ProduitCouleurEnum couleur)
+        {
+            return ColorHexMap.TryGetValue(couleur, out var hexCode) ? hexCode : "#000000"; // Default: Noir
+        }
+    }
+
 }

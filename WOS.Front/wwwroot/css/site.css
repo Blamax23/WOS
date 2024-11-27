@@ -199,6 +199,7 @@ body {
     font-family: 'Montserrat', sans-serif;
     font-size: 1em;
     border: 2px solid red;
+    text-decoration: none;
 }
 
     .cancel-btn:hover {
@@ -218,6 +219,7 @@ body {
     font-family: 'Montserrat', sans-serif;
     font-size: 1em;
     border: 2px solid black;
+    text-decoration: none;
 }
 
     .confirm-btn:hover {

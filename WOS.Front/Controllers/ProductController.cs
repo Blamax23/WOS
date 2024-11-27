@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WOS.Model;
+using System.Text.Json;
 
 namespace WOS.Front.Controllers
 {
@@ -14,72 +16,33 @@ namespace WOS.Front.Controllers
             return View();
         }
 
-        // GET: ProductController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: ProductController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: ProductController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        [Route("AddProduct")]
+        public ActionResult AddProduct(IFormFile[] Sources, string nom, string description, bool active, string SelectedColors, string StockData)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+            var colors = SelectedColors.Split(',').ToList();
 
-        // GET: ProductController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
+            // Convertir StockData en liste d'objets
+            var stockItems = JsonSerializer.Deserialize<List<StockItem>>(StockData);
 
-        // POST: ProductController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
+            var newProduct = new Produit
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+                Nom = nom,
+                Description = description,
+                ProduitCouleurs = colors.Select(c => new ProduitCouleur { Couleur = c }).ToList(),
+                Actif = active
+            };
 
-        // GET: ProductController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: ProductController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
+            var productTailles = new List<ProduitTaille>();
+            foreach (var item in stockItems)
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
+                productTailles.Add(new ProduitTaille
+                {
+                    Taille = item.Size,
+                    Stock = item.Quantity,
+                    Prix = item.Price,
+                    
+                });
             }
         }
     }

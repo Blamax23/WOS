@@ -110,7 +110,7 @@
                 <div class="info-commandes">
                     <div class="head-commandes">
                         <h2>Commandes</h2>
-                        <a asp-controller="Account" asp-action="AddCommande">Ajouter une commande</a>
+                        <a asp-controller="Account" asp-action="FormCommande">Ajouter une commande</a>
                     </div>
                     @if (Model.Commandes.Count > 0)
                     {
@@ -156,7 +156,108 @@
                 <div class="info-products">
                     <div class="head-product">
                         <h2>Produits</h2>
-                        <a asp-controller="Account" asp-action="AddProduct">Ajouter un produit</a>
+                        <a class="confirm-btn addProduct">Ajouter un produit</a>
+                    </div>
+                    <form method="post" asp-action="AddProduct" asp-controller="Product" class="formAddProduct">
+                        <div class="left-zone">
+                            <div class="pictures-zone">
+                                <div class="upload-container" id="uploadContainer">
+                                    <div class="drop-area" id="dropArea">
+                                        Glissez-déposez vos fichiers ici
+                                        <div id="previewContainer" class="preview-container"></div>
+                                    </div>
+                                    <input type="file" name="Sources" id="produitSources" accept=".png" multiple style="display: none;" onchange="handleFiles(this.files)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right-zone">
+                            <div class="content-zone general-infos active" data-order="1">
+                                <div class="head-zone-product">
+                                    <input type="text" name="nom" id="productName" class="inputName" placeholder="Nom de la chaussure" required />
+                                </div>
+                                <div class="content-zone-product">
+                                    <textarea name="description" id="productDescription" class="inputDescription" placeholder="Description de la chaussure" required></textarea>
+                                    <div class="zone-active checkbox-wrapper">
+                                        <input type="checkbox" name="active" id="productActive" class="inputActive" />
+                                        <div class="custom-checkbox"></div>
+                                        <label for="productActive">Actif</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="content-zone color-infos" data-order="2">
+                                <h3>Choisissez les couleurs de la chaussure</h3>
+                                <div class="allColors">
+                                    @foreach (ProduitCouleurEnum couleur in Enum.GetValues(typeof(ProduitCouleurEnum)))
+                                    {
+                                        <div class="color-zone">
+                                            <div class="img-color" style="background-color: @couleur.GetHexCode();"></div>
+                                            <p>@couleur</p>
+                                        </div>
+                                    }
+                                    <input type="hidden" name="SelectedColors" id="productSelectedColors" class="inputSelectedColors" />
+                                </div>
+                            </div>
+                            <div class="content-zone stock-infos" data-order="3">
+                                <h3>Renseignez le stock pour cette chaussure</h3>
+                                <div class="table-container">
+                                    <table id="stockTable" class="table-stock">
+                                        <thead>
+                                            <tr>
+                                                <th>Taille</th>
+                                                <th>Quantité</th>
+                                                <th>Prix (€)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <select class="input-size">
+                                                        @for(var i = 36; i <= 48; i++)
+                                                        {
+                                                            <option value="@i">@i</option>
+                                                        })
+                                                    </select>
+                                                </td>
+                                                <td><input type="number" class="input-quantity" placeholder="Quantité" min="0"></td>
+                                                <td><input type="number" class="input-price" placeholder="Prix" step="0.01" min="0"></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="3" class="add-row">
+                                                    <a id="addRowButton" class="btn-add">+ Ajouter une ligne</a>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <input type="hidden" name="StockData" id="productStockData" class="inputStockData" />
+                            </div>
+                            <div class="btns-close activeBtns" data-order="1">
+                                <a type="button" class="btn cancel-btn">Annuler</a>
+                                <a type="button" class="btn confirm-btn nextAddProduct" data-id="1">Suivant</a>
+                            </div>
+                            <div class="btns-close" data-order="2">
+                                <a type="button" class="btn cancel-btn">Annuler</a>
+                                <a type="button" class="btn confirm-btn precedentButton" data-id="2">Précédent</a>
+                                <a type="button" class="btn confirm-btn nextAddProduct" data-id="2">Suivant</a>
+                            </div>
+                            <div class="btns-close" data-order="3">
+                                <a type="button" class="btn cancel-btn">Annuler</a>
+                                <a type="button" class="btn confirm-btn precedentButton" data-id="3">Précédent</a>
+                                <button type="submit" class="btn confirm-btn nextAddProduct">Enregistrer</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="allProducts">
+                        @if (Model.Produits.Count() > 0)
+                        {
+
+                        }
+                        else
+                        {
+                            <p>Vous n'avez pas encore de produits.</p>
+                        }
                     </div>
                 </div>
             </div>
@@ -169,6 +270,26 @@
 </div>
 
 <script>
+    $(document).ready(function () {
+        $('.custom-checkbox').on('click', function () {
+            // Récupérer l'input associé et inverser son état
+            const $input = $(this).siblings('input');
+            $input.prop('checked', !$input.prop('checked'));
+
+            // Optionnel : événement change
+            $input.trigger('change');
+        });
+
+        // Gestionnaire optionnel pour suivre les changements
+        $('#productActive').on('change', function () {
+            if ($(this).is(':checked')) {
+                console.log('Produit activé');
+            } else {
+                console.log('Produit désactivé');
+            }
+        });
+    });
+
     function ShowFormUpdateProfile() {
         const formZone = $('.form-zone');
         const userZone = $('.user-zone');
@@ -296,7 +417,338 @@
     let errorMessage = '@errorMessage';
     console.log("Erreur : " + errorMessage);
 
-    if(errorMessage !== '') {
+    if (errorMessage !== '') {
         ShowFormUpdateProfile();
     }
+
+    const addRowButton = document.getElementById('addRowButton');
+    addRowButton.addEventListener('click', (e) => {
+        e.preventDefault(); // Empêche la soumission du formulaire
+        const tableBody = stockTable.find('tbody');
+
+        // Créer une nouvelle ligne
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+                                       <td>
+                                                    <select class="input-size">
+                                                        @for(var i = 36; i <= 48; i++)
+                                                        {
+                                                            <option value="@i">@i</option>
+                                                        })
+                                                    </select>
+                                                </td>
+                                        <td><input type="number" class="input-quantity" placeholder="Quantité" min="0"></td>
+                                        <td><input type="number" class="input-price" placeholder="Prix" step="0.01" min="0"></td>
+                                    `;
+
+        // Ajouter la ligne au tableau
+        console.log(tableBody);
+        tableBody.append(newRow);
+        console.log(tableBody);
+    });
+
+
+    $(document).ready(function () {
+        $('.color-zone').on('click', function () {
+            $(this).toggleClass('selectedColors');
+
+            // Récupérer les couleurs sélectionnées
+            const selectedColors = $('.color-zone.selectedColors')
+                .map(function () {
+                    return $(this).find('p').text();
+                })
+                .get(); // Convertir en tableau standard
+
+            // Mettre à jour l'input caché avec les couleurs sélectionnées
+            $('#productSelectedColors').val(selectedColors.join(','));
+        });
+    });
+
+    let colorZones = $('.color-zone');
+    let stockTable = $('#stockTable');
+    let colorSelectedInput = $('#inputSelectedColors');
+    let stockDataInput = $('#inputStockData');
+
+    colorZones.each(item => {
+        $(this).on('click', function () {
+            $(this).addClass('selectedColors');
+        });
+    });
+
+
+    colorZones.each(item => {
+        $(this).on('click', function () {
+            $(this).toggleClass('selectedColors');
+
+            // Récupérer les couleurs sélectionnées
+            const selectedColors = $('.color-zone.selectedColors')
+                .map(function () {
+                    return $(this).find('p').text();
+                })
+                .get(); // Pour convertir l'objet jQuery en tableau standard
+
+            colorSelectedInput.val(selectedColors.join(','));
+        });
+    });
+
+    function getStockData() {
+        const rows = document.querySelectorAll("#stockTable tbody tr");
+        const stockData = [];
+
+        rows.forEach(row => {
+            const sizes = Array.from(row.querySelector(".input-size").selectedOptions)
+                .map(option => option.value); // Récupère les valeurs des options sélectionnées
+            const quantity = row.querySelector(".input-quantity").value;
+            const price = row.querySelector(".input-price").value;
+
+            stockData.push({
+                sizes: sizes, // Tailles sélectionnées
+                quantity: quantity, // Quantité entrée
+                price: price // Prix entré
+            });
+        });
+
+        console.log(stockData);
+        return stockData;
+    }
+
+    // Appelle cette fonction lorsque tu veux récupérer les données (par exemple, avant d'envoyer un formulaire)
+    document.getElementById("productStockData").value = JSON.stringify(getStockData());
+</script>
+
+<script>
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('produitSources');
+    const previewContainer = document.getElementById('previewContainer');
+
+    // Utilisation de DataTransfer pour maintenir une liste de fichiers persistante
+    let dt = new DataTransfer();
+
+    // Empêche le comportement par défaut lors du dragover
+    dropArea.addEventListener('dragover', (event) => {
+        event.preventDefault();
+    });
+
+    // Gestion du drop des fichiers dans la zone de drop
+    dropArea.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const files = event.dataTransfer.files;
+        addFilesToDataTransfer(files); // Ajoute les fichiers
+    });
+
+    // Ouvre l'explorateur de fichiers lorsqu'on clique sur la zone de drop
+    dropArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Gestion de l'ajout de fichiers via l'explorateur de fichiers
+    fileInput.addEventListener('change', (event) => {
+        const files = fileInput.files;
+        addFilesToDataTransfer(files); // Ajoute les fichiers
+    });
+
+    function addFilesToDataTransfer(files) {
+        // Parcourt les nouveaux fichiers et les ajoute à DataTransfer sans réinitialiser
+        [...files].forEach(file => {
+            dt.items.add(file);
+            previewFile(file); // Ajoute un aperçu du fichier
+        });
+        updateInputFiles(); // Mets à jour l'input avec les nouveaux fichiers
+    }
+
+    function makeItemResponsive(item) {
+        if (item.tagName === 'IMG') {
+            item.classList.add('img-fluid');
+        } else if (item.tagName === 'VIDEO') {
+            item.classList.add('video-fluid');
+        }
+        item.style.maxWidth = '100%';
+        item.style.height = 'auto';
+    }
+
+    function previewFile(file) {
+        const fileReader = new FileReader();
+        fileReader.onload = () => {
+            const fileContainer = document.createElement('div');
+            fileContainer.classList.add('file-container');
+
+            // Affichage de l'aperçu du fichier
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = fileReader.result;
+                makeItemResponsive(img);
+                fileContainer.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = fileReader.result;
+                makeItemResponsive(video);
+                fileContainer.appendChild(video);
+            }
+
+            // Ajoute une icône de suppression
+            const deleteIcon = document.createElement('i');
+            deleteIcon.className = "bi bi-trash delete-icon";
+            deleteIcon.onclick = () => {
+                event.stopPropagation();
+                fileContainer.remove();
+                removeFile(file); // Supprime le fichier si on clique sur la poubelle
+            };
+            fileContainer.appendChild(deleteIcon);
+
+            // Ajoute l'aperçu dans la zone dédiée
+            previewContainer.appendChild(fileContainer);
+        };
+        fileReader.readAsDataURL(file);
+    }
+
+    function updateInputFiles() {
+        // Met à jour le fileInput avec les fichiers dans DataTransfer
+        fileInput.files = dt.files;
+    }
+
+    function removeFile(fileToRemove) {
+        // Supprime un fichier du DataTransfer
+        const newDataTransfer = new DataTransfer();
+        [...dt.files].forEach(file => {
+            if (file !== fileToRemove) {
+                newDataTransfer.items.add(file); // Ajoute les fichiers sauf celui à supprimer
+            }
+        });
+        dt = newDataTransfer; // Remplace l'ancien DataTransfer par le nouveau
+        updateInputFiles(); // Met à jour l'input
+    }
+</script>
+
+<script>
+    let btnAddProduct = $(".addProduct");
+    let formAddProduct = $(".formAddProduct");
+    let allProducts = $(".allProducts");
+
+    btnAddProduct.on('click', () => {
+        if (formAddProduct.hasClass('hidden')) {
+            formAddProduct.removeClass('hidden');
+            allProducts.addClass('hidden');
+        } else {
+            formAddProduct.addClass('hidden');
+            allProducts.removeClass('hidden');
+        }
+    });
+
+    let btnPrecedent = $(".precedentButton");
+    let formZone = $(".formAddProduct");
+
+    btnPrecedent.each((index, btn) => {
+        $(btn).on('click', () => {
+            // On récupère le champ data-id
+            let id = $(btn).data('id');
+            let currentZone = $(`.content-zone[data-order="${id}"]`);
+            let previousZone = $(`.content-zone[data-order="${id - 1}"]`);
+            let previousBtns = $(`.btns-close[data-order="${id - 1}"]`);
+            currentZone.removeClass('active');
+            previousZone.addClass('active');
+            previousBtns.addClass('activeBtns');
+            previousBtns.siblings().removeClass('activeBtns');
+        });
+    });
+
+
+    let btnsClose = $(".btns-close");
+    let cancelBtn = btnsClose.find('.cancel-btn');
+    let nextBtn = btnsClose.find('.nextAddProduct');
+
+    nextBtn.each((index, btn) => {
+        $(btn).on('click', () => {
+            // On récupère le champ data-id
+            let id = $(btn).data('id');
+            let currentZone = $(`.content-zone[data-order="${id}"]`);
+            if(id < 3){
+                let nextZone = $(`.content-zone[data-order="${id + 1}"]`);
+                let nextBtns = $(`.btns-close[data-order="${id + 1}"]`);
+                currentZone.removeClass('active');
+                nextZone.addClass('active');
+                nextBtns.addClass('activeBtns');
+                nextBtns.siblings().removeClass('activeBtns');
+            }
+            else{
+                let nextZone = $(`.content-zone[data-order="${id + 1}"]`);
+                let nextBtns = $(`.btns-close[data-order="${id + 1}"]`);
+                currentZone.removeClass('active');
+                nextZone.addClass('active');
+                nextBtns.addClass('activeBtns');
+                nextBtns.siblings().removeClass('activeBtns');
+            }
+
+        });
+    })
+
+    cancelBtn.each((index, btn) => {
+        $(btn).on('click', () => {
+            let formAddProduct = $(".formAddProduct");
+            let allProducts = $(".allProducts");
+
+            if (formAddProduct.hasClass('hidden')) {
+                formAddProduct.removeClass('hidden');
+                allProducts.addClass('hidden');
+            } else {
+                formAddProduct.addClass('hidden');
+                allProducts.removeClass('hidden');
+            }
+
+            const inputs = formZone.find('input');
+            inputs.each((index, input) => {
+                input.value = input.defaultValue;
+            });
+
+            const textareas = formZone.find('textarea');
+            textareas.each((index, textarea) => {
+                textarea.value = textarea.defaultValue;
+            });
+
+            const checkboxes = formZone.find('input[type="checkbox"]');
+            checkboxes.each((index, checkbox) => {
+                checkbox.checked = checkbox.defaultChecked;
+            });
+
+            const stockTable = formZone.find('#stockTable');
+            stockTable.find('tbody tr').remove();
+
+            const previewContainer = formZone.find('#previewContainer');
+            previewContainer.empty();
+
+            const colorZones = formZone.find('.color-zone');
+            colorZones.each((index, colorZone) => {
+                $(colorZone).removeClass('selectedColors');
+            });
+
+            const selectedColorsInput = formZone.find('#productSelectedColors');
+            selectedColorsInput.val('');
+
+            const stockDataInput = formZone.find('#productStockData');
+            stockDataInput.val('');
+
+            const generalInfos = formZone.find('.general-infos');
+            generalInfos.addClass('active');
+            generalInfos.siblings().removeClass('active');
+
+            // On remet le premier content zone actif
+            let firstContentZone = $(`.content-zone[data-order="1"]`);
+            firstContentZone.addClass('active');
+            firstContentZone.siblings().removeClass('active');
+
+            // On remet le premier btns-close actif
+            let firstBtnsClose = $(`.btns-close[data-order="1"]`);
+            firstBtnsClose.addClass('activeBtns');
+            firstBtnsClose.siblings().removeClass('activeBtns');
+        });
+    });
+
+
+    let divActive = $(".activeBtns");
+    let divSecond = $(".btns-second");
+    let divThird = $(".btns-third");
+
+    let btnNext = $(".nextAddProduct");
+    let btnPrev = $(".btns-second .confirm-btn");
+    let btnPrev2 = $(".btns-third .confirm-btn");
 </script>

@@ -30,4 +30,11 @@ namespace WOS.Model
         public virtual ICollection<LigneCommande> LignesCommande { get; set; }
     }
 
+    public class StockItem
+    {
+        public string Size { get; set; }
+        public int Quantity { get; set; }
+        public decimal Price { get; set; }
+    }
+
 }
