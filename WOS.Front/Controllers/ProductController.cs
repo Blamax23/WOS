@@ -44,6 +44,8 @@ namespace WOS.Front.Controllers
                     
                 });
             }
+
+            return null;
         }
     }
 }
