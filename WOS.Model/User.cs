@@ -17,5 +17,9 @@ namespace WOS.Model
         public List<Commande> Commandes { get; set; }
 
         public List<Produit> Produits { get; set; }
+
+        public List<Marque> Marques { get; set; }
+
+        public List<Categorie> Categories { get; set; }
     }
 }

@@ -30,9 +30,8 @@ namespace WOS.Dal.Mapping
                 .HasDefaultValue(false)
                 .HasColumnName("principale");
 
-            builder.Property(pi => pi.Name)
-                .HasDefaultValue(false)
-                .HasColumnName("Nom");
+            builder.Property(pc => pc.ProduitId)
+                .HasColumnName("produit_id");
 
             builder.HasOne(pi => pi.Produit)
                 .WithMany(p => p.ProduitImages)

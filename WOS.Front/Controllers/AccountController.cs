@@ -25,8 +25,10 @@ namespace WOS.Front.Controllers
         private readonly IAuthenticationSrv _authenticationSrv;
         private readonly IProduitSrv _produitSrv;
         private readonly ICommandeSrv _commandeSrv;
+        private readonly ICategorieSrv _categorieSrv;
+        private readonly IMarqueSrv _marqueSrv;
 
-        public AccountController(IClientSrv clientSrv, IAdminSrv adminSrv, IConfiguration configuration, IAuthenticationSrv authenticationSrv, IProduitSrv produitSrv, ICommandeSrv commandeSrv)
+        public AccountController(IClientSrv clientSrv, IAdminSrv adminSrv, IConfiguration configuration, IAuthenticationSrv authenticationSrv, IProduitSrv produitSrv, ICommandeSrv commandeSrv, ICategorieSrv categorieSrv, IMarqueSrv marqueSrv)
         {
             _clientSrv = clientSrv;
             _adminSrv = adminSrv;
@@ -34,6 +36,8 @@ namespace WOS.Front.Controllers
             _authenticationSrv = authenticationSrv;
             _produitSrv = produitSrv;
             _commandeSrv = commandeSrv;
+            _categorieSrv = categorieSrv;
+            _marqueSrv = marqueSrv;
         }
 
         #region Account
@@ -66,6 +70,8 @@ namespace WOS.Front.Controllers
                     accountViewModel.User = _adminSrv.GetAdminByEmail(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email).Value.ToString());
                     accountViewModel.Produits = _produitSrv.GetProduits();
                     accountViewModel.Commandes = _commandeSrv.GetCommandes();
+                    accountViewModel.Marques = _marqueSrv.GetAllMarques();
+                    accountViewModel.Categories = _categorieSrv.GetAllCategories();
                 }
                 else
                 {

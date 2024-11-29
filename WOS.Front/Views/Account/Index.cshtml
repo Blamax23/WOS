@@ -38,6 +38,7 @@
                         <li class="linkProfile" data-section="info-account">Profil</li>
                         <li class="linkCommande" data-section="info-commandes">Commandes</li>
                         <li class="linkProducts" data-section="info-products">Produits</li>
+                        <li class="linkMarques" data-section="info-marques">Marques</li>
                     </ul>
                 </div>
             </div>
@@ -158,7 +159,7 @@
                         <h2>Produits</h2>
                         <a class="confirm-btn addProduct">Ajouter un produit</a>
                     </div>
-                    <form method="post" asp-action="AddProduct" asp-controller="Product" class="formAddProduct">
+                    <form method="post" asp-action="AddProduct" enctype="multipart/form-data" asp-controller="Product" class="formAddProduct">
                         <div class="left-zone">
                             <div class="pictures-zone">
                                 <div class="upload-container" id="uploadContainer">
@@ -166,7 +167,7 @@
                                         Glissez-déposez vos fichiers ici
                                         <div id="previewContainer" class="preview-container"></div>
                                     </div>
-                                    <input type="file" name="Sources" id="produitSources" accept=".png" multiple style="display: none;" onchange="handleFiles(this.files)">
+                                    <input type="file" name="Sources" id="produitSources" accept=".png" multiple style="display: none;">
                                 </div>
                             </div>
                         </div>
@@ -182,6 +183,20 @@
                                         <div class="custom-checkbox"></div>
                                         <label for="productActive">Actif</label>
                                     </div>
+                                    <select class="input-marque">
+                                        @foreach (Marque marque in Model.Marques)
+                                        {
+                                            <option value="@marque.Id">@marque.Nom</option>
+                                        })
+                                    </select>
+                                    <input type="hidden" name="marque" id="productMarque" class="inputMarque" />
+                                    <select class="input-categorie">
+                                        @foreach (Categorie cat in Model.Categories)
+                                        {
+                                            <option value="@cat.Id" data-id-marque="@cat.IdMarque">@cat.Nom</option>
+                                        })
+                                    </select>
+                                    <input type="hidden" name="categorie" id="productCategorie" class="inputCategorie" />
                                 </div>
                             </div>
                             <div class="content-zone color-infos" data-order="2">
@@ -206,13 +221,14 @@
                                                 <th>Taille</th>
                                                 <th>Quantité</th>
                                                 <th>Prix (€)</th>
+                                                <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
                                                 <td>
                                                     <select class="input-size">
-                                                        @for(var i = 36; i <= 48; i++)
+                                                        @for (var i = 36; i <= 48; i++)
                                                         {
                                                             <option value="@i">@i</option>
                                                         })
@@ -220,11 +236,12 @@
                                                 </td>
                                                 <td><input type="number" class="input-quantity" placeholder="Quantité" min="0"></td>
                                                 <td><input type="number" class="input-price" placeholder="Prix" step="0.01" min="0"></td>
+                                                <td class="caseDeleteRow"><a class="btn-remove-row"><i class="bi bi-trash"></i></a></td>
                                             </tr>
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="3" class="add-row">
+                                                <td colspan="4" class="add-row">
                                                     <a id="addRowButton" class="btn-add">+ Ajouter une ligne</a>
                                                 </td>
                                             </tr>
@@ -245,19 +262,213 @@
                             <div class="btns-close" data-order="3">
                                 <a type="button" class="btn cancel-btn">Annuler</a>
                                 <a type="button" class="btn confirm-btn precedentButton" data-id="3">Précédent</a>
-                                <button type="submit" class="btn confirm-btn nextAddProduct">Enregistrer</button>
+                                <button type="submit" class="btn confirm-btn nextAddProduct finalBtnAddProduct">Enregistrer</button>
                             </div>
                         </div>
                     </form>
                     <div class="allProducts">
                         @if (Model.Produits.Count() > 0)
                         {
+                            foreach (Produit produit in Model.Produits)
+                            {
+                                <div class="produit">
+                                    <div class="entete-produit">
+                                        <div class="left-zone-product-show">
+                                            <img src="@Url.Content(@produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url)" class="imagePresProduit" />
+                                        </div>
+                                        <div class="center-zone-product-show">
+                                            <div class="head-zone-product-show">
+                                                <h3>@produit.Nom</h3>
+                                            </div>
+                                            <div class="content-zone-product-show">
+                                                <div class="marque-zone">
+                                                    <p><strong>Marque :</strong> @produit.Marque.Nom</p>
+                                                </div>
+                                                <div class="categorie-zone">
+                                                    <p><strong>Catégorie :</strong> @produit.Categorie.Nom</p>
+                                                </div>
+                                                <div class="active-zone">
+                                                    <form method="post" asp-action="UpdateActive" asp-asp-controller="Product" class="formUpdateActiveProduct">
+                                                        <label for="active">Est ce que le produit est actif ?</label>
+                                                        <input type="checkbox" name="active" class="inputActiveProduct" @(produit.Actif ? "checked" : "") />
+                                                        <button type="submit" class="confirm-btn btnUpdateProductActive hidden">Modifier</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="detail-produit">
+                                        <div class="waitToShow">
+                                            <button class="showMore confirm-btn">Voir plus</button>
+                                        </div>
+                                        <div class="stockList hidden">
+                                            <h3>Tailles disponibles</h3>
+                                            @if (produit.ProduitTailles.Count() > 0)
+                                            {
+                                                <div class="table-container">
+                                                    <table id="stockTable" class="table-stock">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Taille</th>
+                                                                <th>Quantité</th>
+                                                                <th>Prix (€)</th>
+                                                                <th>Promotion (€)</th>
+                                                                <th></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
 
+                                                            @foreach (var stock in produit.ProduitTailles)
+                                                            {
+                                                                <tr data-id="@stock.ProduitId">
+                                                                    <td>@stock.Taille</td>
+                                                                    <td>@stock.Stock</td>
+                                                                    <td>@stock.Prix</td>
+                                                                    <td>@stock.PrixPromo</td>
+                                                                    <td class="updatePriceRow">Modifier</td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <p>Aucune taille n'a été renseignée pour ce produit.</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
                         }
                         else
                         {
                             <p>Vous n'avez pas encore de produits.</p>
                         }
+                    </div>
+                </div>
+                <div class="info-marques">
+                    <div class="head-marque">
+                        <h2>Marques</h2>
+                        <div class="addBtns">
+                            <a class="confirm-btn addMarque">Ajouter une marque</a>
+                            <a class="confirm-btn addCategorie">Ajouter un modèle</a>
+                        </div>
+                    </div>
+                    <div class="content-marque">
+                        <form method="post" asp-controller="Marque" asp-action="AddMarque" class="formAddMarque hidden">
+                            <div class="name-zone">
+                                <label for="name">Nom</label>
+                                <input type="text" name="name" class="inputName" />
+                            </div>
+                            <div class="description-zone">
+                                <label for="description">Description</label>
+                                <input type="hidden" name="description" class="inputDescMarque" />
+                                <textarea type="text" name="description" class="textDescMarque"></textarea>
+                            </div>
+                            <div class="active-zone">
+                                <label for="home">Page d'accueil</label>
+                                <input type="checkbox" name="home" class="inputHome" />
+                            </div>
+                            <div class="btnFormAddMarque">
+                                <a class="cancel-btn cancelAddMarque">Annuler</a>
+                                <button type="submit" class="confirm-btn">Ajouter</button>
+                            </div>
+                        </form>
+
+                        <form method="post" asp-controller="Categorie" asp-action="AddCategorie" class="formAddCategorie hidden">
+                            <div class="head-zone-inputCat">
+                                <div class="name-zone">
+                                    <label for="name">Nom du modèle</label>
+                                    <input type="text" name="name" class="inputName" />
+                                </div>
+                                <select class="input-marque-formAdd">
+                                    @if (Model.Marques.Count() == 0)
+                                    {
+                                        <option selected>Veuillez ajouter une marque</option>
+                                    }
+                                    else
+                                    {
+                                        foreach (Marque marque in Model.Marques)
+                                        {
+                                            <option value="@marque.Id">@marque.Nom</option>
+                                        }
+                                    }
+                                </select>
+                                <input type="hidden" name="marque" class="inputMarque" />
+                            </div>
+                            <div class="description-zone">
+                                <label for="description">Description</label>
+                                <input type="hidden" name="description" class="inputDescCat" />
+                                <textarea type="text" class="textDescCat"></textarea>
+                            </div>
+                            <div class="active-zone">
+                                <label for="home">Page d'accueil'</label>
+                                <input type="checkbox" name="home" class="inputHome" />
+                            </div>
+                            <div class="btnFormAddCategorie">
+                                <a class="cancel-btn cancelAddCategorie">Annuler</a>
+                                <button type="submit" class="confirm-btn">Ajouter</button>
+                            </div>
+                        </form>
+                        <div class="allMarques">
+                            @if (Model.Marques.Count() == 0)
+                            {
+                                <h3>Aucune marque n'a été ajoutée pour l'instant.</h3>
+                            }
+                            else
+                            {
+                                @for (var i = 0; i < Model.Marques.Count(); i++)
+                                {
+                                    <div class="marque">
+                                        <div class="head-zone-marqueShow" id="marque-@i">
+                                            <div class="zone-right-marque">
+                                                <div class="nameMarque">
+                                                    <h3>@Model.Marques[i].Nom</h3>
+                                                </div>
+                                                <div class="descMarque">
+                                                    <p>@Model.Marques[i].Description</p>
+                                                    <form method="post" asp-action="UpdateMarque" asp-controller="Marque" class="formUpdateMarque">
+                                                        <label for="isHomeCat">Est ce que la marque est affichée en page d'accueil ?</label>
+                                                        <input type="checkbox" class="inputIsHomeMarque" @(Model.Marques[i].IsHome.Value ? "checked" : "") />
+                                                        <input type="hidden" value="@Model.Marques[i].Id" name="id" />
+                                                        <button type="submit" class="submitUpdateMarque hidden confirm-btn">Modifier</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            <div class="zone-left-marque">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bottom-zone-marque hidden" id="categories-@i">
+                                            @if (Model.Categories.Where(c => c.IdMarque == Model.Marques[i].Id).Count() == 0)
+                                            {
+                                                <h3>Aucun modèle n'a encore été ajouté pour cette marque.</h3>
+                                            }
+                                            else
+                                            {
+                                                <ul>
+                                                    @foreach (var cat in Model.Categories.Where(c => c.IdMarque == Model.Marques[i].Id))
+                                                    {
+                                                        <div class="categorie">
+                                                            <div class="name">
+                                                                <h3>@cat.Nom</h3>
+                                                            </div>
+                                                            <form method="post" asp-action="UpdateCategorie" asp-controller="Categorie" class="formUpdateCat">
+                                                                <label for="isHomeCat">Est ce que la catégorie est affichée en page d'accueil ?</label>
+                                                                <input type="checkbox" class="inputIsHomeCat" @(Model.Categories[i].IsHome.Value ? "checked" : "") />
+                                                                <input type="hidden" value="@cat.Id" name="id" />
+                                                                <button type="submit" class="submitUpdateCategorie hidden confirm-btn">Modifier</button>
+                                                            </form>
+                                                        </div>
+                                                    }
+                                                </ul>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -271,21 +482,141 @@
 
 <script>
     $(document).ready(function () {
-        $('.custom-checkbox').on('click', function () {
-            // Récupérer l'input associé et inverser son état
-            const $input = $(this).siblings('input');
-            $input.prop('checked', !$input.prop('checked'));
-
-            // Optionnel : événement change
-            $input.trigger('change');
+        // Mettre à jour l'input hidden à chaque modification du textarea
+        $('.textDescCat').on('input', function () {
+            const value = $(this).val(); // Récupère la valeur du textarea
+            $('.inputDescCat').val(value); // Met à jour la valeur de l'input hidden
         });
 
-        // Gestionnaire optionnel pour suivre les changements
-        $('#productActive').on('change', function () {
-            if ($(this).is(':checked')) {
-                console.log('Produit activé');
+        $('.textDescMarque').on('input', function () {
+            const value = $(this).val(); // Récupère la valeur du textarea
+            $('.inputDescMarque').val(value); // Met à jour la valeur de l'input hidden
+        });
+
+        $('.addMarque').on('click', function () {
+            let formAddMarque = $(".formAddMarque");
+            if (formAddMarque.hasClass("hidden")) {
+                formAddMarque.removeClass("hidden");
+                formAddMarque.siblings().addClass("hidden");
             } else {
-                console.log('Produit désactivé');
+                formAddMarque.addClass("hidden");
+                let allMarques = $(".allMarques")
+                allMarques.removeClass("hidden");
+            }
+
+        });
+
+        $('.addCategorie').on('click', function () {
+            let formAddCategorie = $(".formAddCategorie");
+            if (formAddCategorie.hasClass("hidden")) {
+                formAddCategorie.removeClass("hidden");
+                formAddCategorie.siblings().addClass("hidden");
+            } else {
+                formAddCategorie.addClass("hidden");
+                let allMarques = $(".allMarques")
+                allMarques.removeClass("hidden");
+            }
+
+        });
+
+        $(".cancelAddMarque").on('click', function () {
+            let formAddMarque = $(".formAddMarque");
+            if (formAddMarque.hasClass("hidden")) {
+                formAddMarque.removeClass("hidden");
+                formAddMarque.siblings().addClass("hidden");
+            } else {
+                formAddMarque.addClass("hidden");
+                let allMarques = $(".allMarques")
+                allMarques.removeClass("hidden");
+            }
+        })
+
+        $(".cancelAddCategorie").on('click', function () {
+            let formAddCategorie = $(".formAddCategorie");
+            if (formAddCategorie.hasClass("hidden")) {
+                formAddCategorie.removeClass("hidden");
+                formAddCategorie.siblings().addClass("hidden");
+            } else {
+                formAddCategorie.addClass("hidden");
+                let allMarques = $(".allMarques")
+                allMarques.removeClass("hidden");
+            }
+        })
+
+        $('.input-marque-formAdd').val($('.input-marque-formAdd option:selected').val());
+        $('.inputMarque').val($('.input-marque-formAdd').val());
+
+        $('.input-marque-formAdd').change(function () {
+            $('.inputMarque').val($(this).val());
+        });
+
+        $(".formUpdateMarque .inputIsHomeMarque").on("click", function (event) {
+            event.stopPropagation();
+            // Cibler le bouton dans le même formulaire et enlever la classe 'hidden'
+            $(this).closest("form").find(".submitUpdateMarque").removeClass("hidden");
+        });
+
+        // Gérer les clics sur les checkboxes dans les catégories
+        $(".formUpdateCat .inputIsHomeCat").on("click", function (event) {
+            event.stopPropagation();
+            // Cibler le bouton dans le même formulaire et enlever la classe 'hidden'
+            $(this).closest("form").find(".submitUpdateCategorie").removeClass("hidden");
+        });
+
+        var marques = document.querySelectorAll(".head-zone-marqueShow");
+        marques.forEach((marque, index) => {
+            marque.addEventListener('click', function () {
+                var categories = document.querySelector(`#categories-${index}`);
+                var icon = marque.querySelector("i");
+
+                // Fermez toutes les autres sections de catégories
+                var allCategories = document.querySelectorAll(".bottom-zone-marque");
+                var allMarques = document.querySelectorAll(".head-zone-marqueShow");
+
+                allCategories.forEach((categorie, i) => {
+                    if (i !== index) {
+                        categorie.classList.add("hidden");
+                        allMarques[i].style.borderBottomLeftRadius = "15px";
+                        allMarques[i].style.borderBottomRightRadius = "15px";
+                        allMarques[i].querySelector("i").style.transform = "rotate(0deg)";
+                    }
+                });
+
+                // Basculez la catégorie actuelle
+                if (categories.classList.contains("hidden")) {
+                    categories.classList.remove("hidden");
+                    marque.style.borderBottomLeftRadius = "0px";
+                    marque.style.borderBottomRightRadius = "0px";
+
+                    icon.style.transition = "transform 0.5s ease";
+                    icon.style.transform = "rotate(90deg)";
+                } else {
+                    categories.classList.add("hidden");
+                    marque.style.borderBottomLeftRadius = "15px";
+                    marque.style.borderBottomRightRadius = "15px";
+
+                    icon.style.transform = "rotate(0deg)";
+                }
+            });
+        });
+    });
+    $(document).ready(function () {
+        $('.custom-checkbox').on('click', function () {
+            // On met la valeur de l'input à true si la checkbox est cochée
+            if ($(this).siblings('.inputActive').is(':checked')) {
+                $(this).siblings('.inputActive').prop('checked', false);
+            } else {
+                $(this).siblings('.inputActive').prop('checked', true);
+            }
+        });
+
+        // On ajoute une valeur à productActive en fonction des clics sur custom-checkbox
+        $('.custom-checkbox').on('click', function () {
+            // On met la valeur de l'input à true si la checkbox est cochée
+            if ($(this).siblings('.inputActive').is(':checked')) {
+                $(this).siblings('.inputActive').val('true');
+            } else {
+                $(this).siblings('.inputActive').val('false');
             }
         });
     });
@@ -390,6 +721,9 @@
                     case item.classList.contains('linkProducts'):
                         console.log('Navigation vers les produits');
                         break;
+                    case item.classList.contains('linkMarques'):
+                        console.log('Navigation vers les produits');
+                        break;
                 }
 
                 // Fermer le menu après la sélection
@@ -421,30 +755,39 @@
         ShowFormUpdateProfile();
     }
 
-    const addRowButton = document.getElementById('addRowButton');
-    addRowButton.addEventListener('click', (e) => {
+    const addRowButton = $('.add-row');
+    // on ajoute un gestionnaire d'événement sur le bouton d'ajout de ligne
+    addRowButton.on('click', (e) => {
         e.preventDefault(); // Empêche la soumission du formulaire
-        const tableBody = stockTable.find('tbody');
+        const table = $('#stockTable tbody');
+        const lastRow = table.find('tr:last-child');
+        const newRow = lastRow.clone(); // Clone la dernière ligne
+        newRow.find('input').val(''); // Réinitialise les valeurs des inputs
+        table.append(newRow); // Ajoute la nouvelle ligne à la fin du tableau
 
-        // Créer une nouvelle ligne
-        const newRow = document.createElement('tr');
-        newRow.innerHTML = `
-                                       <td>
-                                                    <select class="input-size">
-                                                        @for(var i = 36; i <= 48; i++)
-                                                        {
-                                                            <option value="@i">@i</option>
-                                                        })
-                                                    </select>
-                                                </td>
-                                        <td><input type="number" class="input-quantity" placeholder="Quantité" min="0"></td>
-                                        <td><input type="number" class="input-price" placeholder="Prix" step="0.01" min="0"></td>
-                                    `;
+        let deleteCases = $('.caseDeleteRow');
+        // On ajoute un gestionnaire d'événement pour chaque case
+        deleteCases.each(function () {
+            $(this).on('click', function () {
+                console.log($('#stockTable tbody tr').length);
+                // On supprime la ligne parent sauf si c'est la premier ligne du tableau
+                if ($('#stockTable tbody tr').length > 1) {
+                    $(this).parent().remove();
+                }
+            });
+        });
+    });
 
-        // Ajouter la ligne au tableau
-        console.log(tableBody);
-        tableBody.append(newRow);
-        console.log(tableBody);
+    let deleteCases = $('.caseDeleteRow');
+    // On ajoute un gestionnaire d'événement pour chaque case
+    deleteCases.each(function () {
+        $(this).on('click', function () {
+            console.log($('#stockTable tbody tr').length);
+            // On supprime la ligne parent sauf si c'est la premier ligne du tableau
+            if ($('#stockTable tbody tr').length > 1) {
+                $(this).parent().remove();
+            }
+        });
     });
 
 
@@ -467,7 +810,7 @@
     let colorZones = $('.color-zone');
     let stockTable = $('#stockTable');
     let colorSelectedInput = $('#inputSelectedColors');
-    let stockDataInput = $('#inputStockData');
+    let stockDataInput = $('#productStockData'); // Assure-toi que l’ID correspond bien
 
     colorZones.each(item => {
         $(this).on('click', function () {
@@ -496,24 +839,71 @@
         const stockData = [];
 
         rows.forEach(row => {
-            const sizes = Array.from(row.querySelector(".input-size").selectedOptions)
-                .map(option => option.value); // Récupère les valeurs des options sélectionnées
-            const quantity = row.querySelector(".input-quantity").value;
-            const price = row.querySelector(".input-price").value;
+            const size = row.querySelector('.input-size')?.value || '';
+            const quantity = row.querySelector('.input-quantity')?.value || '';
+            const price = row.querySelector('.input-price')?.value || '';
 
             stockData.push({
-                sizes: sizes, // Tailles sélectionnées
-                quantity: quantity, // Quantité entrée
-                price: price // Prix entré
+                size: size,
+                quantity: quantity,
+                price: price
             });
         });
 
-        console.log(stockData);
         return stockData;
     }
 
-    // Appelle cette fonction lorsque tu veux récupérer les données (par exemple, avant d'envoyer un formulaire)
-    document.getElementById("productStockData").value = JSON.stringify(getStockData());
+    // Met à jour les données dans l'input caché quand la table change
+    stockTable.on('change', 'input', function () {
+        const stockData = JSON.stringify(getStockData());
+        stockDataInput.val(stockData); // Met à jour l'input caché
+        console.log('Stock data updated:', stockData);
+    });
+
+    $(document).ready(function () {
+        function updateCategorySelection() {
+            const firstVisibleOption = $('.input-categorie option:visible').first();
+            if (firstVisibleOption.length) {
+                $('.input-categorie').val(firstVisibleOption.val());
+                $('#productCategorie').val(firstVisibleOption.val());
+            } else {
+                // Aucune option visible, réinitialise complètement
+                $('.input-categorie').val('');
+                $('#productCategorie').val('');
+            }
+        }
+
+        // Lors du changement de marque, filtre les catégories et met à jour la sélection
+        $('.input-marque').on('change', function () {
+            const selectedMarqueId = $(this).val();
+
+            // Parcourt toutes les options des catégories
+            $('.input-categorie option').each(function () {
+                const idMarque = $(this).data('id-marque');
+                if (idMarque == selectedMarqueId || !idMarque) {
+                    $(this).show(); // Affiche les options correspondant à la marque
+                } else {
+                    $(this).hide(); // Cache les options qui ne correspondent pas
+                }
+            });
+
+            // Met à jour la sélection de catégorie
+            updateCategorySelection();
+
+            // Met à jour la valeur de l'input caché de la marque
+            $('#productMarque').val(selectedMarqueId);
+            console.log('Marque sélectionnée :', selectedMarqueId);
+        });
+
+        // Lors du changement de catégorie, met à jour l'input caché "categorie"
+        $('.input-categorie').on('change', function () {
+            const selectedCategorieId = $(this).val();
+            $('#productCategorie').val(selectedCategorieId);
+            console.log('Catégorie sélectionnée :', selectedCategorieId);
+        });
+
+        updateCategorySelection();
+    });
 </script>
 
 <script>
@@ -662,7 +1052,7 @@
             // On récupère le champ data-id
             let id = $(btn).data('id');
             let currentZone = $(`.content-zone[data-order="${id}"]`);
-            if(id < 3){
+            if (id < 3) {
                 let nextZone = $(`.content-zone[data-order="${id + 1}"]`);
                 let nextBtns = $(`.btns-close[data-order="${id + 1}"]`);
                 currentZone.removeClass('active');
@@ -670,7 +1060,7 @@
                 nextBtns.addClass('activeBtns');
                 nextBtns.siblings().removeClass('activeBtns');
             }
-            else{
+            else {
                 let nextZone = $(`.content-zone[data-order="${id + 1}"]`);
                 let nextBtns = $(`.btns-close[data-order="${id + 1}"]`);
                 currentZone.removeClass('active');
@@ -751,4 +1141,163 @@
     let btnNext = $(".nextAddProduct");
     let btnPrev = $(".btns-second .confirm-btn");
     let btnPrev2 = $(".btns-third .confirm-btn");
+</script>
+
+<script>
+    $(".formUpdateActiveProduct .inputActiveProduct").on("click", function (event) {
+        event.stopPropagation();
+        // Cibler le bouton dans le même formulaire et enlever la classe 'hidden'
+        $(this).closest("form").find(".btnUpdateProductActive").removeClass("hidden");
+    });
+
+    let deroules = $(".showMore");
+    // On affiche les stocks quand on clique sur le bouton
+    deroules.each((index, deroule) => {
+        $(deroule).on('click', () => {
+            let stockList = $(deroule).parent().siblings('.stockList');
+            if (stockList.hasClass('hidden')) {
+                stockList.removeClass('hidden');
+                $(deroule).text('Voir moins');
+            } else {
+                stockList.addClass('hidden');
+                $(deroule).text('Voir plus');
+            }
+        });
+    });
+
+    // Clic sur le bouton modifier
+    let btnUpdateRowStock = $(".updatePriceRow");
+    btnUpdateRowStock.each((index, btn) => {
+        $(btn).on('click', () => {
+            let row = $(btn).parent();
+            let inputs = row.find('td');
+            let taille = inputs.eq(0).text();
+            let stock = inputs.eq(1).text();
+            let prix = inputs.eq(2).text();
+            let promo = inputs.eq(3).text();
+
+            // On remplace les valeurs par des inputs
+            inputs.eq(1).html(`<input type="number" class="input-quantity" value="${stock}" />`);
+            inputs.eq(2).html(`<input type="number" class="input-price" value="${prix}" />`);
+            inputs.eq(3).html(`<input type="number" class="input-promo" value="${promo}" />`);
+
+            // On modifie le bouton pour qu'il confirme
+            $(btn).text('Confirmer');
+            $(btn).removeClass('updatePriceRow');
+            $(btn).addClass('confirmUpdatePriceRow');
+            $(btn).addClass('confirm-btn');
+
+            // On ajoute un bouton pour annuler
+            row.append('<td class="cancelUpdatePriceRow cancel-btn">Annuler</td>');
+
+            // On ajoute un autre th dans le thead du tableau
+            let thead = $('#stockTable thead tr');
+            thead.append('<th></th>');
+
+            let cancelUpdatePriceRow = $(".cancelUpdatePriceRow");
+
+            cancelUpdatePriceRow.each((index, btn) => {
+                $(btn).on('click', () => {
+                    let row = $(btn).parent();
+                    let inputs = row.find('input');
+                    let taille = inputs.eq(0).val();
+                    let stock = inputs.eq(1).val();
+                    let prix = inputs.eq(2).val();
+                    let promo = inputs.eq(3).val();
+
+                    console.log(inputs.eq(3));
+
+                    // On remplace les inputs par les anciennes valeurs
+                    inputs.eq(1).replaceWith(`<td>${stock}</td>`);
+                    inputs.eq(2).replaceWith(`<td>${prix}</td>`);
+                    inputs.eq(3).replaceWith(`<td>${promo}</td>`);
+
+                    // On remet le bouton modifier
+                    $(btn).text('Modifier');
+                    $(btn).removeClass('confirmUpdatePriceRow');
+                    $(btn).addClass('updatePriceRow');
+
+                    // On supprime le bouton annuler
+                    row.find('.cancelUpdatePriceRow').remove();
+                });
+            });
+
+            let confirmUpdatePriceRow = $(".confirmUpdatePriceRow");
+            confirmUpdatePriceRow.each((index, btn) => {
+                $(btn).on('click', () => {
+                    // On récupère le tr
+                    let tr = $(btn).parent().parent();
+                    // on récupère la valeur de son champ data-id
+                    let idProduit = $(tr).data('id-produit');
+                    let taille = $(tr).data('taille');
+                    console.log(idProduit);
+                    console.log(taille);
+
+
+                    let row = $(btn).parent();
+                    let inputs = row.find('input');
+                    let stock = inputs[0].val();
+                    let prix = inputs[1].val();
+                    let promo = inputs[2].val();
+
+                    console.log(inputs);
+                    console.log(taille);
+                    console.log(stock);
+                    console.log(prix);
+                    console.log(promo);
+
+                    // On remplace les inputs par les nouvelles valeurs
+                    inputs.eq(1).replaceWith(`<td>${stock}</td>`);
+                    inputs.eq(2).replaceWith(`<td>${prix}</td>`);
+                    inputs.eq(3).replaceWith(`<td>${promo}</td>`);
+
+                    // On remet le bouton modifier
+                    $(btn).text('Modifier');
+                    $(btn).removeClass('confirmUpdatePriceRow');
+                    $(btn).addClass('updatePriceRow');
+
+                    // On supprime le bouton annuler
+                    row.find('.cancelUpdatePriceRow').remove();
+
+                    // On supprime le th ajouté
+                    $('#stockTable thead tr th:last-child').remove();
+
+
+                    // On récupère le tr
+                    let tr = $(btn).parent().parent();
+                    // on récupère la valeur de son champ data-id
+                    let idProduit = $(tr).data('id');
+                    console.log(idProduit);
+
+
+
+                    // On met à jour les valeurs dans la base de données
+                    let size = taille;
+                    let quantity = stock;
+                    let price = prix;
+                    let priceProm = promo;
+                    // On crée un objet stockData
+                    let stockData = {
+                        size: size,
+                        quantity: quantity,
+                        price: price,
+                        priceProm: priceProm
+                    };
+                    let url = `/Product/UpdateStockProduct?id=${idProduit}&StockData=${stockData}`;
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        success: function (data) {
+                            console.log(data);
+                        },
+                        error: function (error) {
+                            console.log(error);
+                        }
+                    });
+                });
+            });
+
+        });
+    });
+
 </script>

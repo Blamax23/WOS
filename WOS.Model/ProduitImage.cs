@@ -20,8 +20,6 @@ namespace WOS.Model
 
         public bool Principale { get; set; }
 
-        public string Name { get; set; }
-
         // Navigation property
         public virtual Produit Produit { get; set; }
     }

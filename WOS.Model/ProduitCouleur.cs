@@ -90,6 +90,19 @@ namespace WOS.Model
         {
             return ColorHexMap.TryGetValue(couleur, out var hexCode) ? hexCode : "#000000"; // Default: Noir
         }
+
+        public static string GetName(this ProduitCouleurEnum couleur)
+        {
+            return couleur.GetAttribute<DisplayAttribute>()?.Name ?? couleur.ToString();
+        }
+
+        public static TAttribute GetAttribute<TAttribute>(this Enum value)
+            where TAttribute : Attribute
+        {
+            var type = value.GetType();
+            var name = Enum.GetName(type, value);
+            return type.GetField(name)?.GetCustomAttributes(false).OfType<TAttribute>().SingleOrDefault();
+        }
     }
 
 }

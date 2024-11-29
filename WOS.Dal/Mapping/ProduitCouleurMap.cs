@@ -30,6 +30,9 @@ namespace WOS.Dal.Mapping
                 .HasMaxLength(7)
                 .HasColumnName("code_hex");
 
+            builder.Property(pc => pc.ProduitId)
+                .HasColumnName("produit_id");
+
             builder.HasOne(pc => pc.Produit)
                 .WithMany(p => p.ProduitCouleurs)
                 .HasForeignKey(pc => pc.ProduitId);

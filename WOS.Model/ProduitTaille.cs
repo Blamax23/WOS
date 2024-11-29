@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace WOS.Model
@@ -25,6 +26,9 @@ namespace WOS.Model
         [Column(TypeName = "decimal(10, 2)")]
         public decimal Prix { get; set; }
 
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal? PrixPromo { get; set; }
+
         // Navigation property
         public virtual Produit Produit { get; set; }
         public virtual ICollection<LigneCommande> LignesCommande { get; set; }
@@ -32,9 +36,17 @@ namespace WOS.Model
 
     public class StockItem
     {
+        [JsonPropertyName("size")]
         public string Size { get; set; }
-        public int Quantity { get; set; }
-        public decimal Price { get; set; }
+
+        [JsonPropertyName("quantity")]
+        public string Quantity { get; set; }
+
+        [JsonPropertyName("price")]
+        public string Price { get; set; }
+
+        [JsonPropertyName("priceProm")]
+        public string PriceProm { get; set; }
     }
 
 }

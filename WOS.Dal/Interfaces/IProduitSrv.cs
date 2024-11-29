@@ -13,5 +13,6 @@ namespace WOS.Dal.Interfaces
         Produit GetProduitById(int id);
         void AddProduit(Produit produit);
         List<double> GetAllTailles();
+        void UpdateProduit(Produit produit);
     }
 }

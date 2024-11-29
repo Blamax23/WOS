@@ -47,6 +47,8 @@ builder.Services.AddScoped<IAuthenticationSrv, AuthenticationSrv>();
 builder.Services.AddScoped<IProduitSrv, ProduitSrv>();
 builder.Services.AddScoped<ICommandeSrv, CommandeSrv>();
 builder.Services.AddScoped<IQuestionSrv, QuestionSrv>();
+builder.Services.AddScoped<IMarqueSrv, MarqueSrv>();
+builder.Services.AddScoped<ICategorieSrv, CategorieSrv>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

@@ -31,6 +31,18 @@ namespace WOS.Dal.Mapping
                 .HasDefaultValue(0)
                 .HasColumnName("stock");
 
+            builder.Property(pc => pc.ProduitId)
+                .HasColumnName("produit_id");
+
+            builder.Property(pt => pt.Prix)
+                .IsRequired()
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("prix");
+
+            builder.Property(pc => pc.PrixPromo)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("prix_promo");
+
             builder.HasOne(pt => pt.Produit)
                 .WithMany(p => p.ProduitTailles)
                 .HasForeignKey(pt => pt.ProduitId);

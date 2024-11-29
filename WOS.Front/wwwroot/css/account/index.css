@@ -5,7 +5,7 @@
 }
 
 /* Cacher les sections par défaut */
-.info-account, .info-commandes, .info-products {
+.info-account, .info-commandes, .info-products, .info-marques {
     display: none; /* Masquer par défaut */
     opacity: 0; /* Initialement transparent */
     transition: opacity 0.5s ease, transform 0.5s ease; /* Animation */
@@ -13,7 +13,7 @@
 }
 
     /* Classe pour afficher une section */
-    .info-account.active, .info-commandes.active, .info-products.active {
+    .info-account.active, .info-commandes.active, .info-products.active, .info-marques.active {
         display: block; /* Affiche la div */
         opacity: 1; /* Rétablit l'opacité */
         transform: translateY(0); /* Position normale */
@@ -334,27 +334,40 @@ input:invalid {
         box-sizing: border-box;
     }
 
-.content-zone-product textarea {
-    width: 100%;
-    height: 20vh;
-    padding: .5em;
-    border: 2px solid black;
-    border-radius: 5px;
-    color: black;
-    resize: none;
-    box-sizing: border-box;
+.content-zone-product {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
 }
+
+    .content-zone-product textarea {
+        width: 100%;
+        height: 20vh;
+        padding: .5em;
+        border: 2px solid black;
+        border-radius: 5px;
+        color: black;
+        resize: none;
+        box-sizing: border-box;
+    }
+
+    .content-zone-product select {
+        width: 50%;
+        height: 3em;
+        border: 2px solid black;
+        margin: .5em 0;
+    }
 
 .content-zone {
     display: none;
 }
 
-.content-zone h3{
-    margin: 0;
-    margin-bottom: 1em;
-}
+    .content-zone h3 {
+        margin: 0;
+        margin-bottom: 1em;
+    }
 
-.allColors{
+.allColors {
     display: flex;
     flex-wrap: wrap;
     gap: .5em;
@@ -374,7 +387,7 @@ input:invalid {
     border: 2px solid #f1f1f1;
 }
 
-.img-color{
+.img-color {
     width: 80%;
     display: block;
     aspect-ratio: 1/1;
@@ -382,24 +395,22 @@ input:invalid {
     border-radius: 50%;
     margin: auto;
     border: 2px solid black;
-
 }
 
-.selectedColors{
+.selectedColors {
     background-color: #bee0ea;
     border: 2px solid #4fb2c5;
     border-radius: 5px;
 }
 
-.table-stock{
+.table-stock {
     width: 100%;
     border-collapse: collapse;
-
 }
 
-.table-stock th{
-    border: 1px solid black;
-}
+    .table-stock th {
+        border: 1px solid black;
+    }
 
 th, td {
     border: 1px solid black; /* Bordure noire autour des cellules */
@@ -407,15 +418,14 @@ th, td {
     text-align: center; /* Centrer le texte */
 }
 
-td input{
-    width: 100%;
-    padding: .5em;
-    border: 2px solid black;
-    border-radius: 5px;
-    color: black;
-    box-sizing: border-box;
-
-}
+    td input {
+        width: 100%;
+        padding: .5em;
+        border: 2px solid black;
+        border-radius: 5px;
+        color: black;
+        box-sizing: border-box;
+    }
 
 th {
     background-color: #f4f4f4; /* Couleur de fond pour l'en-tête */
@@ -435,8 +445,8 @@ select.input-size {
         padding: 5px;
     }
 
-.add-row{
-padding: .5em 1em;
+.add-row {
+    padding: .5em 1em;
     background-color: black;
     color: white;
     border: none;
@@ -553,10 +563,9 @@ padding: .5em 1em;
     position: absolute;
     display: flex;
     justify-content: right;
-    bottom: 0;
+    bottom: -5vh;
     right: 0;
     display: none;
-    margin-top: 1em;
 }
 
     .btns-close a {
@@ -571,6 +580,396 @@ padding: .5em 1em;
     display: flex;
 }
 
-.hidden{
+.produit {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    border: 1px solid rgb(98, 106, 115);
+    margin-top: 5vh;
+}
+
+.entete-produit {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5vh 5vw;
+    flex-shrink: 0;
+    border-radius: 15px;
+}
+
+    .entete-produit h3 {
+        font-size: 2em;
+        margin: 0;
+    }
+
+    .entete-produit a {
+        text-decoration: none;
+    }
+
+    .entete-produit .bi-chevron-right {
+        font-size: 5em;
+    }
+
+
+.formUpdateActiveProduct {
+    margin: 3vh 0;
+    font-size: 1em;
+    display: flex;
+    height: 2em;
+    align-items: center;
+}
+
+    .formUpdateActiveProduct label {
+        font-size: 1em;
+        display: inline;
+        height: min-content;
+    }
+
+    .formUpdateActiveProduct input {
+        width: max-content;
+        width: min-content;
+        transform: scale(2);
+        margin: 0 2vh;
+    }
+
+.center-zone-product-show {
+    width: 50%;
+}
+
+.updatePriceRow {
+    background-color: black;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .updatePriceRow:hover {
+        background-color: white;
+        color: black;
+    }
+
+.detail-produit{
+    padding: 1em;
+}
+
+.showMore{
+    width: 100%;
+}
+
+.right-zone-show-product{
+    display: flex;
+}
+
+.showStock{
+    transform: rotate(90deg);
+}
+
+.confirmUpdatePriceRow, .cancelUpdatePriceRow{
+    border-radius: 0;
+}
+
+.confirmUpdatePriceRow{
+    background-color: green;
+    color: white;
+    border: 1px solid green;
+}
+
+.cancelUpdatePriceRow{
+    background-color: red;
+    color: white;
+    border: 1px solid red;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ===================================================================== */
+/* ========================== Partie Marques =========================== */
+/* ===================================================================== */
+
+.head-marque {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5vh 5vw;
+    border-bottom: 1px solid rgb(98, 106, 115);
+    flex-shrink: 0;
+}
+
+    .head-marque h2 {
+        font-size: 2em;
+        margin: 0;
+    }
+
+    .head-marque a {
+        text-decoration: none;
+    }
+
+
+.content-marque {
+}
+
+.formAddMarque {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 80%;
+    margin: auto;
+}
+
+    .formAddMarque label {
+        font-size: 1.2em;
+        margin: .5vh 0;
+    }
+
+    .formAddMarque input {
+        font-size: 1.2em;
+        padding: .5em;
+        border: 2px solid black;
+        width: 50%;
+    }
+
+    .formAddMarque div {
+        display: flex;
+        flex-direction: column;
+        margin: 1em;
+        box-sizing: border-box;
+    }
+
+    .formAddMarque textarea {
+        font-size: 1.2em;
+        padding: .5em;
+        border: 2px solid black;
+        width: 100%;
+        resize: none;
+        height: 3.5em;
+    }
+
+    .formAddMarque .active-zone {
+        display: flex;
+        flex-direction: initial;
+    }
+
+    .formAddMarque .btnFormAddMarque {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: right;
+    }
+
+        .formAddMarque .btnFormAddMarque a {
+            margin: 0 1em;
+            display: inline;
+            height: min-content;
+        }
+
+    .formAddMarque .active-zone label {
+        width: max-content;
+    }
+
+
+
+    .formAddMarque .active-zone input {
+        width: min-content;
+        transform: scale(2);
+        margin: 0 2vh;
+    }
+
+.formAddCategorie {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 80%;
+    margin: auto;
+}
+
+    .formAddCategorie .head-zone-inputCat {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        align-items: end;
+        width: 99.5%;
+    }
+
+        .formAddCategorie .head-zone-inputCat .name-zone {
+            width: 45%;
+            margin: 0;
+        }
+
+.input-marque-formAdd {
+    width: 48%;
+    height: 3em;
+    font-size: 1em;
+    border: 2px solid black;
+}
+
+.formAddCategorie label {
+    font-size: 1.2em;
+    margin: .5vh 0;
+}
+
+.formAddCategorie input {
+    font-size: 1.2em;
+    padding: .5em;
+    border: 2px solid black;
+    width: 100%;
+}
+
+.formAddCategorie div {
+    display: flex;
+    flex-direction: column;
+    margin: 1em;
+    box-sizing: border-box;
+}
+
+.formAddCategorie textarea {
+    font-size: 1.2em;
+    padding: .5em;
+    border: 2px solid black;
+    width: 100%;
+    resize: none;
+    height: 3.5em;
+}
+
+.formAddCategorie .active-zone {
+    display: flex;
+    flex-direction: initial;
+}
+
+    .formAddCategorie .active-zone .inputHome {
+        width: max-content;
+        width: min-content;
+        transform: scale(2);
+        margin: 0 2vh;
+    }
+
+    .formAddCategorie .active-zone label {
+        width: max-content;
+    }
+
+
+.formAddCategorie .btnFormAddCategorie {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: right;
+}
+
+    .formAddCategorie .btnFormAddCategorie a {
+        margin: 0 1em;
+        display: inline;
+        height: min-content;
+    }
+
+.allMarques {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    margin: auto;
+}
+
+.marque {
+    display: block;
+    width: 50vw;
+    margin-top: 5vh;
+    min-height: 30vh;
+    box-sizing: border-box;
+}
+
+.head-zone-marqueShow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: content-box;
+    background-color: rgb(98, 106, 115);
+    color: white;
+    border-radius: 15px;
+}
+
+    .head-zone-marqueShow div {
+        background-color: transparent;
+    }
+
+    .head-zone-marqueShow h3 {
+        font-size: 2em;
+        margin: 1vh 0;
+        padding: 0 .5em;
+    }
+
+    .head-zone-marqueShow p {
+        font-size: 1em;
+        margin: 0;
+        width: 90%;
+        min-height: 10vh;
+        padding: 1em;
+        word-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+        overflow: hidden; /* Masque le texte qui dépasse */
+        text-overflow: ellipsis;
+    }
+
+    .head-zone-marqueShow .bi-chevron-right {
+        font-size: 5em;
+    }
+
+.formUpdateMarque {
+    margin: 1em;
+    font-size: 1em;
+}
+
+    .formUpdateMarque input {
+        width: max-content;
+        width: min-content;
+        transform: scale(2);
+        margin: 0 2vh;
+    }
+
+.zone-left-marque {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bottom-zone-marque {
+    background-color: #d3d3d3;
+}
+
+    .bottom-zone-marque h3 {
+        margin: 0;
+        padding: 1em;
+    }
+
+    .bottom-zone-marque ul {
+        margin: 0;
+        padding: 0;
+    }
+
+.categorie {
+    border: 2px solid black;
+    padding: 1em;
+}
+
+    .categorie h3 {
+        font-size: 1.5em;
+        margin: .5em 0;
+        padding: 0;
+    }
+
+.formUpdateCat label {
+    font-size: 1em;
+}
+
+.formUpdateCat input {
+    width: max-content;
+    width: min-content;
+    transform: scale(1.5);
+    margin: 0 2vh;
+}
+
+.hidden {
     display: none;
 }
