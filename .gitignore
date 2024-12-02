@@ -19,6 +19,7 @@ obj/
 
 # Fichiers spécifiques à ASP.NET
 wwwroot/lib/
+wwwroot/uploads/
 
 # Fichiers de configuration sensibles
 secrets.json

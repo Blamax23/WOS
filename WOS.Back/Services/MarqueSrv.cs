@@ -24,6 +24,12 @@ namespace WOS.Back.Services
             return marques;
         }
 
+        public List<Marque> GetMarquesByHome()
+        {
+            List<Marque> marques = _context.Marques.Where(m => m.IsHome == true).ToList();
+            return marques;
+        }
+
         public Marque GetMarqueById(int id)
         {
             Marque marque = _context.Marques.Find(id);

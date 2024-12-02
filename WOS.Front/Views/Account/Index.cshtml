@@ -159,7 +159,7 @@
                         <h2>Produits</h2>
                         <a class="confirm-btn addProduct">Ajouter un produit</a>
                     </div>
-                    <form method="post" asp-action="AddProduct" enctype="multipart/form-data" asp-controller="Product" class="formAddProduct">
+                    <form method="post" asp-action="AddProduct" enctype="multipart/form-data" asp-controller="Product" class="formAddProduct hidden">
                         <div class="left-zone">
                             <div class="pictures-zone">
                                 <div class="upload-container" id="uploadContainer">
@@ -306,7 +306,7 @@
                                             @if (produit.ProduitTailles.Count() > 0)
                                             {
                                                 <div class="table-container">
-                                                    <table id="stockTable" class="table-stock">
+                                                    <table id="stockTableShow" class="table-stock">
                                                         <thead>
                                                             <tr>
                                                                 <th>Taille</th>
@@ -320,7 +320,7 @@
 
                                                             @foreach (var stock in produit.ProduitTailles)
                                                             {
-                                                                <tr data-id="@stock.ProduitId">
+                                                                <tr data-id-produit="@stock.ProduitId" data-id-taille="@stock.Taille">
                                                                     <td>@stock.Taille</td>
                                                                     <td>@stock.Stock</td>
                                                                     <td>@stock.Prix</td>
@@ -1166,138 +1166,283 @@
     });
 
     // Clic sur le bouton modifier
-    let btnUpdateRowStock = $(".updatePriceRow");
-    btnUpdateRowStock.each((index, btn) => {
-        $(btn).on('click', () => {
-            let row = $(btn).parent();
-            let inputs = row.find('td');
-            let taille = inputs.eq(0).text();
-            let stock = inputs.eq(1).text();
-            let prix = inputs.eq(2).text();
-            let promo = inputs.eq(3).text();
+    // let btnUpdateRowStock = $(".updatePriceRow");
+    // btnUpdateRowStock.each((index, btn) => {
+    //     $(btn).on('click', () => {
+    //         let row = $(btn).parent();
+    //         let inputs = row.find('td');
+    //         let taille = inputs.eq(0).text();
+    //         let stock = inputs.eq(1).text();
+    //         let prix = inputs.eq(2).text();
+    //         let promo = inputs.eq(3).text();
 
-            // On remplace les valeurs par des inputs
-            inputs.eq(1).html(`<input type="number" class="input-quantity" value="${stock}" />`);
-            inputs.eq(2).html(`<input type="number" class="input-price" value="${prix}" />`);
-            inputs.eq(3).html(`<input type="number" class="input-promo" value="${promo}" />`);
+    //         // On remplace les valeurs par des inputs
+    //         inputs.eq(1).html(`<input type="number" class="input-quantity" value="${stock}" />`);
+    //         inputs.eq(2).html(`<input type="number" class="input-price" value="${prix}" />`);
+    //         inputs.eq(3).html(`<input type="number" class="input-promo" value="${promo}" />`);
 
-            // On modifie le bouton pour qu'il confirme
-            $(btn).text('Confirmer');
-            $(btn).removeClass('updatePriceRow');
-            $(btn).addClass('confirmUpdatePriceRow');
-            $(btn).addClass('confirm-btn');
+    //         // On modifie le bouton pour qu'il confirme
+    //         $(btn).text('Confirmer');
+    //         $(btn).removeClass('updatePriceRow');
+    //         $(btn).addClass('confirmUpdatePriceRow');
+    //         $(btn).addClass('confirm-btn');
 
-            // On ajoute un bouton pour annuler
-            row.append('<td class="cancelUpdatePriceRow cancel-btn">Annuler</td>');
+    //         // On ajoute un bouton pour annuler
+    //         row.append('<td class="cancelUpdatePriceRow cancel-btn">Annuler</td>');
 
-            // On ajoute un autre th dans le thead du tableau
-            let thead = $('#stockTable thead tr');
-            thead.append('<th></th>');
+    //         // On ajoute un autre th dans le thead du tableau
+    //         let thead = $('#stockTable thead tr');
+    //         thead.append('<th class="headBtnCancel"></th>');
 
-            let cancelUpdatePriceRow = $(".cancelUpdatePriceRow");
+    //         let cancelUpdatePriceRow = $(".cancelUpdatePriceRow");
 
-            cancelUpdatePriceRow.each((index, btn) => {
-                $(btn).on('click', () => {
-                    let row = $(btn).parent();
-                    let inputs = row.find('input');
-                    let taille = inputs.eq(0).val();
-                    let stock = inputs.eq(1).val();
-                    let prix = inputs.eq(2).val();
-                    let promo = inputs.eq(3).val();
+    //         cancelUpdatePriceRow.each((index, btn) => {
+    //             $(btn).on('click', () => {
+    //                 let row = $(btn).parent();
+    //                 let inputs = row.find('input');
+    //                 let stock = inputs.eq(0).val();
+    //                 let prix = inputs.eq(1).val();
+    //                 let promo = inputs.eq(2).val();
 
-                    console.log(inputs.eq(3));
+    //                 console.log(inputs);
+    //                 console.log(inputs.eq(0).val());
+    //                 console.log(inputs.eq(1).val());
+    //                 console.log(inputs.eq(2).val());
+    //                 console.log(stock);
+    //                 console.log(prix);
+    //                 console.log(promo);
 
-                    // On remplace les inputs par les anciennes valeurs
-                    inputs.eq(1).replaceWith(`<td>${stock}</td>`);
-                    inputs.eq(2).replaceWith(`<td>${prix}</td>`);
-                    inputs.eq(3).replaceWith(`<td>${promo}</td>`);
+    //                 // On remplace les inputs par les anciennes valeurs
+    //                 inputs.eq(0).replaceWith(`${stock}`);
+    //                 inputs.eq(1).replaceWith(`${prix}`);
+    //                 inputs.eq(2).replaceWith(`${promo}`);
 
-                    // On remet le bouton modifier
-                    $(btn).text('Modifier');
-                    $(btn).removeClass('confirmUpdatePriceRow');
-                    $(btn).addClass('updatePriceRow');
+    //                 // On remet le bouton modifier
 
-                    // On supprime le bouton annuler
-                    row.find('.cancelUpdatePriceRow').remove();
-                });
+    //                 let tdUpdate = row.find('.confirmUpdatePriceRow');
+    //                 console.log(tdUpdate);
+    //                 console.log($(btn));
+    //                 $(tdUpdate).text('Modifier');
+    //                 $(tdUpdate).removeClass('confirmUpdatePriceRow').addClass('updatePriceRow');
+
+    //                 // On supprime le bouton annuler
+    //                 row.find('.cancelUpdatePriceRow').remove();
+
+    //                 // On supprime le td au dessus de ce bouton annulé
+    //                 thead.find('.headBtnCancel').remove();
+    //             });
+    //         });
+
+    //         let confirmUpdatePriceRow = $(".confirmUpdatePriceRow");
+    //         confirmUpdatePriceRow.each((index, btn) => {
+    //             $(btn).on('click', () => {
+    //                 // On récupère le tr
+    //                 let tr = $(btn).parent().parent();
+    //                 // on récupère la valeur de son champ data-id
+    //                 let idProduit = $(tr).data('id-produit');
+    //                 let taille = $(tr).data('id-taille');
+    //                 console.log(idProduit);
+    //                 console.log(taille);
+
+
+    //                 let row = $(btn).parent();
+    //                 let inputs = row.find('input');
+    //                 let stock = inputs.eq(0).val();
+    //                 let prix = inputs.eq(0).val();
+    //                 let promo = inputs.eq(0).val();
+
+    //                 console.log(inputs);
+    //                 console.log(taille);
+    //                 console.log(stock);
+    //                 console.log(prix);
+    //                 console.log(promo);
+
+    //                 // On remplace les inputs par les nouvelles valeurs
+    //                 inputs.eq(0).replaceWith(`${stock}`);
+    //                 inputs.eq(1).replaceWith(`${prix}`);
+    //                 inputs.eq(2).replaceWith(`${promo}`);
+
+    //                 // On remet le bouton modifier
+    //                 console.log(btn);
+    //                 console.log($(btn));
+    //                 $(btn).text('Modifier');
+    //                 $(btn).removeClass('confirmUpdatePriceRow');
+    //                 $(btn).addClass('updatePriceRow');
+
+    //                 // On supprime le bouton annuler
+    //                 row.find('.cancelUpdatePriceRow').remove();
+
+    //                 // On supprime le th ajouté
+    //                 $('#stockTable thead tr th:last-child').remove();
+
+
+    //                 // On récupère le tr
+    //                 tr = $(btn).parent().parent();
+    //                 // on récupère la valeur de son champ data-id
+
+
+
+    //                 // On met à jour les valeurs dans la base de données
+    //                 let size = taille;
+    //                 let quantity = stock;
+    //                 let price = prix;
+    //                 let priceProm = promo;
+    //                 // On crée un objet stockData
+    //                 let stockData = {
+    //                     size: size,
+    //                     quantity: quantity,
+    //                     price: price,
+    //                     priceProm: priceProm
+    //                 };
+    //                 let url = `/Product/UpdateStockProduct?id=${idProduit}&StockData=${stockData}`;
+    //                 $.ajax({
+    //                     url: url,
+    //                     type: 'POST',
+    //                     success: function (data) {
+    //                         console.log(data);
+    //                     },
+    //                     error: function (error) {
+    //                         console.log(error);
+    //                     }
+    //                 });
+    //             });
+    //         });
+
+    //     });
+    // });
+
+    // On attache l'événement "Update" à un parent statique
+    $(document).ready(function () {
+        // Événement délégué pour le bouton "Modifier"
+        let stockTable = $('#stockTable');
+        console.log(stockTable);
+        $('#stockTableShow').on('click', '.updatePriceRow', function () {
+            console.log('Bouton Modifier cliqué');
+
+            let btn = $(this); // Le bouton (td)
+            let row = btn.closest('tr'); // La ligne parente
+            let cells = row.find('td'); // Toutes les cellules de la ligne
+
+            // Récupération des anciennes valeurs
+            let stock = cells.eq(1).text().trim();
+            let prix = cells.eq(2).text().trim();
+            let promo = cells.eq(3).text().trim();
+
+            // Remplace les valeurs par des champs d'input
+            cells.eq(1).html(`<input type="number" value="${stock}" class="input-stock" />`);
+            cells.eq(2).html(`<input type="number" value="${prix}" class="input-price" />`);
+            cells.eq(3).html(`<input type="number" value="${promo}" class="input-promo" />`);
+
+            // Change le bouton pour "Confirmer"
+            btn.text('Confirmer').removeClass('updatePriceRow').addClass('confirmUpdatePriceRow').addClass('confirm-btn');
+
+            // Ajoute un bouton "Annuler" à la fin de la ligne
+            if (!row.find('.cancelUpdatePriceRow').length) {
+                row.append('<td class="cancelUpdatePriceRow cancel-btn">Annuler</td>');
+            }
+
+            let thead = $('#stockTableShow thead tr');
+            thead.append('<th class="headBtnCancel"></th>');
+
+            console.log('Passé en mode édition');
+        });
+
+        // Événement délégué pour le bouton "Confirmer"
+        $('#stockTableShow').on('click', '.confirmUpdatePriceRow', function () {
+            console.log('Bouton Confirmer cliqué');
+
+            let btn = $(this); // Le bouton (td)
+            let row = btn.closest('tr'); // La ligne parente
+            let inputs = row.find('input'); // Tous les champs d'input de la ligne
+
+            // Récupération des nouvelles valeurs
+            let stock = inputs.eq(0).val().trim();
+            let prix = inputs.eq(1).val().trim();
+            let promo = inputs.eq(2).val().trim();
+
+            // Replace les champs d'input par les nouvelles valeurs
+            inputs.eq(0).parent().text(stock);
+            inputs.eq(1).parent().text(prix);
+            inputs.eq(2).parent().text(promo);
+
+            // Change le bouton pour "Modifier"
+            btn.text('Modifier').removeClass('confirmUpdatePriceRow').addClass('updatePriceRow');
+
+            // Supprime le bouton "Annuler"
+            row.find('.cancelUpdatePriceRow').remove();
+
+            let thead = $('#stockTableShow thead tr');
+            thead.find('.headBtnCancel').remove();
+
+            // Récupère l'ID produit et taille depuis les attributs de la ligne
+            let productId = row.data('id-produit');
+            let size = row.data('id-taille');
+
+            // Crée l'objet JSON correspondant à la classe C#
+            let stockItem = {
+                size: size.toString(),
+                quantity: stock,
+                price: prix,
+                priceProm: promo
+            };
+
+            console.log('StockItem JSON:', stockItem);
+
+            // Envoi des données au serveur via AJAX
+            let data = JSON.stringify(stockItem);
+            let url = `/Product/UpdateStockProduct?id=${productId}&stockData=${data}`;
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json', // Indique que les données envoyées sont en JSON
+                success: function (response) {
+                    console.log('Réponse du serveur:', response);
+                    alert('Mise à jour effectuée avec succès.');
+                },
+                error: function (error) {
+                    console.error('Erreur lors de la mise à jour:', error);
+                    alert('Erreur lors de la mise à jour. Veuillez réessayer.');
+                }
             });
 
-            let confirmUpdatePriceRow = $(".confirmUpdatePriceRow");
-            confirmUpdatePriceRow.each((index, btn) => {
-                $(btn).on('click', () => {
-                    // On récupère le tr
-                    let tr = $(btn).parent().parent();
-                    // on récupère la valeur de son champ data-id
-                    let idProduit = $(tr).data('id-produit');
-                    let taille = $(tr).data('taille');
-                    console.log(idProduit);
-                    console.log(taille);
+            console.log('Requête envoyée à:', url);
+        });
 
+        // Événement délégué pour le bouton "Annuler"
+        $('#stockTableShow').on('click', '.cancelUpdatePriceRow', function () {
+            console.log('Bouton Annuler cliqué');
 
-                    let row = $(btn).parent();
-                    let inputs = row.find('input');
-                    let stock = inputs[0].val();
-                    let prix = inputs[1].val();
-                    let promo = inputs[2].val();
+            let btn = $(this); // Le bouton (td)
+            let row = btn.closest('tr'); // La ligne parente
+            let inputs = row.find('input'); // Tous les champs d'input de la ligne
 
-                    console.log(inputs);
-                    console.log(taille);
-                    console.log(stock);
-                    console.log(prix);
-                    console.log(promo);
+            // Récupération des anciennes valeurs
+            let stock = inputs.eq(0).attr('value'); // La valeur initiale dans l'attribut
+            let prix = inputs.eq(1).attr('value');
+            let promo = inputs.eq(2).attr('value');
 
-                    // On remplace les inputs par les nouvelles valeurs
-                    inputs.eq(1).replaceWith(`<td>${stock}</td>`);
-                    inputs.eq(2).replaceWith(`<td>${prix}</td>`);
-                    inputs.eq(3).replaceWith(`<td>${promo}</td>`);
+            // Replace les champs d'input par les anciennes valeurs
+            inputs.eq(0).parent().text(stock);
+            inputs.eq(1).parent().text(prix);
+            inputs.eq(2).parent().text(promo);
 
-                    // On remet le bouton modifier
-                    $(btn).text('Modifier');
-                    $(btn).removeClass('confirmUpdatePriceRow');
-                    $(btn).addClass('updatePriceRow');
+            // Change le bouton pour "Modifier"
+            row.find('.confirmUpdatePriceRow')
+                .text('Modifier')
+                .removeClass('confirmUpdatePriceRow')
+                .addClass('updatePriceRow');
 
-                    // On supprime le bouton annuler
-                    row.find('.cancelUpdatePriceRow').remove();
+            // Supprime le bouton "Annuler"
+            btn.remove();
 
-                    // On supprime le th ajouté
-                    $('#stockTable thead tr th:last-child').remove();
+            let thead = $('#stockTableShow thead tr');
+            thead.find('.headBtnCancel').remove();
 
-
-                    // On récupère le tr
-                    let tr = $(btn).parent().parent();
-                    // on récupère la valeur de son champ data-id
-                    let idProduit = $(tr).data('id');
-                    console.log(idProduit);
-
-
-
-                    // On met à jour les valeurs dans la base de données
-                    let size = taille;
-                    let quantity = stock;
-                    let price = prix;
-                    let priceProm = promo;
-                    // On crée un objet stockData
-                    let stockData = {
-                        size: size,
-                        quantity: quantity,
-                        price: price,
-                        priceProm: priceProm
-                    };
-                    let url = `/Product/UpdateStockProduct?id=${idProduit}&StockData=${stockData}`;
-                    $.ajax({
-                        url: url,
-                        type: 'POST',
-                        success: function (data) {
-                            console.log(data);
-                        },
-                        error: function (error) {
-                            console.log(error);
-                        }
-                    });
-                });
-            });
-
+            console.log('Modifications annulées');
         });
     });
+
+
 
 </script>

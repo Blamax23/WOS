@@ -27,7 +27,58 @@ namespace WOS.Back.Services
                 produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
                 produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
                 produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
-                //produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
+                produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
+                produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
+                produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
+            }
+
+            return produits;
+        }
+
+        public List<Produit> GetProduitsTendance()
+        {
+            List<Produit> produits = _context.Produits.Where(p => p.IsTendance).ToList();
+
+            foreach (Produit produit in produits)
+            {
+                produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
+                produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
+                produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
+                produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
+                produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
+                produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
+            }
+
+            return produits;
+        }
+
+        public List<Produit> GetProduitsByMarque(int idMarque)
+        {
+            List<Produit> produits = _context.Produits.Where(p => p.MarqueId == idMarque).ToList();
+
+            foreach (Produit produit in produits)
+            {
+                produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
+                produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
+                produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
+                produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
+                produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
+                produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
+            }
+
+            return produits;
+        }
+
+        public List<Produit> GetProduitsByCat(int idCat)
+        {
+            List<Produit> produits = _context.Produits.Where(p => p.CategorieId == idCat).ToList();
+
+            foreach (Produit produit in produits)
+            {
+                produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
+                produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
+                produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
+                produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
                 produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
                 produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
             }

@@ -1,0 +1,125 @@
+.homescreen{
+    width: 100%;
+    height: 86.5vh;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+}
+
+.logoWos{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+}
+
+.logoWos img{
+    width: 40vw;
+    position: absolute;
+    margin: 0 30vw; 
+}
+
+.tendance-product-zone{
+    width: 90%;
+    margin: auto;
+}
+
+    .tendance-product-zone h2{
+        text-align: center;
+        font-size: 2.5em;
+        box-sizing: unset;
+    }
+
+    .shoe-carousel-container {
+        width: 100%;
+        overflow: hidden;
+    }
+
+.shoe-carousel-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+.shoe-carousel {
+    display: flex;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    gap: 20px;
+    padding: 1em 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+    .shoe-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+.shoe-card {
+    flex: 0 0 30vh;
+    scroll-snap-align: center;
+    scroll-margin: 0 10px;
+    cursor: grab;
+    position: relative;
+    /* Empêche la sélection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+    .shoe-card * {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    .shoe-card img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        pointer-events: none;
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+    }
+
+.shoe-carousel.active {
+    cursor: grabbing;
+}
+
+.shoe-details {
+    padding: 10px;
+    text-align: left;
+}
+
+.shoe-details h3{
+    height: 5vh;
+    font-weight: normal;
+}
+
+.price-product-zone {
+    display: flex;
+    justify-content: left;
+    gap: 1vw;
+    font-weight: bold;
+}
+
+.oldPrice {
+    display: inline-block; /* Pour limiter la rotation au texte */
+    text-decoration: line-through; /* Barre le texte */
+    text-decoration-thickness: 2px; /* Épaisseur de la ligne */
+    text-decoration-color: red; /* Couleur de la ligne */
+}
+
+.promoPrice {
+    color: red;
+}
+

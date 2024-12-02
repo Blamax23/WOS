@@ -12,6 +12,8 @@ namespace WOS.Dal.Interfaces
     {
         List<Categorie> GetAllCategories();
 
+        List<Categorie> GetCategoriesByHome();
+
         Categorie GetCategorieById(int id);
 
         void AddCategorie(Categorie Categorie);

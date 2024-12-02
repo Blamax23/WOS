@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
 using System.Net;
 using WOS.Dal.Context;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WOS.Front.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("[controller]")]
     public class ContactController : Controller
     {

@@ -22,4 +22,17 @@ namespace WOS.Model
 
         public List<Categorie> Categories { get; set; }
     }
+
+    public class HomeViewModel
+    {
+        public List<RowHomeModel> RowHome { get; set; } = new List<RowHomeModel>();
+    }
+
+    public class RowHomeModel
+    {
+        public string Name { get; set; }
+
+        public List<Produit> Produits { get; set; }
+
+    }
 }

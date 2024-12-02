@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using WOS.Dal.Interfaces;
@@ -6,6 +7,7 @@ using WOS.Model;
 
 namespace WOS.Front.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("[controller]")]
     public class QuestionController : Controller
     {

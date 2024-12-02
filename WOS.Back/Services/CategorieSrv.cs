@@ -24,6 +24,12 @@ namespace WOS.Back.Services
             return Categories;
         }
 
+        public List<Categorie> GetCategoriesByHome()
+        {
+            var categories = _context.Categories.Where(c => c.IsHome == true).ToList();
+            return categories;
+        }
+
         public Categorie GetCategorieById(int id)
         {
             Categorie Categorie = _context.Categories.Find(id);

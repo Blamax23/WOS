@@ -10,6 +10,10 @@ namespace WOS.Dal.Interfaces
     public interface IProduitSrv
     {
         List<Produit> GetProduits();
+
+        List<Produit> GetProduitsTendance();
+        List<Produit> GetProduitsByMarque(int idMarque);
+        List<Produit> GetProduitsByCat(int idCat);
         Produit GetProduitById(int id);
         void AddProduit(Produit produit);
         List<double> GetAllTailles();

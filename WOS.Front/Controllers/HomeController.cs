@@ -15,18 +15,62 @@ namespace WOS.Front.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IClientSrv _clientSrv;
+        private readonly IProduitSrv _produitSrv;
+        private readonly IMarqueSrv _marqueSrv;
+        private readonly ICategorieSrv _categorieSrv;
 
-        public HomeController(ILogger<HomeController> logger, IClientSrv clientSrv)
+        public HomeController(ILogger<HomeController> logger, IClientSrv clientSrv, IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv)
         {
             _logger = logger;
             _clientSrv = clientSrv;
+            _produitSrv = produitSrv;
+            _marqueSrv = marqueSrv;
+            _categorieSrv = categorieSrv;
         }
 
         public IActionResult Index()
         {
             HttpContext.Session.SetString("ReturnUrl", HttpContext.Request.Path);
-            List<Client> clients = _clientSrv.GetAllClients();
-            return View(clients);
+
+            List<Produit> allProducts = _produitSrv.GetProduits();
+
+            HomeViewModel homeViewModel = new HomeViewModel();
+
+            RowHomeModel rowHomeModelTendance = new RowHomeModel()
+            {
+                Name = "Tendances",
+                Produits = allProducts.Where(p => p.IsTendance).ToList()
+            };
+
+            homeViewModel.RowHome.Add(rowHomeModelTendance);
+
+            List<Categorie> catTendances = _categorieSrv.GetCategoriesByHome();
+
+            foreach (var cat in catTendances)
+            {
+                RowHomeModel rowHomeModel = new RowHomeModel()
+                {
+                    Name = cat.Nom,
+                    Produits = allProducts.Where(p => p.CategorieId == cat.Id).ToList()
+                };
+
+                homeViewModel.RowHome.Add(rowHomeModel);
+            }
+
+            List<Marque> marquesTendances = _marqueSrv.GetMarquesByHome();
+
+            foreach(var marque in marquesTendances)
+            {
+                RowHomeModel rowHomeModel = new RowHomeModel()
+                {
+                    Name = marque.Nom,
+                    Produits = allProducts.Where(p => p.MarqueId == marque.Id).ToList()
+                };
+
+                homeViewModel.RowHome.Add(rowHomeModel);
+            }
+
+            return View(homeViewModel);
         }
 
         [HttpPost]

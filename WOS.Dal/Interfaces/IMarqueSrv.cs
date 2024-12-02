@@ -12,6 +12,8 @@ namespace WOS.Dal.Interfaces
     {
         List<Marque> GetAllMarques();
 
+        List<Marque> GetMarquesByHome();
+
         Marque GetMarqueById(int id);
 
         void AddMarque(Marque marque);

@@ -33,6 +33,12 @@ namespace WOS.Dal.Mapping
                 .HasDefaultValue(DateTime.Now)
                 .HasColumnName("date_avis");
 
+            builder.Property(a => a.ClientId)
+                .HasColumnName("client_id");
+
+            builder.Property(a => a.ProduitId)
+                .HasColumnName("produit_id");
+
             builder.HasOne(a => a.Client)
                 .WithMany(c => c.Avis)
                 .HasForeignKey(a => a.ClientId);

@@ -1,15 +1,15 @@
 ﻿@using WOS.Model;
 
-@model List<Client>;
+@model HomeViewModel;
 
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Accueil WOS";
 }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<link rel="stylesheet" href="~/css/accueil.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/home/accueil.css" asp-append-version="true" />
 
 <div class="content">
     <div class="homescreen">
@@ -20,71 +20,117 @@
             <div class="chaussure" id="chaussure-droite"></div>
         </div>
     </div>
+    <div class="content-products">
+        @if (Model.RowHome.Count() > 0)
+        {
+            foreach (var row in Model.RowHome)
+            {
+                <div class="tendance-product-zone">
+                    <h2>@row.Name</h2>
+                    <div class="tendance-product-row">
+                        <div class="shoe-carousel-container">
+                            <div class="shoe-carousel">
+                                @if (row.Produits.Count() > 0)
+                                {
+                                    foreach (var product in row.Produits)
+                                    {
+                                        <div class="shoe-card">
+                                            <img src="@Url.Content(@product.ProduitImages.FirstOrDefault(i => i.Principale).Url)" alt="@product.Nom" />
+                                            <div class="shoe-details">
+                                                <h3>@product.Categorie.Nom @product.Nom</h3>
+                                                <div class="price-product-zone">
+                                                    @{
+                                                        ProduitTaille lessPrice = product.ProduitTailles.OrderBy(t => t.Prix).FirstOrDefault();
+                                                    }
+                                                    @if (@lessPrice.PrixPromo != 0 && @lessPrice.PrixPromo != null)
+                                                    {
+                                                        <p class="promoPrice">@lessPrice.PrixPromo.00 €</p>
+                                                        <p class="oldPrice">@lessPrice.Prix.00 €</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p class="standardPrice">@lessPrice.Prix.00 €</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <h3>Il n'y a encore aucun produit pour cette marque/catégorie</h3>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
 </div>
 
-<form method="post" asp-controller="Home" asp-action="AddClient">
-    <label for="nom">Nom : </label>
-    <input type="text" name="nom" id="nom" />
-    <br />
-    <label for="prenom">Prénom : </label>
-    <input type="text" name="prenom" id="prenom" />
-    <br />
-    <label for="email">Email : </label>
-    <input type="email" name="email" id="email" />
-    <br />
-    <label for="password">Mot de passe : </label>
-    <input type="password" name="password" id="password" />
-    <br />
-    <input type="submit" value="Ajouter" />
-</form>
 
-<table>
-    <tr>
-        <th>Nom</th>
-        <th>Prénom</th>
-        <th>Email</th>
-    </tr>
-    @if(Model.Count > 0)
-    {
-        @foreach (var client in Model)
-        {
-            <tr>
-                <td>@client.Nom</td>
-                <td>@client.Prenom</td>
-                <td>@client.Email</td>
-            </tr>
-        }
-    }
-</table>
-<!-- On test l'authentification avec les claims -->
-@if(User.Claims.Count() > 0)
-{
-    <h1>Claims</h1>
-    <table>
-        <tr>
-            <th>Type</th>
-            <th>Valeur</th>
-        </tr>
-        @foreach (var claim in User.Claims)
-        {
-            <tr>
-                <td>@claim.Type</td>
-                <td>@claim.Value</td>
-            </tr>
-        }
-    </table>
-}
-
-@if(User.Identity.IsAuthenticated)
-{
-    <p>@User.Identity.Name</p>
-    <a asp-controller="Account" asp-action="LogOut">Déconnexion</a>
-}
-else
-{
-    <a asp-controller="Account" asp-action="LogIn">Connexion</a>
-    <a asp-controller="Account" asp-action="SignIn">Inscription</a>
-})
 
 <script src="~/js/chaussure.js" asp-append-version="true"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    $(document).ready(function () {
+        // Pour chaque carousel trouvé
+        $('.shoe-carousel').each(function () {
+            const $carousel = $(this); // Le carousel actuel
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            // Empêche la sélection sur le carousel actuel
+            $carousel.on('selectstart', function (e) {
+                e.preventDefault();
+            });
+
+            // Quand on clique dans le carousel
+            $carousel.on('mousedown', function (e) {
+                e.preventDefault();
+                isDown = true;
+                $carousel.addClass('active');
+                startX = e.pageX - $carousel.offset().left;
+                scrollLeft = $carousel.scrollLeft();
+            });
+
+            // Quand on bouge la souris
+            $carousel.on('mousemove', function (e) {
+                if (!isDown) return;
+                e.preventDefault();
+
+                const x = e.pageX - $carousel.offset().left;
+                const walk = (x - startX) * 2; // Ajuste la vitesse ici si nécessaire
+                $carousel.scrollLeft(scrollLeft - walk);
+            });
+
+            // Quand on relâche ou quitte le carousel
+            $carousel.on('mouseup mouseleave', function () {
+                if (!isDown) return;
+                isDown = false;
+                $carousel.removeClass('active');
+
+                // Trouver la carte la plus proche après le défilement
+                const cardWidth = $carousel.find('.shoe-card').first().outerWidth(true); // Inclure la marge
+                const scrollPos = $carousel.scrollLeft();
+
+                // Calculer l'index de la carte la plus proche
+                const closestCardIndex = Math.round(scrollPos / cardWidth);
+
+                // Scroller à la position de la carte la plus proche
+                $carousel.animate({
+                    scrollLeft: closestCardIndex * cardWidth
+                }, 200);
+            });
+
+            // Empêche le drag des images dans ce carousel
+            $carousel.find('img').on('dragstart', function (e) {
+                e.preventDefault();
+            });
+        });
+    });
+
+</script>

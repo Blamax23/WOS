@@ -58,7 +58,7 @@ namespace WOS.Back.Services
         {
             try
             {
-                Client client = _context.Clients.FirstOrDefault(c => c.Email == email && c.MotDePasse == password);
+                Client client = _context.Clients.FirstOrDefault(c => c.Email.ToLower() == email.ToLower() && c.MotDePasse == password);
                 return client;
             }
             catch(Exception e)

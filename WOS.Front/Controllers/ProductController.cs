@@ -142,23 +142,20 @@ namespace WOS.Front.Controllers
 
         [HttpPost]
         [Route("UpdateStockProduct")]
-        public ActionResult UpdateStockProduct(string id, string StockData)
+        public ActionResult UpdateStockProduct(string id, string stockData)
         {
             Int32.TryParse(id, out int idProduit);
 
             Produit produit = _produitSrv.GetProduitById(idProduit);
 
-            var stockItems = JsonSerializer.Deserialize<List<StockItem>>(StockData);
+            var item = JsonSerializer.Deserialize<StockItem>(stockData);
 
-            foreach (var item in stockItems)
+            ProduitTaille produitTaille = produit.ProduitTailles.FirstOrDefault(pt => pt.Taille == item.Size);
+            if (produitTaille != null)
             {
-                ProduitTaille produitTaille = produit.ProduitTailles.FirstOrDefault(pt => pt.Taille == item.Size);
-                if (produitTaille != null)
-                {
-                    produitTaille.Stock = int.Parse(item.Quantity);
-                    produitTaille.Prix = decimal.Parse(item.Price);
-                    produitTaille.PrixPromo = decimal.Parse(item.PriceProm);
-                }
+                produitTaille.Stock = int.Parse(item.Quantity);
+                produitTaille.Prix = decimal.Parse(item.Price);
+                produitTaille.PrixPromo = decimal.Parse(item.PriceProm);
             }
 
             _produitSrv.UpdateProduit(produit);
