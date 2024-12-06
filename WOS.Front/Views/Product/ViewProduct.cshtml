@@ -1,0 +1,66 @@
+﻿@using WOS.Model;
+
+@model Produit
+
+@{
+    ViewData["Title"] = "Ajouter un produit";
+}
+
+<link rel="stylesheet" href="~/css/product/add.css" asp-append-version="true" />
+
+<div class="content">
+    <div class="product">
+        <div class="images-product">
+            <div class="main-Image">
+                <img src="@Url.Content(Model.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@Model.Nom" />
+            </div>
+            <div class="other-images">
+                @foreach (var image in Model.ProduitImages)
+                {
+                    <img src="@Url.Content(image.Url)" alt="@Model.Nom" />
+                }
+            </div>
+        </div>
+        <div class="detail-product">
+            <div class="title-product">
+                <h1>@Model.Nom</h1>
+            </div>
+            <div class="description-product">
+                <p>@Model.Description</p>
+            </div>
+            <div class="grid-taille">
+                @foreach (var stock in Model.ProduitTailles.Where(t => t.Stock > 0))
+                {
+                    <div class="taille">
+                        <p>@stock.Taille EUR</p>
+                        @if (stock.PrixPromo != null)
+                        {
+                            <p class="price">@stock.PrixPromo.Value.ToString("C")</p>
+                            <p class="old-price">@stock.Prix.ToString("C")</p>
+                        }
+                        else
+                        {
+                            <p class="price">@stock.Prix.ToString("C")</p>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="add-to-cart">
+                <button class="btn confirm-btn">Ajouter au panier</button>
+            </div>
+            <div class="infos-product">
+                <p class="marqueInfo">Marque: @Model.Marque.Nom</p>
+                <p class="categorieInfo">Catégorie: @Model.Categorie.Nom</p>
+                <!-- On concatène toutes les couleurs de la chaussures avec "/" comme séparation -->
+                <p class="couleurInfo">Couleur: @string.Join("/", Model.ProduitCouleurs.Select(c => c.Couleur))</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+    </script>
+}
+

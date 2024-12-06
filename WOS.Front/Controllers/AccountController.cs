@@ -109,14 +109,12 @@ namespace WOS.Front.Controllers
                 // On effectue le contrôle avec les focntions statiques sur chaque champ s'il n'est pas null
                 if (admin == null)
                 {
-                    ViewBag.ErrorMessage = "Nous n'avons trouvé aucun compte vous correspondant."; 
-                    return RedirectToAction("Index");
+                    return Json(new { errorMessage = "Nous n'avons trouvé aucun compte vous correspondant." });
                 }
                 if (!IsEmailValid(email))
                 {
                     var result = WhichPartIsMissingEmail(email);
-                    ViewBag.ErrorMessage = result;
-                    return RedirectToAction("Index");
+                    return Json(new { errorMessage = result }); ;
                 }
                 else
                 {
@@ -126,8 +124,7 @@ namespace WOS.Front.Controllers
 
                 if (!IsFirstNameValid(prenom))
                 {
-                    ViewBag.ErrorMessage = "Le prénom est obligatoire";
-                    return RedirectToAction("Index");
+                    return Json(new { errorMessage = "Le prénom est obligatoire" });
                 }
                 else
                 {
@@ -137,8 +134,7 @@ namespace WOS.Front.Controllers
 
                 if (!IsNameValid(nom))
                 {
-                    ViewBag.ErrorMessage = "Le nom est obligatoire";
-                    return RedirectToAction("Index");
+                    return Json(new { errorMessage = "Le nom est obligatoire" });
                 }
                 else
                 {
@@ -150,8 +146,7 @@ namespace WOS.Front.Controllers
                 {
                     if (HashPassword(password) != admin.MotDePasse)
                     {
-                        ViewBag.ErrorMessage = "Le mot de passe actuel est incorrect";
-                        return RedirectToAction("Index");
+                        return Json(new { errorMessage = "Le mot de passe actuel est incorrect" });
                     }
                     else
                     {
@@ -159,8 +154,7 @@ namespace WOS.Front.Controllers
                         {
                             if (!IsPasswordValid(newPassword))
                             {
-                                ViewBag.ErrorMessage = "Le nouveau mot de passe doit contenir au moins 8 caractères";
-                                return RedirectToAction("Index");
+                                return Json(new { errorMessage = "Le nouveau mot de passe doit contenir au moins 8 caractères" });
                             }
                             else
                             {
@@ -188,7 +182,7 @@ namespace WOS.Front.Controllers
                 }
                 _clientSrv.UpdateClient(client);
             }
-            return RedirectToAction("Index");
+            return Json(new { errorMessage = ""});
         }
 
         #endregion
@@ -551,7 +545,7 @@ namespace WOS.Front.Controllers
                 {
                     builder.Append(bytes[i].ToString("x2"));
                 }
-                return builder.ToString();
+                return builder.ToString().ToUpper() ;
             }
         }
 

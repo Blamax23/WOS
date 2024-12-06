@@ -49,12 +49,12 @@
 
             <div class="info-sections">
                 <div class="info-account active">
-                    <form method="post" asp-controller="Account" asp-action="UpdateProfile" class="formUpdateInfo">
+                    <div class="formUpdateInfo">
                         <div class="head-profile">
                             <h2>Profil</h2>
                             <div class="whenForm hidden">
                                 <button type="button" class="cancel-btn">Annuler</button>
-                                <button type="submit" class="user-actions confirm-btn">Modifier</button>
+                                <button type="submit" class="user-actions confirm-btn confirm-update-profile">Modifier</button>
                             </div>
                             <div class="whenInfos">
                                 <button type="button" class="user-actions">Modifier</button>
@@ -62,36 +62,33 @@
                         </div>
                         <div class="user-zone">
                             <div class="name-zone">
-                                <p><strong>Nom :</strong> @admin.Nom</p>
-                                <p><strong>Prénom :</strong>  @admin.Prenom</p>
+                                <p><strong>Nom :</strong> <p id="displayNom">@admin.Nom</p></p>
+                                <p><strong>Prénom :</strong>  <p id="displayPrenom">@admin.Prenom</p></p>
                             </div>
                             <div class="email-zone">
-                                <p><strong>Email :</strong>  @admin.Email</p>
+                                <p><strong>Email :</strong>  <p id="displayEmail">@admin.Email</p></p>
                             </div>
                         </div>
                         <div class="form-zone hidden">
                             <div class="consignes">
-                                @if (ViewBag.ErrorMessage != null)
-                                {
-                                    <p>@ViewBag.ErrorMessage</p>
-                                }
+                                <p class="errorUpdateProfil"></p>
                                 <p>Vous pouvez modifier vos informations personnelles ici. <br />Si vous souhaitez changer vos informations publiques, renseignez seulement le mot de passe actuel.<br /> Si vous souhaitez changer de mot de passe, renseignez le mot de passe actuel ainsi que le nouveau.</p>
                             </div>
                             <div class="inputs">
                                 <div class="zone-input name-zone">
                                     <div class="input name-input">
                                         <label for="nom">Nom : </label>
-                                        <input type="text" name="nom" id="nom" value="@admin.Nom" />
+                                        <input type="text" name="nom" id="nom" />
                                     </div>
                                     <div class="input firstname-input">
                                         <label for="prenom">Prénom : </label>
-                                        <input type="text" name="prenom" id="prenom" value="@admin.Prenom" />
+                                        <input type="text" name="prenom" id="prenom" />
                                     </div>
                                 </div>
                                 <div class="zone-input email-zone">
                                     <div class="input email-input">
                                         <label for="email">Email : </label>
-                                        <input type="text" name="email" id="email" value="@admin.Email" />
+                                        <input type="text" name="email" id="email" />
                                     </div>
                                 </div>
                                 <div class="zone-input password-zone">
@@ -106,7 +103,7 @@
                                 </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
                 <div class="info-commandes">
                     <div class="head-commandes">
@@ -271,7 +268,7 @@
                         {
                             foreach (Produit produit in Model.Produits)
                             {
-                                <div class="produit">
+                                <div class="produit" data-id-produit="@produit.Id">
                                     <div class="entete-produit">
                                         <div class="left-zone-product-show">
                                             <img src="@Url.Content(@produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url)" class="imagePresProduit" />
@@ -627,6 +624,11 @@
         const btnForm = $(".whenForm");
         const btnInfo = $(".whenInfos");
 
+        // On récupère les valeurs dans les <p> display puis on met la valeur dans chaque input
+        $('#nom').val($('#displayNom').text());
+        $('#prenom').val($('#displayPrenom').text());
+        $('#email').val($('#displayEmail').text());
+
         if (formZone.hasClass('hidden')) {
             formZone.removeClass('hidden');
             userZone.addClass('hidden');
@@ -737,6 +739,52 @@
     // On récupère le bouton modifier
     const btnUpdate = $('.user-actions');
     const btnCancel = $('.cancel-btn');
+    const btnConfirmUpdateProfie = $('.confirm-update-profile');
+
+    // On récupère les 5 inputs du profil
+    const inputs = $('.form-zone input');
+
+    // On crée l'url de requête ajax
+    const url = '@Url.Action("UpdateProfile", "Account")';
+
+    // On lance la requête
+    btnConfirmUpdateProfie.on('click', () => {
+        // On regarde si le mot de passe actuel est renseigné, si non, on l'affiche dans l'erreur
+        if ($('#password').val() === '') {
+            $('.errorUpdateProfil').text('Veuillez renseigner votre mot de passe actuel.');
+            return;
+        }
+
+        const data = {
+            nom: $('#nom').val(),
+            prenom: $('#prenom').val(),
+            email: $('#email').val(),
+            password: $('#password').val(),
+            newPassword: $('#newPassword').val()
+        };
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            success: function (response) {
+                if (response.errorMessage != "") {
+                    // On affiche l'erreur dans le p errorUpdateProfil
+                    $('.errorUpdateProfil').text(response.errorMessage);
+                } else {
+                    $('#displayNom').text(data.nom);
+                    $('#displayPrenom').text(data.prenom);
+                    $('#displayEmail').text(data.email);
+
+                    // On ferme le formulaire
+                    CloseFormUpdateProfile();
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    });
 
     // On ajoute un gestionnaire de click sur btnUpdate
     btnUpdate.on('click', () => {
@@ -1313,10 +1361,41 @@
 
     // On attache l'événement "Update" à un parent statique
     $(document).ready(function () {
+        // On ajoute un petit bouton supprimer en haut à droite de chaque produit
+        let products = $('.produit');
+        products.each((index, product) => {
+            let deleteButton = $('<button class="btn cancel-btn delete-product">Supprimer</button>');
+            $(product).append(deleteButton);
+        });
+
+        // On ajoute un gestionnaire d'événement pour chaque bouton supprimer
+        let deleteButtons = $('.delete-product');
+        deleteButtons.each((index, button) => {
+            $(button).on('click', () => {
+                let product = $(button).parent();
+                let productId = product.data('id-produit');
+                console.log('Suppression du produit', productId);
+
+                // Envoi de la requête AJAX pour supprimer le produit
+                $.ajax({
+                    url: `/Product/DeleteProduct?id=${productId}`,
+                    type: 'POST',
+                    success: function (response) {
+                        console.log('Produit supprimé:', response);
+                        product.remove(); // Supprime le produit du DOM
+                    },
+                    error: function (error) {
+                        console.error('Erreur lors de la suppression:', error);
+                    }
+                });
+
+            });
+        });
+
         // Événement délégué pour le bouton "Modifier"
         let stockTable = $('#stockTable');
         console.log(stockTable);
-        $('#stockTableShow').on('click', '.updatePriceRow', function () {
+        $('#stockTableShow tbody').on('click', '.updatePriceRow', function () {
             console.log('Bouton Modifier cliqué');
 
             let btn = $(this); // Le bouton (td)
@@ -1348,7 +1427,7 @@
         });
 
         // Événement délégué pour le bouton "Confirmer"
-        $('#stockTableShow').on('click', '.confirmUpdatePriceRow', function () {
+        $('#stockTableShow tbody').on('click', '.confirmUpdatePriceRow', function () {
             console.log('Bouton Confirmer cliqué');
 
             let btn = $(this); // Le bouton (td)
@@ -1410,7 +1489,7 @@
         });
 
         // Événement délégué pour le bouton "Annuler"
-        $('#stockTableShow').on('click', '.cancelUpdatePriceRow', function () {
+        $('#stockTableShow tbody').on('click', '.cancelUpdatePriceRow', function () {
             console.log('Bouton Annuler cliqué');
 
             let btn = $(this); // Le bouton (td)

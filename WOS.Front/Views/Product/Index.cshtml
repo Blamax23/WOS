@@ -1,32 +1,129 @@
 ﻿@using WOS.Model;
 
+@model ProductViewModel;
+
 @{
     ViewData["Title"] = "Contactez-nous !";
 }
 
-<link rel="stylesheet" href="~/css/contact/contact.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/product/index.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/product/itemSneaker.css" asp-append-version="true" />
 
 <div class="content">
-    <h2>Contactez-nous</h2>
-    <div class="page-contact shadow-lg">
-        <form action="@Url.Action("SendMessage", "Contact")" method="post" class="form form-contact">
-            <div class="send-zone">
-                <div class="infoEmail emailDiv">
-                    <label for="Email">E-mail</label>
-                    <input type="email" name="Email" id="contactEmail" class="inputEmail" required />
-                </div>
-                <div class="infoEmail objetDiv">
-                    <label for="Objet">Objet</label>
-                    <input type="text" name="Objet" id="contactObjet" class="inputObjet" required />
-                </div>
+    <div class="head-products">
+        <h1>Sneakers</h1>
+    </div>
+    <div class="viewProducts">
+        <div class="side-nav" id="sideNav">
+            <div class="filters-products">
+                <ul>
+                    <li>
+                        <h2>Filtres</h2>
+                    </li>
+                    <li class="zonePrice">
+                        <div class="entete entetePrice">
+                            <p>Prix</p>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                        <div class="listFilters priceInputs hidden">
+                            <input type="number" id="minPrice" placeholder="Min" />
+                            <input type="number" id="maxPrice" placeholder="Max" />
+                        </div>
+                    </li>
+                    <li class="zoneMarque">
+                        <div class=" entete enteteMarque">
+                            <p>Marque</p>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                        <div class="listFilters listMarques hidden">
+                            @if (Model.Marques.Count() > 0)
+                            {
+                                @foreach (var marque in Model.Marques)
+                                {
+                                    <div class="marque">
+                                        <input type="checkbox" class="hidden-checkbox" id="marque-@marque.Id" />
+                                        <label for="marque-@marque.Id" class="custom-checkbox" data-id-marque="@marque.Id">
+                                            <span class="checkbox-tick"></span>
+                                        </label>
+                                        <label for="marque-@marque.Id">@marque.Nom</label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </li>
+                    <li class="zoneCategorie">
+                        <div class="entete enteteCategorie">
+                            <p>Catégorie</p>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                        <div class="listFilters listCategories hidden">
+                            @if (Model.Categories.Count() > 0)
+                            {
+                                @foreach (var categorie in Model.Categories)
+                                {
+                                    <div class="categorie">
+                                        <input type="checkbox" class="hidden-checkbox" id="categorie-@categorie.Id" data-categorie-id="@categorie.IdMarque" />
+                                        <label for="categorie-@categorie.Id" class="custom-checkbox" data-id-categorie="@categorie.Id">
+                                            <span class="checkbox-tick"></span>
+                                        </label>
+                                        <label for="categorie-@categorie.Id">@categorie.Nom</label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </li>
+                    <li class="zoneColour">
+                        <div class="entete enteteColour">
+                            <p>Couleur</p>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                        <div class="listFilters listColours hidden">
+                            @foreach (ProduitCouleurEnum couleur in Enum.GetValues(typeof(ProduitCouleurEnum)))
+                            {
+                                <div class="color-zone">
+                                    <div class="img-color" data-id-color="@couleur.GetName()" style="background-color: @couleur.GetHexCode();"></div>
+                                </div>
+                            }
+                        </div>
+                    </li>
+                </ul>
             </div>
-            <div class="content-zone">
-                <textarea name="Contenu" class="form-control inputContenu" id="contactContent" required></textarea>
+        </div>
+
+        <div class="tabProducts">
+            <div class="products">
+                @foreach (var produit in Model.Produits)
+                {
+                    ProduitTaille productWithPromo = new ProduitTaille();
+                    if (produit.ProduitTailles.Where(t => t.PrixPromo != null).Count() > 0)
+                    {
+                        productWithPromo = produit.ProduitTailles.Where(t => t.PrixPromo != null).OrderBy(t => t.PrixPromo).First();
+                    }
+                    else
+                    {
+                        productWithPromo = produit.ProduitTailles.OrderBy(t => t.Prix).First();
+                    }
+                    <a href="@Url.Action("ViewProduct", "Product", new { id = produit.Id })" class="product">
+                        <div class="product-img">
+                            <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
+                        </div>
+                        <div class="product-info">
+                            <p class="product-name">@produit.Categorie.Nom @produit.Nom</p>
+                            <div class="prices">
+                                @if (productWithPromo.PrixPromo != null)
+                                {
+                                    <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
+                                }
+                                else
+                                {
+                                    <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                }
             </div>
-            <div class="btn-send">
-                <button type="submit" class="btn">Envoyer</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -34,3 +131,193 @@
     <script type="text/javascript">
     </script>
 }
+
+<script>
+    // On cache zoneCategorie, si une marque est cliquée, on affiche zoneCatégorie ainsi que les catégories qui lui correspondent. Si aucune marque n'est cliquée, on recache zoneCatégorie
+    $(".zoneCategorie").hide();
+
+    $(".marque input").click(function () {
+        // Vérifie s'il y a au moins une marque sélectionnée
+        if ($(".marque input:checked").length > 0) {
+            $(".zoneCategorie").show(); // Affiche la zone catégorie
+
+            // Récupère tous les IDs des marques sélectionnées
+            let selectedMarqueIds = $(".marque input:checked").map(function () {
+                return $(this).attr("id"); // Retourne les IDs des marques cochées
+            }).get(); // Retourne un tableau
+
+            // Parcourt toutes les catégories
+            $(".categorie").each(function () {
+                // Récupère l'ID de la marque associée à cette catégorie
+                let categorieMarqueId = $(this).find("input").data("marque-id").toString();
+
+                // Affiche ou cache la catégorie selon qu'elle correspond à une des marques sélectionnées
+                if (selectedMarqueIds.includes(categorieMarqueId)) {
+                    $(this).show(); // Affiche la catégorie correspondante
+                } else {
+                    $(this).hide(); // Cache les catégories non correspondantes
+                }
+            });
+        } else {
+            // Si aucune marque n'est sélectionnée, cache tout
+            $(".zoneCategorie").hide();
+            $(".categorie").hide();
+
+            // Décoche toutes les catégories
+            $(".categorie input").prop("checked", false);
+        }
+    });
+
+    // On ajoute un gestionnaire d'événement sur chaque couleur, on lui ajoute la classe sleected-color
+    $(".color-zone").click(function () {
+        // // On ajoute ou enlève la classe s'il l'a
+        // if ($(this).hasClass("selected-color")) {
+        //     $(this).removeClass("selected-color");
+        // } else {
+        //     $(this).addClass("selected-color");
+        // }
+        // console.log("add class");
+
+        $(this).toggleClass("selected-color");
+
+        // Log pour vérifier si la classe a bien été ajoutée
+        console.log("Color selected:", $(this).hasClass("selected-color"));
+
+        let selectedColors = $(".color-zone.selected-color").map(function () {
+            console.log("Color data-id-color:", $(this).find(".img-color").data("id-color"));  // Log pour vérifier les données de chaque couleur
+            return $(this).find(".img-color").data("id-color");
+        }).get();
+
+        console.log("Selected Colors:", selectedColors);
+    });
+
+    // On met un gestionnaire d'événement pour le changement de prix des inputs
+    $("#minPrice, #maxPrice").change(function () {
+        // On récupère les valeurs de tous les inputs, les couleurs, etc
+        let minPrice = $("#minPrice").val() ? parseFloat($("#minPrice").val()) : null; 
+        let maxPrice = $("#maxPrice").val() ? parseFloat($("#maxPrice").val()) : null;
+
+        // On récupère les couleurs sélectionnées
+        let selectedColors = $(".color-zone.selected-color").map(function () {
+            return $(this).find(".img-color").data("id-color");
+        }).get();
+
+        // On récupère les marques sélectionnées
+        let selectedMarqueIds = $(".marque input:checked").map(function () {
+            return $(this).attr("id");
+        }).get();
+
+        // On récupère les catégories sélectionnées
+        let selectedCategorieIds = $(".categorie input:checked").map(function () {
+            return $(this).attr("id");
+        }).get();
+
+
+        // On envoie les données au serveur
+        $.ajax({
+            url: "/Product/GetProductFiltered",
+            type: "POST",
+            data: {
+                marque: selectedMarqueIds,
+                categorie: selectedCategorieIds,
+                couleur: selectedColors,
+                prixMin: minPrice,
+                prixMax: maxPrice
+            },
+            success: function (data) {
+                $(".products").html(data);
+            },
+            error: function (xhr, status, error) {
+                console.error("Erreur:", error);
+            }
+        });
+    });
+
+    // On affiche les chaussures en fonction de ce qui est cliqué dans les couleurs, les marques ou les catégories
+    $(".color-zone, .marque input, .categorie input").click(function () {
+        console.log("here");
+        // On récupère les couleurs sélectionnées
+        // Récupérer les valeurs des prix
+        let minPrice = $("#minPrice").val() ? parseFloat($("#minPrice").val()) : null; // Convertit en float ou null si vide
+        let maxPrice = $("#maxPrice").val() ? parseFloat($("#maxPrice").val()) : null;
+
+        // Récupérer les ID des marques sélectionnées
+        let selectedMarqueIds = $(".marque input:checked").map(function () {
+            return $(this).attr("id"); // Récupère l'attribut ID des inputs cochés
+        }).get(); // Retourne un tableau de chaînes
+
+        // Récupérer les ID des catégories sélectionnées
+        let selectedCategorieIds = $(".categorie input:checked").map(function () {
+            return $(this).attr("id"); // Récupère l'attribut ID des inputs cochés
+        }).get(); // Retourne un tableau de chaînes
+
+        // Récupérer les data-id-color des couleurs sélectionnées
+        let selectedColors = $(".color-zone.selected-color").map(function () {
+            return $(this).find(".img-color").data("id-color"); // Récupère l'attribut data-id-color
+        }).get(); // Retourne un tableau de chaînes
+
+        // Afficher les résultats dans la console
+        console.log("Min Price:", minPrice);
+        console.log("Max Price:", maxPrice);
+        console.log("Selected Marque IDs:", selectedMarqueIds);
+        console.log("Selected Categorie IDs:", selectedCategorieIds);
+        console.log("Selected Colors:", selectedColors);
+
+        // On envoie les données au serveur
+        $.ajax({
+            url: "/Product/GetProductFiltered",
+            type: "POST",
+            data: {
+                marque: selectedMarqueIds,
+                categorie: selectedCategorieIds,
+                couleur: selectedColors,
+                prixMin: minPrice,
+                prixMax: maxPrice
+            },
+            success: function (data) {
+                $(".products").html(data);
+            },
+            error: function (xhr, status, error) {
+                console.error("Erreur:", error);
+            }
+        });
+    });
+
+</script>
+
+<script>
+    $(".entetePrice").click(function () {
+        $(".priceInputs").toggleClass("hidden");
+        // On change l'icone pour mettre down
+        $(".entetePrice i").toggleClass("bi-chevron-down");
+        // On enlève le right
+        $(".entetePrice i").toggleClass("bi-chevron-right");
+    });
+
+    $(".enteteMarque").click(function () {
+        $(".listMarques").toggleClass("hidden");
+        // On change l'icone pour mettre down
+        $(".enteteMarque i").toggleClass("bi-chevron-down");
+        // On enlève le right
+        $(".enteteMarque i").toggleClass("bi-chevron-right");
+    });
+
+    $(".enteteCategorie").click(function () {
+        $(".listCategories").toggleClass("hidden");
+        // On change l'icone pour mettre down
+        $(".enteteCategorie i").toggleClass("bi-chevron-down");
+        // On enlève le right
+        $(".enteteCategorie i").toggleClass("bi-chevron-right");
+    });
+
+    $(".enteteColour").click(function () {
+        $(".listColours").toggleClass("hidden");
+        // On change l'icone pour mettre down
+        $(".enteteColour i").toggleClass("bi-chevron-down");
+        // On enlève le right
+        $(".enteteColour i").toggleClass("bi-chevron-right");
+    });
+</script>
+
+<script>
+</script>

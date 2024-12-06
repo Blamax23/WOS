@@ -144,5 +144,18 @@ namespace WOS.Back.Services
 
             _context.SaveChanges();
         }
+
+        public void DeleteProduit(int id)
+        {
+            Produit produit = _context.Produits.FirstOrDefault(p => p.Id == id);
+
+            _context.ProduitImages.RemoveRange(_context.ProduitImages.Where(pi => pi.ProduitId == produit.Id));
+            _context.ProduitTailles.RemoveRange(_context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id));
+            _context.ProduitCouleurs.RemoveRange(_context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id));
+            _context.Avis.RemoveRange(_context.Avis.Where(a => a.ProduitId == produit.Id));
+
+            _context.Produits.Remove(produit);
+            _context.SaveChanges();
+        }
     }
 }

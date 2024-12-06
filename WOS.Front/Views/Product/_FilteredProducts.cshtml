@@ -1,0 +1,31 @@
+﻿@using WOS.Model;
+
+@model IEnumerable<Produit>
+
+@foreach (var produit in Model)
+{
+    ProduitTaille productWithPromo = produit.ProduitTailles
+        .Where(t => t.PrixPromo != null)
+        .OrderBy(t => t.PrixPromo)
+        .FirstOrDefault() ?? produit.ProduitTailles.OrderBy(t => t.Prix).First();
+
+    <a href="@Url.Action("ViewProduct", "Product", new { id = produit.Id })" class="product">
+        <div class="product-img">
+            <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
+        </div>
+        <div class="product-info">
+            <p class="product-name">@produit.Categorie.Nom @produit.Nom</p>
+            <div class="prices">
+                @if (productWithPromo.PrixPromo != null)
+                {
+                    <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
+                }
+                else
+                {
+                    <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
+                }
+            </div>
+        </div>
+    </a>
+
+}

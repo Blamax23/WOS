@@ -1,0 +1,192 @@
+.head-products h1{
+        text-align: center;
+    padding: .5em 0;
+    margin: 0;
+    font-size: 3em;
+    border-bottom: 1px solid #000;
+}
+
+.viewProducts {
+    display: flex;
+    position: relative;
+    min-height: 80vh;
+}
+
+.side-nav {
+    position: relative;
+    top: 0;
+    height: auto;
+    width: 20vw;
+    min-width: 20vw;
+    max-width: 20vw;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+
+
+}
+
+.tabProducts {
+    flex-grow: 1;
+}
+
+.products{
+        display: flex;
+    flex-wrap: wrap;
+    justify-content: left;
+    width: 90%;
+    margin: auto;
+}
+
+.filters-products {
+    border-right: 1px solid #000;
+    height: 100%;
+    width: 20vw;
+}
+
+.filters-products ul{
+    list-style: none;
+    padding: 0;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+    .filters-products ul li h2{
+        margin: 2vh 1vw;
+    }
+
+.entete {
+    display: flex;
+    justify-content: space-between;
+    margin: 1vh 0;
+    /* Ombre en dessous */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 0 1vw;
+}
+
+.entete p{
+    font-weight: 600;
+}
+
+.entete i {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.listFilters{
+    width: 81%;
+    margin: auto;
+}
+
+p {
+    margin: 1vh 0;
+}
+
+.priceInputs{
+    display: flex;
+    justify-content: space-between;
+    width: 70%;
+}
+
+    .priceInputs input {
+        width: 5vw;
+        padding: 0.5em;
+    }
+
+.listMarques, .listCategories{
+    display: flex;
+    flex-direction: column;
+}
+
+.listColours{
+        display: flex;
+    flex-wrap: wrap;
+    gap: .5vw;
+}
+
+.color-zone{
+    width: max-content;
+    display: flex;
+    justify-content: center;
+    padding: .5em;
+    border-radius: 5px;
+}
+
+.img-color{
+    width: 2.5vw;
+    height: 2.5vw;
+    border-radius: 50%;
+    border: 1px solid #000;
+    cursor: pointer;
+}
+
+.selected-color{
+    /* Border bleu */
+    background: #2d96b6;
+}
+
+.hidden{
+        display: none;
+
+}
+
+.hidden-checkbox {
+    display: none;
+}
+
+/* Wrapper pour aligner facilement */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Style du checkbox personnalisé */
+.custom-checkbox {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-color: #f0f0f0;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+    /* Style au hover */
+    .custom-checkbox:hover {
+        border-color: #666;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Cocher */
+    .custom-checkbox .checkbox-tick {
+        display: none;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 16px;
+        height: 16px;
+        background-color: #4caf50;
+        border-radius: 4px;
+        transform: scale(0);
+        transition: transform 0.3s ease;
+    }
+
+/* Appliquer l'effet de "check" */
+.hidden-checkbox:checked + .custom-checkbox .checkbox-tick {
+    display: block;
+    transform: scale(1);
+}
+
+.marque, .categorie{
+    display: flex;
+    align-items: center;
+}
+
+    .marque label, .categorie label {
+        margin: .25em;
+    }

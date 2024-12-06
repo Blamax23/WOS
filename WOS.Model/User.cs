@@ -35,4 +35,13 @@ namespace WOS.Model
         public List<Produit> Produits { get; set; }
 
     }
+
+    public class ProductViewModel
+    {
+        public List<Produit> Produits { get; set; }
+
+        public List<Marque> Marques { get; set; }
+
+        public List<Categorie> Categories { get; set; }
+    }
 }
