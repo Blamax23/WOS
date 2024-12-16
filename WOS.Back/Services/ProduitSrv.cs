@@ -97,6 +97,11 @@ namespace WOS.Back.Services
             produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
             produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
 
+            foreach(var avis in produit.Avis)
+            {
+                avis.Client = _context.Clients.FirstOrDefault(c => c.Id == avis.ClientId);
+            }
+
             return produit;
         }
 

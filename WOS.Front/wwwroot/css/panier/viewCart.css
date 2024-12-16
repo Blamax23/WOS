@@ -1,0 +1,210 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    min-height: 80vh;
+}
+
+.head-panier {
+    padding: 5vh 5vw;
+    width: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+    .step p {
+        margin: 0;
+    }
+
+    .step.active .circle{
+        background: black;
+        color: white;
+    }
+
+.circle {
+    width: 50px;
+    height: 50px;
+    color: black;
+    border: 2px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.line {
+    flex: 1; /* S'étend pour combler l'espace entre les cercles */
+    height: .5vh;
+    background: repeating-linear-gradient( to right, #bdc3c7 0, #bdc3c7 5px, transparent 5px, transparent 10px );
+}
+
+    .line.active {
+        background: repeating-linear-gradient( to right, black 0, black 5px, transparent 5px, transparent 10px );
+        color: white;
+    }
+
+.circle.active {
+    background: black;
+    color: white;
+}
+
+
+.viewPanier{
+    border: 3px solid black;
+    width: 50%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 5vh 5vw;
+    border-radius: 15px;
+}
+
+.viewPanier h1{
+    margin: 0;
+}
+
+.itemPanier{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 2vh 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.item-image{
+    width: 30%;
+    height: auto;
+    display: flex;
+    overflow: hidden;
+}
+
+.item-image img{
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.item-infos{
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+}
+
+.item-title{
+    display: flex;
+    flex-direction: row;
+    font-size: .8em;
+    justify-content: space-between;
+}
+
+.item-title .price{
+    font-size: 1em;
+    align-content: center;
+}
+
+.item-details{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 50%;
+    margin: 1vh 0;
+}
+
+.item-details h3{
+    font-size: .9em;
+}
+
+.item-details *{
+    margin: 0;
+}
+
+.panier .total{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 2vh 0;
+    border-top: 1px solid #ddd;
+}
+
+.total h2{
+    font-size: 1em;
+}
+
+.btn-actions{
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+    gap: .5em;
+}
+
+.infos-delivery-zone{
+        display: flex;
+    flex-direction: column;
+    gap: 1em;
+    border: 3px solid black;
+    padding: 1em;
+    border-radius: 15px;
+    width: 50%;
+    margin: auto;
+}
+
+.input-div{
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
+}
+
+.input-div input{
+    padding: .5em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.input-div select{
+    padding: .5em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 50%;
+}
+
+.input-div select option{
+    padding: .5em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.input-div select option:hover{
+    background-color: #ddd;
+}
+
+.country option{
+    padding: .5em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+
+}
+
+.input-div label{
+    font-size: .8em;
+}
+
+
+
+.address-zone {
+    /* On ajoute un grid de 2*2 */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em;
+
+}

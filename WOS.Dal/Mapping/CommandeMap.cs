@@ -30,6 +30,18 @@ namespace WOS.Dal.Mapping
                 .HasDefaultValue(DateTime.Now)
                 .HasColumnName("date_commande");
 
+            builder.Property(c => c.NumeroCommandeLivreur)
+                .IsRequired(false)
+                .HasColumnName("numero_commande_livreur");
+
+            builder.Property(c => c.LinkSuivi)
+                .IsRequired(false)
+                .HasColumnName("link_suivi");
+
+            builder.Property(c => c.NumeroCommande)
+                .IsRequired(true)
+                .HasColumnName("numero_commande");
+
             builder.HasOne(c => c.Client)
                 .WithMany(cl => cl.Commandes)
                 .HasForeignKey(c => c.ClientId);

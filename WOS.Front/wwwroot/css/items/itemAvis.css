@@ -1,0 +1,65 @@
+.avis {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    cursor: pointer;
+}
+
+    .avis .head-avis {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        border-bottom: 1px solid #ddd;
+    }
+
+.name-zone {
+    display: flex;
+    flex-direction: row;
+    gap: .5em;
+}
+
+    .name-zone i {
+        display: flex;
+        align-items: center;
+        font-size: 1.5em;
+    }
+
+.head-avis p {
+    width: max-content;
+}
+
+.content-avis {
+    display: flex;
+    flex-direction: column;
+    padding: 1em 0;
+}
+
+.content-avis p{
+    margin: 0;
+    height: 5em;
+    max-height: 5em;
+    overflow: hidden;
+}
+
+.stars {
+    display: flex;
+    flex-direction: row;
+    gap: .25em;
+}
+
+    .stars i {
+        color: #f1c40f;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+
+.date-avis{
+    position: absolute;
+    right: .5em;
+    bottom: 0;
+    margin: 0;
+    font-size: .7em;
+    color: #999;
+}

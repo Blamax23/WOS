@@ -6,9 +6,25 @@
     <title>@ViewData["Title"]</title>
     @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/panier/cart.css" asp-append-version="true" />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
 </head>
+
+@using WOS.Model;
+@{
+    var cartCookie = Context.Request.Cookies["Cart"];
+    var cartItemCount = 0;
+    List<CartItem> cartItems = new List<CartItem>();
+
+    if (!string.IsNullOrEmpty(cartCookie))
+    {
+        cartItems = System.Text.Json.JsonSerializer.Deserialize<List<CartItem>>(cartCookie);
+        cartItemCount = cartItems.Sum(item => item.Quantity);
+    }
+}
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -32,7 +48,7 @@
                             </ul>
                         </div>
                         <div class="logo">
-                            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/src/WosLogos/logoWosBlack.png" /></a>
+                            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/src/WosLogos/logoWosSneakers.png" /></a>
                         </div>
                     </div>
                     <div class="user-space">
@@ -47,7 +63,10 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="bi bi-heart"></i></a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="bi bi-bag"></i></a>
+                                <a id="cart-icon" class="nav-link text-dark">
+                                    <i class="bi bi-bag"></i>
+                                    <span id="cart-count" class="cart-count">@cartItemCount</span>
+                                </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Index"><i class="bi bi-person"></i></a>
@@ -62,6 +81,63 @@
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
+
+        <div id="cart-modal" class="cart-modal">
+            <div class="cart-modal-content">
+                <div class="cart-header">
+                    <h3>Votre panier</h3>
+                    <button id="close-cart" class="close-cart-btn">&times;</button>
+                </div>
+                <div class="cart-items">
+                    @if (cartItems.Count() > 0)
+                    {
+                        foreach (var item in cartItems)
+                        {
+                            <div class="cart-item" data-product-id="item-@item.ProductId" data-size="@item.Size">
+                                <img src="@Url.Content(@item.ImageUrl)" alt="@item.Name" class="cart-item-image" />
+                                <div class="cart-item-details">
+                                    <p class="cart-item-name">@item.Name</p>
+                                    <div class="item-infos">
+                                        <p class="cart-item-price">Taille: @item.Size</p>
+                                    </div>
+                                    <div class="cart-item-quantity">
+                                        <div class="quantity-zone">
+                                            <label for="quantity-@item.ProductId">Quantité :</label>
+                                            <select id=" quantity-@item.ProductId" data-size="@item.Size" data-product-id="@item.ProductId" class="quantity-input">
+                                                @for (int i = 0; i <= 15; i++)
+                                                {
+                                                    @if (i == 1)
+                                                    {
+                                                        <option value="@i" selected>@i</option>
+                                                    }
+                                                    else if (i == item.Quantity)
+                                                    {
+                                                        <option value="@i" selected>@i</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@i">@i</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <p class="cart-item-price">@item.Price.ToString("C")</p>
+                                    </div>
+                                </div>
+                                <i class="bi bi-trash remove-btn" data-product-id="@item.ProductId" data-size="@item.Size"></i>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="empty-cart">Votre panier est vide.</p>
+                    }
+                </div>
+                <div class="cart-footer">
+                    <button class="btn confirm-btn">Voir le panier</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <footer class="border-top footer text-muted">
@@ -88,22 +164,22 @@
         } else {
             if (inputSearch.val().trim() !== "") {
                 $(".formSearch").submit();
-            }else{
+            } else {
                 inputSearch.removeClass("visible");
                 inputSearch.addClass("closing");
                 iconSearch.removeClass("bi-x-lg");
                 iconSearch.addClass("bi-search");
-            }            
+            }
         }
     });
 
-    function changeIcon(){
+    function changeIcon() {
         let inputSearch = $(".searchSneakers");
         let iconSearch = $(".iconSearch");
-        if(inputSearch.val() == ""){
+        if (inputSearch.val() == "") {
             iconSearch.removeClass("bi-search");
             iconSearch.addClass("bi-x-lg");
-        }else{
+        } else {
             iconSearch.removeClass("bi-x-lg");
             iconSearch.addClass("bi-search");
         }
@@ -111,4 +187,118 @@
 
     $(".searchSneakers").on("input", changeIcon);
     $(".searchSneakers").on("focusout", changeIcon);
+</script>
+
+<script>
+    $(document).ready(function () {
+        // Affiche le modal
+        $('#cart-icon').click(function () {
+            $('#cart-modal').css('right', '0');
+        });
+
+        // Ferme le modal
+        $('#close-cart').click(function () {
+            $('#cart-modal').css('right', '-100%');
+        });
+
+        $('.quantity-input').change(function () {
+            const productId = $(this).data('product-id');
+            // On récupère la taille du produit
+            const size = $(this).data('size');
+            const newQuantity = $(this).val();
+
+            console.log(newQuantity);
+
+            // Si la quantité est 0, supprimer l'article
+            if (newQuantity == 0) {
+                $.ajax({
+                    url: '/Panier/DeleteInCart',
+                    type: 'POST',
+                    data: { productId: productId, size: size },
+                    success: function () {
+                        $(`[data-product-id="item-${productId}"][data-size="${size}"]`).remove();
+
+                        // On compte le nombre de produits restant
+                        const cartItemCount = $('.cart-item').length;
+                        $('#cart-count').text(cartItemCount);
+                    },
+                    error: function () {
+                        alert("Impossible de supprimer l'article.");
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    url: '/Panier/UpdateQuantity',
+                    type: 'POST',
+                    data: { productId: productId, size: size, quantity: newQuantity },
+                    success: function () {
+
+                        // On compte le nombre de produits restant
+                        const cartItemCount = $('.cart-item').length;
+                        $('#cart-count').text(cartItemCount);
+                    },
+                    error: function () {
+                        alert("Impossible de supprimer l'article.");
+                    }
+                });
+            }
+        });
+
+        // Supprimer un article directement
+        $(document).on('click', '.remove-btn', function () {
+            const productId = $(this).data('product-id');
+            const size = $(this).data('size');
+
+            console.log($(this));
+            $.ajax({
+                url: '/Panier/DeleteInCart',
+                type: 'POST',
+                data: { productId: productId, size: size },
+                success: function () {
+                    $(`[data-product-id= "item-${productId}"][data-size="${size}"]`).remove();
+
+                    const cartItemCount = $('.cart-item').length;
+                    $('#cart-count').text(cartItemCount);
+                },
+                error: function () {
+                    alert("Impossible de supprimer l'article.");
+                }
+            });
+        });
+
+        // Valider le panier
+        $('.cart-footer .confirm-btn').click(function () {
+            const cartItems = $('.cart-item').map(function () {
+                let productId = $(this).data('product-id').replace('item-', '');
+                let size = $(this).data('size');
+                let quantity = $(this).find('.quantity-input').val();
+
+                productId = parseInt(productId);
+                quantity = parseInt(quantity);
+                size = size.toString();
+
+                return {
+                    productId: productId,
+                    size: size,
+                    quantity: quantity
+                };
+            }).get();
+
+            $.ajax({
+                url: '/Panier/ViewCart',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(cartItems),
+                success: function (response) {
+                    // Redirige vers une autre page ou affiche les données
+                    window.location.href = '/Panier/Display';
+                },
+                error: function (err) {
+                    console.error('Error:', err);
+                }
+            });
+        });
+    });
+
 </script>

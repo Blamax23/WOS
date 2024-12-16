@@ -1,0 +1,40 @@
+.taille-element {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: .5em;
+    border: 1px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.taille-element p {
+    margin: .5em 0 0 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+.taille-element .price{
+    font-size: .7em;
+}
+
+.taille-element .old-price {
+    display: inline-block; /* Pour limiter la rotation au texte */
+    text-decoration: line-through; /* Barre le texte */
+    text-decoration-thickness: 1.5px; /* Épaisseur de la ligne */
+    text-decoration-color: #c60000; /* Couleur de la ligne */
+    font-size: .7em;
+}
+
+    .taille-element .promo-price {
+        color: #c60000;
+        font-weight: 600;
+        font-size: .7em;
+    }
+
+.size-selected {
+    background-color: #bee0ea;
+    border: 1px solid #4fb2c5;
+}

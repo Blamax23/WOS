@@ -1,0 +1,108 @@
+﻿@using WOS.Model;
+
+@model List<CartItem>;
+
+@{
+    ViewData["Title"] = "Contactez-nous !";
+}
+
+<link rel="stylesheet" href="~/css/panier/viewCart.css" asp-append-version="true" />
+
+<div class="content">
+    
+</div>
+
+<script>
+    $(document).ready(function () {
+        var currentStep = localStorage.getItem('currentStep');
+        console.log(currentStep)
+        if (currentStep) {
+            console.log("je suis dans le if");
+            $.ajax({
+                url: "/Panier/NextStepPurchase",
+                type: "POST",
+                data: { actualStep: currentStep },
+                success: function (data) {
+                    $(".content").html(data);
+                }
+            });
+        }else{
+            $.ajax({
+                url: "/Panier/NextStepPurchase",
+                type: "POST",
+                data: { actualStep: 1 },
+                success: function (data) {
+                    $(".content").html(data);
+                }
+            });
+        }
+    });
+</script>
+
+<!-- On récupère le cookie CartSteps -->
+<script>
+    $(document).ready(function () {
+        var cartSteps = getCookie("CartStep");
+        if (cartSteps != null) {
+            var steps = cartSteps.split(",");
+            for (var i = 0; i < steps.length; i++) {
+                if (steps[i] == "2") {
+                    $("#step-2").addClass("active");
+                    $("#between-step-1-2").addClass("active");
+                }
+                else if (steps[i] == "3") {
+                    $("#step-2").addClass("active");
+                    $("#between-step-1-2").addClass("active");
+                    $("#step-3").addClass("active");
+                    $("#between-step-2-3").addClass("active");
+                }
+            }
+        }
+    });
+
+    function getCookie(name) {
+        var values = document.cookie.split(';');
+        for (var i = 0; i < values.length; i++) {
+            var cookie = values[i].split('=');
+            if (cookie[0].trim() == name) {
+                return cookie[1];
+            }
+        }
+    }
+
+    function deleteCookie(name) {
+        var values = document.cookie.split(';');
+        for (var i = 0; i < values.length; i++) {
+            var cookie = values[i].split('=');
+            if (cookie[0].trim() == name) {
+                // On supprime la values
+                document.cookie.split(';')[i] = "";
+            }
+        }
+    }
+
+    function setCookie(name) {
+        document.cookie = name;
+    }
+
+    
+
+    // Click sur le bouton step-2-to-3
+    $(".step-2-to-3").click(function () {
+        $.ajax({
+            url: "/Panier/NextStepPurchase",
+            type: "POST",
+            data: {
+                actualStep: 1
+            },
+            success: function (data) {
+                $(".content").html(data);
+            }
+        });
+    });
+
+    // Click sur le bouton step-to-never
+    $(".step-to-never").click(function () {
+        window.history.back();
+    });
+</script>

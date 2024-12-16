@@ -21,6 +21,7 @@
 }
 
 <link rel="stylesheet" href="~/css/account/index.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/items/itemColor.css" asp-append-version="true" />
 
 <div class="content">
     <div class="head-account">
@@ -225,7 +226,7 @@
                                             <tr>
                                                 <td>
                                                     <select class="input-size">
-                                                        @for (var i = 36; i <= 48; i++)
+                                                        @for (double i = 36; i <= 48; i+=0.5)
                                                         {
                                                             <option value="@i">@i</option>
                                                         })
@@ -284,6 +285,18 @@
                                                 <div class="categorie-zone">
                                                     <p><strong>Catégorie :</strong> @produit.Categorie.Nom</p>
                                                 </div>
+                                                <div class="color-zone-product">
+                                                    <p><strong>Couleurs : </strong></p>
+                                                    <div class="allColorsProduct">
+                                                        @foreach(var couleur in produit.ProduitCouleurs.Where(c => c.ProduitId == produit.Id))
+                                                        {
+                                                            <div class="color-box">
+                                                                <div class="color-show" style="background-color: @couleur.CodeHex"></div>
+                                                                <p class="color-name">@couleur.Couleur</p>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
                                                 <div class="active-zone">
                                                     <form method="post" asp-action="UpdateActive" asp-asp-controller="Product" class="formUpdateActiveProduct">
                                                         <label for="active">Est ce que le produit est actif ?</label>
@@ -295,6 +308,9 @@
                                         </div>
                                     </div>
                                     <div class="detail-produit">
+                                        <div class="div-delete-product">
+                                            <button class="btn cancel-btn delete-product">Supprimer</button>
+                                        </div>
                                         <div class="waitToShow">
                                             <button class="showMore confirm-btn">Voir plus</button>
                                         </div>
@@ -1362,11 +1378,11 @@
     // On attache l'événement "Update" à un parent statique
     $(document).ready(function () {
         // On ajoute un petit bouton supprimer en haut à droite de chaque produit
-        let products = $('.produit');
-        products.each((index, product) => {
-            let deleteButton = $('<button class="btn cancel-btn delete-product">Supprimer</button>');
-            $(product).append(deleteButton);
-        });
+        // let products = $('.produit');
+        // products.each((index, product) => {
+        //     let deleteButton = $('<button class="btn cancel-btn delete-product">Supprimer</button>');
+        //     $(product).append(deleteButton);
+        // });
 
         // On ajoute un gestionnaire d'événement pour chaque bouton supprimer
         let deleteButtons = $('.delete-product');

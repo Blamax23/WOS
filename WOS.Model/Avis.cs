@@ -16,8 +16,8 @@ namespace WOS.Model
         public int ProduitId { get; set; }
 
         [Required]
-        [Range(1, 5)]
-        public int Note { get; set; }
+        [Range(0, 5)]
+        public double Note { get; set; }
 
         public string Commentaire { get; set; }
 

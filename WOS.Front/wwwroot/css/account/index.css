@@ -576,6 +576,11 @@ select.input-size {
     margin-right: none;
 }
 
+.div-delete-product .delete-product{
+    width: 100%;
+    margin-bottom: 1vh;
+}
+
 .activeBtns {
     display: flex;
 }
@@ -592,16 +597,25 @@ select.input-size {
 .entete-produit {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     padding: 5vh 5vw;
     flex-shrink: 0;
     border-radius: 15px;
 }
 
-    .entete-produit h3 {
-        font-size: 2em;
-        margin: 0;
+    .entete-produit .left-zone-product-show{
+        display: flex;
+        height: 40vh;
+        min-width: 60%;
     }
+
+        .entete-produit .left-zone-product-show img{
+            object-fit: cover;
+        }
+
+        .entete-produit h3 {
+            font-size: 2em;
+            margin: 0;
+        }
 
     .entete-produit a {
         text-decoration: none;
@@ -610,6 +624,14 @@ select.input-size {
     .entete-produit .bi-chevron-right {
         font-size: 5em;
     }
+
+.allColorsProduct {
+    display: flex;
+    flex-direction: row;
+    gap: 1vw;
+    flex-wrap: wrap;
+    justify-content: left;
+}
 
 
 .formUpdateActiveProduct {

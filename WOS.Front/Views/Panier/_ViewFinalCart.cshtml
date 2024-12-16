@@ -1,0 +1,81 @@
+﻿@using WOS.Model;
+
+@model IEnumerable<CartItem>;
+
+<div class="head-panier">
+    <div class="step step-1 active">
+        <div class="circle" id="step-1">1</div>
+        <p>Validation</p>
+    </div>
+    <div class="line" id="between-step-1-2"></div>
+    <div class="step step-2">
+        <div class="circle" id="step-2">2</div>
+        <p>Informations</p>
+    </div>
+    <div class="line" id="between-step-2-3"></div>
+    <div class="step step-3">
+        <div class="circle" id="step-3">3</div>
+        <p>Paiement</p>
+    </div>
+</div>
+<div class="purchaseWay">
+    <div class="viewPanier step-1">
+        <h1>Votre panier</h1>
+        <div class="panier">
+            @foreach (var item in Model)
+            {
+                <div class="itemPanier">
+                    <div class="item-image">
+                        <img src="@Url.Content(item.ImageUrl)" />
+                    </div>
+                    <div class="item-infos">
+                        <div class="item-title">
+                            <h2>@item.Name</h2>
+                            <h2 class="price">@item.Price.ToString("C")</h2>
+                        </div>
+                        <div class="item-details">
+                            <div class="item-size">
+                                <h3>Taille</h3>
+                                <p>@item.Size</p>
+                            </div>
+                            <div class="item-quantity">
+                                <h3>Quantité</h3>
+                                <p>@item.Quantity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="total">
+                <h2>Total</h2>
+                <h2 class="price">@Model.Sum(x => x.Price * x.Quantity).ToString("C")</h2>
+            </div>
+            <div class="btn-actions">
+                <button class="btn cancel-btn step-to-never">Annuler</button>
+                <button class="btn confirm-btn step-1-to-2">Suivant</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Click sur le bouton step-1-to-2
+    $(".step-1-to-2").click(function () {
+        // On fait une requête ajax
+        localStorage.setItem('currentStep', 1);
+        $.ajax({
+            url: "/Panier/NextStepPurchase",
+            type: "POST",
+            data: {
+                actualStep: 1
+            },
+            success: function (data) {
+                $(".content").html(data);
+            },
+            error: function (xhr, status, error) {
+                console.error("Erreur : ", error);
+            }
+        });
+    });
+</script>

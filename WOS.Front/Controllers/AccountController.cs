@@ -306,7 +306,7 @@ namespace WOS.Front.Controllers
         public IActionResult VerifyEmail(string email, string token)
         {
             // On vérifie le token
-            if (token == null || token.Length != 43)
+            if (token == null || token.Length != 44)
             {
                 return View("ErrorVerifyEmail", new SignInViewModel { ErrorMessage = "Token invalide" });
             }
@@ -608,7 +608,14 @@ namespace WOS.Front.Controllers
         public static string GenerateSecureToken()
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-            return token.Replace("+", "").Replace("/", "").Replace("=", ""); // Nettoyage pour l'URL
+            var length = token.Length;
+            // On récupère une lettre au hasard
+            var random = new Random();
+            var letter1 = (char)random.Next(65, 90);
+            var letter2 = (char)random.Next(65, 90);
+            var letter3 = (char)random.Next(65, 90);
+
+            return token.Replace('+', letter1).Replace('/', letter2).Replace('=', letter3); // Nettoyage pour l'URL
         }
     }
 }

@@ -179,6 +179,40 @@ body {
     font-size: 1.7em;
 }
 
+.user-space {
+    position: relative; /* S'assure que le conteneur global est bien positionné */
+}
+
+.nav-link {
+    position: relative; /* Nécessaire pour positionner le badge par rapport à l'icône */
+}
+
+.cart-count {
+    position: absolute;
+    top: -5px; /* Ajuste la position verticale */
+    right: -10px; /* Ajuste la position horizontale */
+    background-color: black; /* Couleur de fond du compteur */
+    color: white; /* Couleur du texte */
+    border-radius: 50%; /* Rend le badge circulaire */
+    padding: 2px; /* Ajuste la taille du badge */
+    font-size: 12px; /* Taille du texte */
+    font-weight: bold; /* Met le texte en gras */
+    min-width: 20px; /* Largeur minimale */
+    text-align: center; /* Centre le texte */
+    line-height: 1; /* Ajuste la hauteur de ligne */
+    z-index: 10; /* Assure que le badge est au-dessus de l'icône */
+}
+
+.cart-container {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-icon {
+    font-size: 24px; /* Taille de l'icône */
+    color: #000; /* Couleur de l'icône */
+}
+
 .footer {
     position: absolute;
     bottom: 0;

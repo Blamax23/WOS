@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace WOS.Model
 {
@@ -33,5 +34,26 @@ namespace WOS.Model
         public virtual ICollection<ProduitImage> ProduitImages { get; set; }
         public virtual ICollection<Avis> Avis { get; set; }
         public virtual ICollection<LigneCommande> LignesCommande { get; set; }
+    }
+
+    public class CartItem
+    {
+        [JsonPropertyName("productId")]
+        public int ProductId { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("price")]
+        public decimal Price { get; set; }
+
+        [JsonPropertyName("quantity")]
+        public int Quantity { get; set; }
+
+        [JsonPropertyName("size")]
+        public string Size { get; set; }
+
+        [JsonPropertyName("url")]
+        public string ImageUrl { get; set; }
     }
 }

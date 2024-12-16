@@ -28,6 +28,15 @@ namespace WOS.Model
         [Column("statut_id")]
         public int StatutId { get; set; }
 
+        [Column("numero_commande_livreur")]
+        public string? NumeroCommandeLivreur { get; set; }
+
+        [Column("link_suivi")]
+        public string? LinkSuivi { get; set; }
+
+        [Column("numero_commande")]
+        public string NumeroCommande { get; set; }
+
         // Navigation properties
         public virtual Client Client { get; set; }
         public virtual Adresse AdresseLivraison { get; set; }

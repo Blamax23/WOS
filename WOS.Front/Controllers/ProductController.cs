@@ -15,12 +15,14 @@ namespace WOS.Front.Controllers
         private readonly IProduitSrv _produitSrv;
         private readonly IMarqueSrv _marqueSrv;
         private readonly ICategorieSrv _categorieSrv;
+        private readonly IAvisSrv _avisSrv;
 
-        public ProductController(IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv)
+        public ProductController(IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv, IAvisSrv avisSrv)
         {
             _produitSrv = produitSrv;
             _marqueSrv = marqueSrv;
             _categorieSrv = categorieSrv;
+            _avisSrv = avisSrv;
         }
         // GET: ProductController
 
@@ -82,28 +84,6 @@ namespace WOS.Front.Controllers
                     {
                         source.CopyTo(stream);
                     }
-
-                    //var extension = Path.GetExtension(source.FileName).Substring(1);
-                    //string typeString = "";
-                    //switch (extension.ToLower())
-                    //{
-                    //    case "jpg":
-                    //    case "png":
-                    //        typeString = "image";
-                    //        break;
-                    //    case "mp4":
-                    //        typeString = "video";
-                    //        break;
-                    //    case "pdf":
-                    //        typeString = "pdf";
-                    //        break;
-                    //    case "mp3":
-                    //        typeString = "audio";
-                    //        break;
-                    //    default:
-                    //        typeString = "link";
-                    //        break;
-                    //}
 
                     ProduitImage nouvelleSource = new ProduitImage
                     {
@@ -265,6 +245,17 @@ namespace WOS.Front.Controllers
             Produit produit = _produitSrv.GetProduitById(id);
 
             return View(produit);
+        }
+
+        [HttpPost]
+
+        public void SaveCartToCookies(HttpContext context, List<CartItem> cart)
+        {
+            var jsonCart = JsonSerializer.Serialize(cart);
+            context.Response.Cookies.Append("Cart", jsonCart, new CookieOptions
+            {
+                Expires = DateTimeOffset.Now.AddDays(7)
+            });
         }
     }
 }
