@@ -45,6 +45,10 @@ namespace WOS.Dal.Mapping
                 .HasDefaultValue(false)
                 .HasColumnName("principale");
 
+            builder.Property(a => a.PointRelais)
+                .HasDefaultValue(false)
+                .HasColumnName("point_relais");
+
             builder.HasOne(a => a.Client)
                 .WithMany(c => c.Adresses)
                 .HasForeignKey(a => a.ClientId);

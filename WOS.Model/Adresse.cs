@@ -32,8 +32,20 @@ namespace WOS.Model
 
         public bool Principale { get; set; }
 
+        public bool PointRelais { get; set; }
+
         // Navigation properties
         public virtual Client Client { get; set; }
         public virtual ICollection<Commande> Commandes { get; set; }
+    }
+
+    public class PointRelais
+    {
+        public string Numero { get; set; }
+        public string Adresse { get; set; }
+        public string CodePostal { get; set; }
+        public string Ville { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
     }
 }

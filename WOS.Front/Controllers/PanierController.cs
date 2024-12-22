@@ -17,11 +17,13 @@ namespace WOS.Front.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IProduitSrv _produitSrv;
+        private readonly IMondialRelaySrv _mondialRelaySrv;
 
-        public PanierController(IConfiguration configuration, IProduitSrv produitSrv)
+        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv)
         {
             _configuration = configuration;
             _produitSrv = produitSrv;
+            _mondialRelaySrv = mondialRelaySrv;
         }
 
         [HttpPost]
@@ -154,7 +156,10 @@ namespace WOS.Front.Controllers
             HttpContext.Response.Cookies.Append("CartStep", (actualStep + 1).ToString());
 
             if(actualStep == 1)
+            {
+                _mondialRelaySrv.ExempleRecherche();
                 return PartialView("_ViewInfoDelivery");
+            }
             else if (actualStep == 2)
                 return PartialView("_ViewPayment");
             else

@@ -5,6 +5,10 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<script src="//unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" type="text/css" href="//unpkg.com/leaflet/dist/leaflet.css" />
+
+<script src="//widget.mondialrelay.com/parcelshop-picker/jquery.plugin.mondialrelay.parcelshoppicker.min.js"></script>
 
 
 <div class="head-panier">
@@ -56,9 +60,26 @@
                     <label for="domicile">À domicile</label>
                 </div>
             </div>
-            <div class="delivery-mode">
-                <input type="radio" id="relais" name="delivery-mode" value="relais">
-                <label for="relais">En point relais</label>
+            <div class="relay-mode">
+                <div class="delivery-mode">
+                    <input type="radio" id="relais" name="delivery-mode" value="relais">
+                    <label for="relais">En point relais</label>
+                </div>
+                <div class="search-relay">
+                    <h3>Sélectionnez votre point relais</h3>
+                    <div id="Zone_Widget"></div>
+                    <input type="hidden" id="Target_Widget" />
+                    <div style="display:inline-block;">
+          <!-- Balises HTML utilisées dans la fonction de CallBack pour reçevoir des données à afficher -->
+                      <div style="font-weight:bold;text-decoration:underline;">Callback zone</div><br/> 
+                          <div>data.ID = <span id="cb_ID"></span></div>
+                          <div>data.Nom = <span id="cb_Nom"></span></div>
+                          <div>data.Adresse = <span id="cb_Adresse"></span></div>
+                          <div>data.CP = <span id="cb_CP"></span></div>
+                          <div>data.Ville = <span id="cb_Ville"></span></div>
+                          <div>data.Pays = <span id="cb_Pays"></span></div>
+                        </div>
+                </div>
             </div>
         </div>
         <div class="btn-actions">
@@ -106,6 +127,29 @@
     // Click sur le bouton step-1-to-2
     $(".step-2-to-3").click(function () {
         localStorage.setItem('currentStep', 2);
+
+        // Récupérer les informations des champs
+        let deliveryMode = $('input[name="delivery-mode"]:checked').val();
+        let address = $('#address').val();
+        let postalCode = $('#postal-code').val();
+        let city = $('#city').val();
+        let country = $('#country').val(); // Code ISO sélectionné
+        let parcelShopId = $('#Target_Widget').val(); // ID du point relais sélectionné par le widget
+
+        // Préparer les données pour stockage
+        let deliveryInfo = {
+            mode: deliveryMode,
+            address: deliveryMode === 'domicile' ? address : null,
+            postalCode: deliveryMode === 'domicile' ? postalCode : null,
+            city: deliveryMode === 'domicile' ? city : null,
+            country: country,
+            parcelShopId: deliveryMode === 'relais' ? parcelShopId : null
+        };
+
+        // Stocker dans localStorage
+        localStorage.setItem('deliveryInfo', JSON.stringify(deliveryInfo));
+
+        console.log('Informations de livraison enregistrées :', deliveryInfo);
         // On fait une requête ajax
         $.ajax({
             url: "/Panier/NextStepPurchase",
@@ -133,5 +177,83 @@
                 $(".content").html(data);
             }
         });
+    });
+
+    function GetPointRelais(cp = ""){
+        console.log(`Type de cp: ${typeof cp}, Valeur de cp: ${cp}`);
+        // $("#Zone_Widget").empty();
+        $("#Zone_Widget").MR_ParcelShopPicker({
+            //
+            // Settings relating to the HTML.
+            //
+            // JQuery selector of the HTML element receiving the Parcelshop Number (ex: here, input type text, but should be input hidden)
+            Target: "#Target_Widget",
+            //
+            // Settings for Parcelshop data access
+            //
+            // Code given by Mondial Relay, 8 characters (padding right with spaces)
+            // BDTEST is used for development only => a warning appears
+            Brand: "BDTEST  ",
+            // Default Country (2 letters) used for search at loading
+            Country: "FR",
+            // Default postal Code used for search at loading
+            PostCode: "01400",
+            // Delivery mode (Standard [24R], XL [24L], XXL [24X], Drive [DRI])
+            ColLivMod: "24R",
+            // Number of parcelshops requested (must be less than 20)
+            NbResults: "7",
+
+            OnParcelShopSelected:
+                // Fonction de traitement à la sélection du point relais.
+                // Remplace les données de cette page par le contenu de la variable data.
+                // data: les informations du Point Relais
+                function (data) {
+                    $("#cb_ID").html(data.ID);
+                    $("#cb_Nom").html(data.Nom);
+                    $("#cb_Adresse").html(data.Adresse1 + ' ' + data.Adresse2);
+                    $("#cb_CP").html(data.CP);
+                    $("#cb_Ville").html(data.Ville);
+                    $("#cb_Pays").html(data.Pays);
+                },
+            //
+            // Display settings
+            //
+            // Enable Responsive (nb: non responsive corresponds to the Widget used in older versions=
+            Responsive: true,
+            // Show the results on Leaflet map usng OpenStreetMap.
+            ShowResultsOnMap: true
+        });
+    }
+
+    $(document).ready(function () {
+        // On met un gestionnaire d'événement quand on clique sur l'input pour la livraison en point relais
+        // Loading the Parcelshop picker widget into the <div> with id "Zone_Widget" with such settings:
+        GetPointRelais()
+    });
+
+    $(document).ready(function () {
+        $('.search-relay').hide();
+        // Gestionnaire d'événements pour les inputs radio
+        $('input[name="delivery-mode"]').on('change', function () {
+            // Récupérer la valeur de l'input sélectionné
+            let selectedValue = $(this).val();
+
+            // Action en fonction de la sélection
+            if (selectedValue === 'relais') {
+                console.log('Mode de livraison sélectionné : En point relais');
+                // Vous pouvez ajouter ici des actions spécifiques
+                let cp = $('#postal-code').val();
+                GetPointRelais(cp);
+                $('.search-relay').show(); // Exemple : afficher le widget
+            } else {
+                console.log('Mode de livraison sélectionné : Autre');
+                $('.search-relay').hide(); // Exemple : cacher le widget
+            }
+        });
+
+        $('#postal-code').on('change', function(){
+            let cp = $(this).val();
+            GetPointRelais(cp);
+        })
     });
 </script>
