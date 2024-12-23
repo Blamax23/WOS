@@ -15,27 +15,37 @@
 <script>
     $(document).ready(function () {
         var currentStep = localStorage.getItem('currentStep');
-        console.log(currentStep)
-        if (currentStep) {
-            console.log("je suis dans le if");
-            $.ajax({
-                url: "/Panier/NextStepPurchase",
-                type: "POST",
-                data: { actualStep: currentStep },
-                success: function (data) {
-                    $(".content").html(data);
-                }
-            });
-        }else{
-            $.ajax({
-                url: "/Panier/NextStepPurchase",
-                type: "POST",
-                data: { actualStep: 1 },
-                success: function (data) {
-                    $(".content").html(data);
-                }
-            });
-        }
+        console.log(localStorage);
+        console.log(currentStep);
+        // if (currentStep) {
+        //     console.log("je suis dans le if");
+        //     $.ajax({
+        //         url: "/Panier/NextStepPurchase",
+        //         type: "POST",
+        //         data: { actualStep: currentStep },
+        //         success: function (data) {
+        //             $(".content").html(data);
+        //         }
+        //     });
+        // }else{
+        //     $.ajax({
+        //         url: "/Panier/NextStepPurchase",
+        //         type: "POST",
+        //         data: { actualStep: 1 },
+        //         success: function (data) {
+        //             $(".content").html(data);
+        //         }
+        //     });
+        // }
+
+        $.ajax({
+            url: "/Panier/NextStepPurchase",
+            type: "POST",
+            data: { actualStep: 0 },
+            success: function (data) {
+                $(".content").html(data);
+            }
+        });
     });
 </script>
 

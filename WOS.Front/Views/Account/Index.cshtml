@@ -40,6 +40,7 @@
                         <li class="linkCommande" data-section="info-commandes">Commandes</li>
                         <li class="linkProducts" data-section="info-products">Produits</li>
                         <li class="linkMarques" data-section="info-marques">Marques</li>
+                        <li class="linkLivraison" data-section="info-livraison">Livraison</li>
                     </ul>
                 </div>
             </div>
@@ -483,6 +484,32 @@
                             }
                         </div>
                     </div>
+                </div>
+                <div class="info-livraison">
+                    <div class="head-livraison">
+                        <h1>Mode de livraison</h1>
+                    </div>
+                    @foreach(var mode in Model.ModeLivraisons)
+                    {
+                        <div class="mode-livraison">
+                            <div class="left-zone">
+                                <img src="@Url.Content(mode.PathLogo)" />
+                            </div>
+                            <div class="right-zone">
+                                <div class="name-zone">
+                                    <h3>@mode.Nom</h3>
+                                </div>
+                                <form class="price-zone">
+                                    <label for="price">Prix</label>
+                                    <script>
+                                        console.log("@mode.PrixLivraison.ToString(System.Globalization.CultureInfo.InvariantCulture)");
+                                    </script>
+                                    <input type="number" name="price" class="input-price" step="0.01" value="@mode.PrixLivraison.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                    <button type="submit" class="confirm-btn update-delivery-mode" data-mode-id="@mode.Id">Modifier</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         }
@@ -1539,5 +1566,36 @@
     });
 
 
+
+</script>
+
+<script>
+    // On gère la modification du prix du mode de livraison
+    let btnUpdateDelivery = $(".update-delivery-mode");
+
+    // On ajoute un gestionnaire d'événement pour chaque bouton
+    btnUpdateDelivery.each((index, button) => {
+        $(button).on('click', () => {
+            event.preventDefault();
+            // On récupère le data-mode-id 
+            let modeId = $(button).data('mode-id');
+            // On récupère la valeur de l'input à cote
+            let price = $(button).siblings('.input-price').val();
+
+            // On effectue une requête AJAX pour modifier le prix
+            $.ajax({
+                url: `/Panier/UpdateDeliveryPrice?idModeLivraison=${modeId}&newPrice=${price}`,
+                type: 'POST',
+                success: function (response) {
+                    console.log('Prix modifié:', response);
+                    alert('Prix modifié avec succès.');
+                },
+                error: function (error) {
+                    console.error('Erreur lors de la modification:', error);
+                    alert('Erreur lors de la modification. Veuillez réessayer.');
+                }
+            });
+        });
+    });
 
 </script>

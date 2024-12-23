@@ -29,6 +29,7 @@ namespace WOS.Dal.Context
         public DbSet<Avis> Avis { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Question> Questions { get; set; }
+        public DbSet<ModeLivraison> ModeLivraisons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +47,7 @@ namespace WOS.Dal.Context
             modelBuilder.ApplyConfiguration(new AvisMap());
             modelBuilder.ApplyConfiguration(new AdminMap());
             modelBuilder.ApplyConfiguration(new QuestionMap());
+            modelBuilder.ApplyConfiguration(new ModeLivraisonMap());
         }
     }
 }

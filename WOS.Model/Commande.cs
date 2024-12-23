@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace WOS.Model
 {
@@ -42,5 +43,64 @@ namespace WOS.Model
         public virtual Adresse AdresseLivraison { get; set; }
         public virtual StatutCommande Statut { get; set; }
         public virtual ICollection<LigneCommande> LignesCommande { get; set; }
+    }
+
+    public class DeliveryInfo
+    {
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("address")]
+        public string? Address { get; set; }
+
+        [JsonPropertyName("city")]
+        public string? City { get; set; }
+
+        [JsonPropertyName("zipCode")]
+        public string? ZipCode { get; set; }
+
+        [JsonPropertyName("country")]
+        public string? Country { get; set; }
+
+        [JsonPropertyName("modeName")]
+        public string? ModeName { get; set; }
+
+        [JsonPropertyName("parcelShop")]
+        public ParcelShop? ParcelShop { get; set; }
+    }
+
+    public class ParcelShop
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("address")]
+        public string? Address { get; set; }
+
+        [JsonPropertyName("city")]
+        public string? City { get; set; }
+
+        [JsonPropertyName("postalCode")]
+        public string? ZipCode { get; set; }
+
+        [JsonPropertyName("country")]
+        public string? Country { get; set; }
+    }
+
+    public class ViewFinalPurchase
+    {
+        public List<CartItem> Cart { get; set; }
+
+        public DeliveryInfo DeliveryInfo { get; set; }
+
+        public ModeLivraison ModeLivraison { get; set; }
+
+        public string ModePaiement { get; set; }
+
+        public string TotalPrice { get; set; }
     }
 }

@@ -5,7 +5,7 @@
 }
 
 /* Cacher les sections par défaut */
-.info-account, .info-commandes, .info-products, .info-marques {
+.info-account, .info-commandes, .info-products, .info-marques, .info-livraison {
     display: none; /* Masquer par défaut */
     opacity: 0; /* Initialement transparent */
     transition: opacity 0.5s ease, transform 0.5s ease; /* Animation */
@@ -13,7 +13,7 @@
 }
 
     /* Classe pour afficher une section */
-    .info-account.active, .info-commandes.active, .info-products.active, .info-marques.active {
+    .info-account.active, .info-commandes.active, .info-products.active, .info-marques.active, .info-livraison.active {
         display: block; /* Affiche la div */
         opacity: 1; /* Rétablit l'opacité */
         transform: translateY(0); /* Position normale */
@@ -995,3 +995,66 @@ select.input-size {
 .hidden {
     display: none;
 }
+
+/* ===================================================================== */
+/* ========================== Partie Livraison ========================= */
+/* ===================================================================== */
+
+.head-livraison {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5vh 5vw;
+    border-bottom: 1px solid rgb(98, 106, 115);
+    flex-shrink: 0;
+    margin-bottom: 5vh;
+}
+
+    .head-livraison h1 {
+        font-size: 2em;
+        margin: 0;
+    }
+
+.mode-livraison {
+    width: 50%;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1em;
+    border: 1px solid black;
+    padding: 1em 5vw;
+    margin: 5vh auto;
+}
+
+.mode-livraison .left-zone{
+    width: min-content;
+    height:30vh;
+    display: flex;
+    object-fit: contain;
+}
+
+    .mode-livraison .right-zone{
+        display: flex;
+        flex-direction: column;
+        width: 50%;
+    }
+
+    .mode-livraison .right-zone .name-zone h3 {
+        font-size: 1.5em;
+    }
+
+    .mode-livraison .right-zone .price-zone{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+        .mode-livraison .right-zone .price-zone button {
+            margin: .5em 0;
+        }
+
+        .mode-livraison .right-zone .price-zone input {
+            height: 1em;
+            padding: .5em;
+        }

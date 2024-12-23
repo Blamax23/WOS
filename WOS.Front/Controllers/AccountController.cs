@@ -27,8 +27,9 @@ namespace WOS.Front.Controllers
         private readonly ICommandeSrv _commandeSrv;
         private readonly ICategorieSrv _categorieSrv;
         private readonly IMarqueSrv _marqueSrv;
+        private readonly IModeLivraisonSrv _modeLivraisonSrv;
 
-        public AccountController(IClientSrv clientSrv, IAdminSrv adminSrv, IConfiguration configuration, IAuthenticationSrv authenticationSrv, IProduitSrv produitSrv, ICommandeSrv commandeSrv, ICategorieSrv categorieSrv, IMarqueSrv marqueSrv)
+        public AccountController(IClientSrv clientSrv, IAdminSrv adminSrv, IConfiguration configuration, IAuthenticationSrv authenticationSrv, IProduitSrv produitSrv, ICommandeSrv commandeSrv, ICategorieSrv categorieSrv, IMarqueSrv marqueSrv, IModeLivraisonSrv modeLivraisonSrv)
         {
             _clientSrv = clientSrv;
             _adminSrv = adminSrv;
@@ -38,6 +39,7 @@ namespace WOS.Front.Controllers
             _commandeSrv = commandeSrv;
             _categorieSrv = categorieSrv;
             _marqueSrv = marqueSrv;
+            _modeLivraisonSrv = modeLivraisonSrv;
         }
 
         #region Account
@@ -72,6 +74,7 @@ namespace WOS.Front.Controllers
                     accountViewModel.Commandes = _commandeSrv.GetCommandes();
                     accountViewModel.Marques = _marqueSrv.GetAllMarques();
                     accountViewModel.Categories = _categorieSrv.GetAllCategories();
+                    accountViewModel.ModeLivraisons = _modeLivraisonSrv.GetModeLivraisons();
                 }
                 else
                 {

@@ -1,6 +1,6 @@
 ﻿@using WOS.Model;
 
-@model IEnumerable<CartItem>;
+@model IEnumerable<ModeLivraison>;
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -54,31 +54,65 @@
         </div>
         <h2>Mode de livraison</h2>
         <div class="delivery-modes">
+            <div class="error-relais"><p>Veuillez sélectionner un point-relais.</p></div>
+            <div class="error-delivery"><p>Veuillez sélectionner un mode de livraison.</p></div>
             <div class="domicile-mode">
                 <div class="delivery-mode">
-                    <input type="radio" id="domicile" name="delivery-mode" value="domicile" checked>
-                    <label for="domicile">À domicile</label>
+                    <div class="home-delivery">
+                        <div class="home-accordion">
+                            <h3>A domicile</h3>
+                            <i class="bi bi-caret-right-fill"></i>
+                        </div>
+                        <div class="modes-home collapsed">
+                            @foreach (var mode in Model)
+                            {
+                                if (new[] { "UPS", "Colissimo" }.Any(substring => mode.Nom.Contains(substring, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <div class="mode" data-name-mode="@mode.Nom">
+                                        <img src="@Url.Content(mode.PathLogo)" />
+                                        <p><strong>@mode.Nom</strong></p>
+                                        <p>+@mode.PrixLivraison.ToString("C")</p>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="relay-delivery">
+                        <div class="relay-accordion">
+                            <h3>En point-relais</h3>
+                            <i class="bi bi-caret-right-fill"></i>
+                        </div>
+                        <div class="modes-relay collapsed">
+                            @foreach (var mode in Model)
+                            {
+                                if (!new[] { "UPS", "Colissimo" }.Any(substring => mode.Nom.Contains(substring, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <div class="mode" data-name-mode="@mode.Nom">
+                                        <img src="@Url.Content(mode.PathLogo)" />
+                                        <p><strong>@mode.Nom</strong></p>
+                                        <p>+@mode.PrixLivraison.ToString("C")</p>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="relay-mode">
-                <div class="delivery-mode">
-                    <input type="radio" id="relais" name="delivery-mode" value="relais">
-                    <label for="relais">En point relais</label>
-                </div>
                 <div class="search-relay">
                     <h3>Sélectionnez votre point relais</h3>
                     <div id="Zone_Widget"></div>
                     <input type="hidden" id="Target_Widget" />
-                    <div style="display:inline-block;">
-          <!-- Balises HTML utilisées dans la fonction de CallBack pour reçevoir des données à afficher -->
-                      <div style="font-weight:bold;text-decoration:underline;">Callback zone</div><br/> 
-                          <div>data.ID = <span id="cb_ID"></span></div>
-                          <div>data.Nom = <span id="cb_Nom"></span></div>
-                          <div>data.Adresse = <span id="cb_Adresse"></span></div>
-                          <div>data.CP = <span id="cb_CP"></span></div>
-                          <div>data.Ville = <span id="cb_Ville"></span></div>
-                          <div>data.Pays = <span id="cb_Pays"></span></div>
-                        </div>
+                    <div style="display:none;">
+                        <!-- Balises HTML utilisées dans la fonction de CallBack pour reçevoir des données à afficher -->
+                        <div style="font-weight:bold;text-decoration:underline;">Callback zone</div><br />
+                        <div>data.ID = <span id="cb_ID"></span></div>
+                        <div>data.Nom = <span id="cb_Nom"></span></div>
+                        <div>data.Adresse = <span id="cb_Adresse"></span></div>
+                        <div>data.CP = <span id="cb_CP"></span></div>
+                        <div>data.Ville = <span id="cb_Ville"></span></div>
+                        <div>data.Pays = <span id="cb_Pays"></span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -90,6 +124,7 @@
 </div>
 
 <script>
+    let deliveryModeHome = true;
     $.ajax({
         url: 'https://restcountries.com/v3.1/all',
         type: 'GET',
@@ -98,11 +133,13 @@
             // Trier les pays pour que la France apparaisse en premier
             data.sort((a, b) => a.name.common === 'France' ? -1 : b.name.common === 'France' ? 1 : a.name.common.localeCompare(b.name.common));
 
+
+
             // Ajouter les options au select
             data.forEach(function (country) {
-                const option = $('<option></option>')
-                    .val(country.cca2) // Code ISO du pays
-                    .text(country.name.common); // Nom courant
+                // Si le code ISO est FR, on lui ajoute selected
+                let option = `<option value="${country.cca2}" ${country.cca2 === 'FR' ? 'selected' : ''}>${country.name.common}</option>`;
+
                 $countrySelect.append(option);
             });
 
@@ -124,30 +161,106 @@
         }
     });
 
+    // On cache error-relais si #Target_Widget change
+    $('#Target_Widget').on('change', function () {
+        console.log("on change le ")
+        $('.error-relais').css('display', 'none');
+    });
+
     // Click sur le bouton step-1-to-2
     $(".step-2-to-3").click(function () {
+        // On cache les messages d'erreur
+        $('.error-delivery').hide();
+        $('.error-relais').hide();
+
+        let stop = false;
+
+        // On regarde si une div mode a la classe selected
+        if ($('.mode.selected').length === 0) {
+            $('.error-delivery').show();
+            stop = true;
+        }else{
+            // On regarde si la div mode choisie est celle de Mondial Relay, si oui on contrôle qu'un point relais ait été choisi
+            if ($('.mode.selected').data('name-mode').toLowerCase().includes('mondial relay') && $('#Target_Widget').val() === "") {
+                $('.error-relais').show();
+                stop = true;
+            }
+        }
+
+        console.log($('#address').val());
+
+        // On vérifie si les inputs et le select sont remplis. Si non, on met des border en rouge
+        if ($('#address').val() === "") {
+            console.log("c'est null");
+            $('#address').css('border', '1px solid red');
+            stop = true;
+        } else {
+            $('#address').css('border', '1px solid #ccc');
+        }
+
+        if ($('#postal-code').val() === "") {
+            $('#postal-code').css('border', '1px solid red');
+            stop = true;
+        } else {
+            $('#postal-code').css('border', '1px solid #ccc');
+        }
+
+        if ($('#city').val() === "") {
+            $('#city').css('border', '1px solid red');
+            stop = true;
+        } else {
+            $('#city').css('border', '1px solid #ccc');
+        }
+
+        if ($('#country').val() === "") {
+            $('#country').css('border', '1px solid red');
+            stop = true;
+        } else {
+            console.log($('#country').val());
+            $('#country').css('border', '1px solid #ccc');
+        }
+
+        if (stop) {
+            return;
+        }
+
+
         localStorage.setItem('currentStep', 2);
 
+        // On récupère le nom du mode de livraison sélectionné en fonction de la div home qui a la classe selected
+        let modeName = $('.mode.selected').data('name-mode');
+
         // Récupérer les informations des champs
-        let deliveryMode = $('input[name="delivery-mode"]:checked').val();
         let address = $('#address').val();
         let postalCode = $('#postal-code').val();
         let city = $('#city').val();
         let country = $('#country').val(); // Code ISO sélectionné
         let parcelShopId = $('#Target_Widget').val(); // ID du point relais sélectionné par le widget
+        // On récupère les valeurs du point relais
+        let parcelShop = {
+            id: $('#cb_ID').text(),
+            name: $('#cb_Nom').text(),
+            address: $('#cb_Adresse').text(),
+            postalCode: $('#cb_CP').text(),
+            city: $('#cb_Ville').text(),
+            country: $('#cb_Pays').text()
+        };
 
         // Préparer les données pour stockage
         let deliveryInfo = {
-            mode: deliveryMode,
-            address: deliveryMode === 'domicile' ? address : null,
-            postalCode: deliveryMode === 'domicile' ? postalCode : null,
-            city: deliveryMode === 'domicile' ? city : null,
+            mode: deliveryModeHome,
+            address: address,
+            postalCode: postalCode,
+            city: city,
             country: country,
-            parcelShopId: deliveryMode === 'relais' ? parcelShopId : null
+            parcelShop: parcelShop,
+            modeName: modeName
         };
 
-        // Stocker dans localStorage
-        localStorage.setItem('deliveryInfo', JSON.stringify(deliveryInfo));
+        console.log(deliveryInfo);
+
+        // Stocker dans la session
+        // localStorage.setItem('deliveryInfo', JSON.stringify(deliveryInfo));
 
         console.log('Informations de livraison enregistrées :', deliveryInfo);
         // On fait une requête ajax
@@ -155,7 +268,8 @@
             url: "/Panier/NextStepPurchase",
             type: "POST",
             data: {
-                actualStep: 2
+                actualStep: 2,
+                deliveryInfo: JSON.stringify(deliveryInfo)
             },
             success: function (data) {
                 $(".content").html(data);
@@ -179,7 +293,7 @@
         });
     });
 
-    function GetPointRelais(cp = ""){
+    function GetPointRelais(cp = "") {
         console.log(`Type de cp: ${typeof cp}, Valeur de cp: ${cp}`);
         // $("#Zone_Widget").empty();
         $("#Zone_Widget").MR_ParcelShopPicker({
@@ -197,7 +311,7 @@
             // Default Country (2 letters) used for search at loading
             Country: "FR",
             // Default postal Code used for search at loading
-            PostCode: "01400",
+            PostCode: "",
             // Delivery mode (Standard [24R], XL [24L], XXL [24X], Drive [DRI])
             ColLivMod: "24R",
             // Number of parcelshops requested (must be less than 20)
@@ -251,9 +365,66 @@
             }
         });
 
-        $('#postal-code').on('change', function(){
+        $('#postal-code').on('change', function () {
             let cp = $(this).val();
             GetPointRelais(cp);
         })
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('.home-accordion').on('click', function () {
+            const $modesDiv = $('.modes-home'); // Sélectionne la div "modes"
+            const $icon = $(this).find('i'); // Sélectionne l'icône dans le header
+
+            // Toggle les classes pour afficher/masquer le contenu
+            $modesDiv.toggleClass('expanded collapsed');
+
+            // Animation pour le max-height
+            if ($modesDiv.hasClass('expanded')) {
+                $modesDiv.stop().animate({ maxHeight: $modesDiv.get(0).scrollHeight }, 300);
+            } else {
+                $modesDiv.stop().animate({ maxHeight: 0 }, 300);
+            }
+
+            // Rotation de l'icône
+            $icon.toggleClass('rotated');
+        });
+
+        $('.relay-accordion').on('click', function () {
+            const $modesDiv = $('.modes-relay'); // Sélectionne la div "modes"
+            const $icon = $(this).find('i'); // Sélectionne l'icône dans le header
+
+            // Toggle les classes pour afficher/masquer le contenu
+            $modesDiv.toggleClass('expanded collapsed');
+
+            // Animation pour le max-height
+            if ($modesDiv.hasClass('expanded')) {
+                $modesDiv.stop().animate({ maxHeight: $modesDiv.get(0).scrollHeight }, 300);
+            } else {
+                $modesDiv.stop().animate({ maxHeight: 0 }, 300);
+            }
+
+            // Rotation de l'icône
+            $icon.toggleClass('rotated');
+        });
+
+        // Gestionnaire de clic sur chaque div mode
+        $('.mode').on('click', function () {
+            $('.search-relay').hide();
+            // On retire la classe selected à toutes les div mode
+            $('.mode').removeClass('selected');
+            // On ajoute la classe selected à la div mode cliquée
+            $(this).addClass('selected');
+            deliveryModeHome = true;
+
+            // On regarde si on a cliqué sur Mondial Relay
+            if ($(this).data('name-mode').toLowerCase().includes('mondial relay')) {
+                deliveryModeHome = false;
+                // On affiche le widget
+                $('.search-relay').show();
+            }
+        });
     });
 </script>

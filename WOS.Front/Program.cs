@@ -51,6 +51,7 @@ builder.Services.AddScoped<IMarqueSrv, MarqueSrv>();
 builder.Services.AddScoped<ICategorieSrv, CategorieSrv>();
 builder.Services.AddScoped<IAvisSrv, AvisSrv>();
 builder.Services.AddScoped<IMondialRelaySrv, MondialRelaySrv>();
+builder.Services.AddScoped<IModeLivraisonSrv, ModeLivraisonSrv>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

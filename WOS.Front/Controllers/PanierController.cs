@@ -8,6 +8,7 @@ using WOS.Dal.Context;
 using WOS.Back.Services;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 namespace WOS.Front.Controllers
 {
@@ -18,12 +19,14 @@ namespace WOS.Front.Controllers
         private readonly IConfiguration _configuration;
         private readonly IProduitSrv _produitSrv;
         private readonly IMondialRelaySrv _mondialRelaySrv;
+        private readonly IModeLivraisonSrv _modeLivraisonSrv;
 
-        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv)
+        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv, IModeLivraisonSrv modeLivraisonSrv)
         {
             _configuration = configuration;
             _produitSrv = produitSrv;
             _mondialRelaySrv = mondialRelaySrv;
+            _modeLivraisonSrv = modeLivraisonSrv;
         }
 
         [HttpPost]
@@ -39,6 +42,8 @@ namespace WOS.Front.Controllers
                 item.Price = produit.ProduitTailles.FirstOrDefault(t => t.Taille == item.Size).Prix;
 
             }
+
+
 
             var cartItemsJson = JsonSerializer.Serialize(cartItems);
             HttpContext.Session.Set("CartItems", System.Text.Encoding.UTF8.GetBytes(cartItemsJson));
@@ -149,7 +154,7 @@ namespace WOS.Front.Controllers
 
         [HttpPost]
         [Route("NextStepPurchase")]
-        public IActionResult NextStepPurchase(int actualStep)
+        public IActionResult NextStepPurchase(int actualStep, string deliveryInfo = null)
         {
             // On supprime le potentiel cookie de l'étape 1
             HttpContext.Response.Cookies.Delete("CartStep");
@@ -158,10 +163,41 @@ namespace WOS.Front.Controllers
             if(actualStep == 1)
             {
                 _mondialRelaySrv.ExempleRecherche();
-                return PartialView("_ViewInfoDelivery");
+                var modesLivraison = _modeLivraisonSrv.GetModeLivraisons();
+                return PartialView("_ViewInfoDelivery", modesLivraison);
             }
             else if (actualStep == 2)
-                return PartialView("_ViewPayment");
+            {
+                ViewFinalPurchase viewFinalPurchase = new ViewFinalPurchase();
+                // On récupère l'objet deliveryInfo dans le localStora
+                DeliveryInfo deliveryInfoObj = new DeliveryInfo();
+                if (deliveryInfo != null)
+                {
+                    // On séserialise la string json
+                    deliveryInfoObj = JsonSerializer.Deserialize<DeliveryInfo>(deliveryInfo);
+                }
+                viewFinalPurchase.DeliveryInfo = deliveryInfoObj;
+                // On récupère le panier final
+                var cartItemsBytes = HttpContext.Session.Get("CartItems");
+                var cartItemsJson = System.Text.Encoding.UTF8.GetString(cartItemsBytes);
+                var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson);
+                viewFinalPurchase.Cart = cartItems;
+
+                // On récupère le mode de livraison
+                ModeLivraison modeLivraison = _modeLivraisonSrv.GetModeLivraisonByName(deliveryInfoObj.ModeName);
+                viewFinalPurchase.ModeLivraison = modeLivraison;
+
+                // On calcule le prix total
+                decimal totalPrice = 0;
+                foreach (var item in cartItems)
+                {
+                    totalPrice += item.Price * item.Quantity;
+                }
+                totalPrice += (decimal)modeLivraison.PrixLivraison;
+                viewFinalPurchase.TotalPrice = totalPrice.ToString();
+
+                return PartialView("_ViewPayment", viewFinalPurchase);
+            }
             else
             {
                 // On récupère ce qui est dans le panier
@@ -188,7 +224,11 @@ namespace WOS.Front.Controllers
                 var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson);
                 return PartialView("_ViewFinalCart", cartItems);
             }else if (actualStep == 3)
-                return PartialView("_ViewInfoDelivery");
+            {
+                // On récupère les modes de livraisons
+                var modesLivraison = _modeLivraisonSrv.GetModeLivraisons();
+                return PartialView("_ViewInfoDelivery", modesLivraison);
+            }
             else
                 return PartialView("_ViewPayment");
 
@@ -200,6 +240,17 @@ namespace WOS.Front.Controllers
         {
             var cart = GetCartFromCookies(HttpContext);
             return PartialView("_ViewFinalCart", cart);
+        }
+
+        [HttpPost]
+        [Route("UpdateDeliveryPrice")]
+        public IActionResult UpdateDeliveryPrice(int idModeLivraison, string newPrice)
+        {
+            if (float.TryParse(newPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float prix))
+            {
+                _modeLivraisonSrv.UpdatePriceLivraison(idModeLivraison, prix);
+            }
+            return Ok();
         }
     }
 }

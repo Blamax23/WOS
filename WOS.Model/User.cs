@@ -21,6 +21,8 @@ namespace WOS.Model
         public List<Marque> Marques { get; set; }
 
         public List<Categorie> Categories { get; set; }
+
+        public List<ModeLivraison> ModeLivraisons { get; set; }
     }
 
     public class HomeViewModel

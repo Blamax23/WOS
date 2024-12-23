@@ -1,6 +1,6 @@
 ﻿@using WOS.Model;
 
-@model IEnumerable<CartItem>;
+@model ViewFinalPurchase;
 
 <div class="head-panier">
     <div class="step step-1 active">
@@ -19,6 +19,43 @@
     </div>
 </div>
 <div class="purchaseWay">
+    <div class="recapitulatif">
+        <div class="panier-final">
+            <h3>Panier</h3>
+            @foreach (var item in Model.Cart)
+            {
+                <div class="itemPanier">
+                    <div class="item-image">
+                        <img src="@Url.Content(item.ImageUrl)" />
+                    </div>
+                    <div class="item-infos">
+                        <div class="item-title">
+                            <h2>@item.Name</h2>
+                            <h2 class="price">@item.Price.ToString("C")</h2>
+                        </div>
+                        <div class="item-details">
+                            <div class="item-size">
+                                <h3>Taille</h3>
+                                <p>@item.Size</p>
+                            </div>
+                            <div class="item-quantity">
+                                <h3>Quantité</h3>
+                                <p>@item.Quantity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="mode-livraison-final">
+            <h3>Mode de livraison</h3>
+            <div class="delivery-mode">
+                <img src="@Url.Content(Model.ModeLivraison.PathLogo)"/>
+                <h3 class="name-delivery-mode">@Model.ModeLivraison.Nom</h3>
+                <p class="delivery-price"><string>@Model.ModeLivraison.PrixLivraison.ToString("C")</string></p>
+            </div>
+        </div>
+    </div>
     <div class="">
         <h2>Paiement </h2>
         <div class="form-info-purchase">
@@ -109,4 +146,12 @@
             }
         });
     });
+
+    // On récupère l'objet delivery info dans le localStorage
+    const deliveryInfo = JSON.parse(localStorage.getItem('deliveryInfo'));
+    console.log(deliveryInfo);
+
+    // Si l'objet deliveryInfo n'est pas null
+    if (deliveryInfo !== null) {
+    }
 </script>
