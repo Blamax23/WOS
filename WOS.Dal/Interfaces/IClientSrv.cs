@@ -19,8 +19,6 @@ namespace WOS.Dal.Interfaces
 
         Client GetClientByEmail(string email);
 
-        List<Client> GetAllClients();
-
         Client GetClient(string email, string password);
 
         bool ClientExists(string email);

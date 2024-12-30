@@ -42,7 +42,7 @@ namespace WOS.Model
         public virtual Client Client { get; set; }
         public virtual Adresse AdresseLivraison { get; set; }
         public virtual StatutCommande Statut { get; set; }
-        public virtual ICollection<LigneCommande> LignesCommande { get; set; }
+        public virtual List<LigneCommande> LignesCommande { get; set; } = new List<LigneCommande>();
     }
 
     public class DeliveryInfo
@@ -57,7 +57,7 @@ namespace WOS.Model
         [JsonPropertyName("city")]
         public string? City { get; set; }
 
-        [JsonPropertyName("zipCode")]
+        [JsonPropertyName("postalCode")]
         public string? ZipCode { get; set; }
 
         [JsonPropertyName("country")]
@@ -102,5 +102,10 @@ namespace WOS.Model
         public string ModePaiement { get; set; }
 
         public string TotalPrice { get; set; }
+    }
+
+    public class AmountDto
+    {
+        public string Amount { get; set; }
     }
 }

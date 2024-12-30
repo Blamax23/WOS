@@ -10,8 +10,6 @@ namespace WOS.Dal.Interfaces
 {
     public interface ICategorieSrv
     {
-        List<Categorie> GetAllCategories();
-
         List<Categorie> GetCategoriesByHome();
 
         Categorie GetCategorieById(int id);

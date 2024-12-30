@@ -12,16 +12,18 @@ namespace WOS.Front.Controllers
     public class QuestionController : Controller
     {
         private readonly IQuestionSrv _questionSrv;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public QuestionController(IQuestionSrv questionSrv)
+        public QuestionController(IQuestionSrv questionSrv, IGlobalDataSrv globalDataSrv)
         {
             _questionSrv = questionSrv;
+            _globalDataSrv = globalDataSrv;
         }
         // GET: QuestionController
         [Route("")]
         public ActionResult Index()
         {
-            List<Question> questions = _questionSrv.GetAllQuestions();
+            List<Question> questions = _globalDataSrv.Questions;
             return View(questions);
         }
 

@@ -12,10 +12,12 @@ namespace WOS.Front.Controllers
     [Route("[controller]")]
     public class CategorieController : Controller
     {
+        private readonly IGlobalDataSrv _globalDataSrv;
         private readonly ICategorieSrv _categorieSrv;
 
-        public CategorieController(ICategorieSrv categorieSrv)
+        public CategorieController(IGlobalDataSrv globalDataSrv, ICategorieSrv categorieSrv)
         {
+            _globalDataSrv = globalDataSrv;
             _categorieSrv = categorieSrv;
         }
 
@@ -40,6 +42,8 @@ namespace WOS.Front.Controllers
 
             _categorieSrv.AddCategorie(cat);
 
+            _globalDataSrv.RefreshCacheAsync(typeof(Categorie));
+
             return RedirectToAction("Index", "Account");
         }
 
@@ -52,6 +56,8 @@ namespace WOS.Front.Controllers
             Categorie cat = _categorieSrv.GetCategorieById(idCategorie);
 
             _categorieSrv.ChangeStatusCategorie(cat);
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Categorie));
 
             return RedirectToAction("Index", "Account");
         }

@@ -12,41 +12,26 @@ namespace WOS.Back.Services
     public class ProduitSrv : IProduitSrv
     {
         private readonly WOSDbContext _context;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public ProduitSrv(WOSDbContext context)
+        public ProduitSrv(WOSDbContext context, IGlobalDataSrv globalDataSrv)
         {
             _context = context;
-        }
-
-        public List<Produit> GetProduits()
-        {
-            List<Produit> produits = _context.Produits.ToList();
-
-            foreach (Produit produit in produits)
-            {
-                produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
-                produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
-                produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
-                produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
-                produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
-                produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
-            }
-
-            return produits;
+            _globalDataSrv = globalDataSrv;
         }
 
         public List<Produit> GetProduitsTendance()
         {
-            List<Produit> produits = _context.Produits.Where(p => p.IsTendance).ToList();
+            List<Produit> produits = _globalDataSrv.Produits.Where(p => p.IsTendance).ToList();
 
             foreach (Produit produit in produits)
             {
-                produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
-                produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
-                produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
-                produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
-                produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
-                produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
+                produit.ProduitImages = _globalDataSrv.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
+                produit.ProduitTailles = _globalDataSrv.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
+                produit.ProduitCouleurs = _globalDataSrv.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
+                produit.Avis = _globalDataSrv.Avis.Where(a => a.ProduitId == produit.Id).ToList();
+                produit.Marque = _globalDataSrv.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
+                produit.Categorie = _globalDataSrv.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
             }
 
             return produits;
@@ -54,16 +39,16 @@ namespace WOS.Back.Services
 
         public List<Produit> GetProduitsByMarque(int idMarque)
         {
-            List<Produit> produits = _context.Produits.Where(p => p.MarqueId == idMarque).ToList();
+            List<Produit> produits = _globalDataSrv.Produits.Where(p => p.MarqueId == idMarque).ToList();
 
             foreach (Produit produit in produits)
             {
-                produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
-                produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
-                produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
-                produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
-                produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
-                produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
+                produit.ProduitImages = _globalDataSrv.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
+                produit.ProduitTailles = _globalDataSrv.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
+                produit.ProduitCouleurs = _globalDataSrv.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
+                produit.Avis = _globalDataSrv.Avis.Where(a => a.ProduitId == produit.Id).ToList();
+                produit.Marque = _globalDataSrv.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
+                produit.Categorie = _globalDataSrv.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
             }
 
             return produits;
@@ -71,16 +56,16 @@ namespace WOS.Back.Services
 
         public List<Produit> GetProduitsByCat(int idCat)
         {
-            List<Produit> produits = _context.Produits.Where(p => p.CategorieId == idCat).ToList();
+            List<Produit> produits = _globalDataSrv.Produits.Where(p => p.CategorieId == idCat).ToList();
 
             foreach (Produit produit in produits)
             {
-                produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
-                produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
-                produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
-                produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
-                produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
-                produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
+                produit.ProduitImages = _globalDataSrv.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
+                produit.ProduitTailles = _globalDataSrv.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
+                produit.ProduitCouleurs = _globalDataSrv.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
+                produit.Avis = _globalDataSrv.Avis.Where(a => a.ProduitId == produit.Id).ToList();
+                produit.Marque = _globalDataSrv.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
+                produit.Categorie = _globalDataSrv.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
             }
 
             return produits;
@@ -88,18 +73,18 @@ namespace WOS.Back.Services
 
         public Produit GetProduitById(int id)
         {
-            Produit produit = _context.Produits.FirstOrDefault(p => p.Id == id);
+            Produit produit = _globalDataSrv.Produits.FirstOrDefault(p => p.Id == id);
 
-            produit.ProduitImages = _context.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
-            produit.ProduitTailles = _context.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
-            produit.ProduitCouleurs = _context.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
-            produit.Avis = _context.Avis.Where(a => a.ProduitId == produit.Id).ToList();
-            produit.Marque = _context.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
-            produit.Categorie = _context.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
+            produit.ProduitImages = _globalDataSrv.ProduitImages.Where(pi => pi.ProduitId == produit.Id).ToList();
+            produit.ProduitTailles = _globalDataSrv.ProduitTailles.Where(pt => pt.ProduitId == produit.Id).ToList();
+            produit.ProduitCouleurs = _globalDataSrv.ProduitCouleurs.Where(pc => pc.ProduitId == produit.Id).ToList();
+            produit.Avis = _globalDataSrv.Avis.Where(a => a.ProduitId == produit.Id).ToList();
+            produit.Marque = _globalDataSrv.Marques.FirstOrDefault(m => m.Id == produit.MarqueId);
+            produit.Categorie = _globalDataSrv.Categories.FirstOrDefault(c => c.Id == produit.CategorieId);
 
             foreach(var avis in produit.Avis)
             {
-                avis.Client = _context.Clients.FirstOrDefault(c => c.Id == avis.ClientId);
+                avis.Client = _globalDataSrv.Clients.FirstOrDefault(c => c.Id == avis.ClientId);
             }
 
             return produit;
@@ -125,6 +110,8 @@ namespace WOS.Back.Services
 
             _context.Produits.Add(produit);
             _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Produit));
         }
 
         public List<double> GetAllTailles()
@@ -148,6 +135,7 @@ namespace WOS.Back.Services
             produitToUpdate.ProduitCouleurs = produit.ProduitCouleurs;
 
             _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(Produit));
         }
 
         public void DeleteProduit(int id)
@@ -161,6 +149,7 @@ namespace WOS.Back.Services
 
             _context.Produits.Remove(produit);
             _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(Produit));
         }
     }
 }

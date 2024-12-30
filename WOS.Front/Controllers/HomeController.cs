@@ -18,21 +18,23 @@ namespace WOS.Front.Controllers
         private readonly IProduitSrv _produitSrv;
         private readonly IMarqueSrv _marqueSrv;
         private readonly ICategorieSrv _categorieSrv;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public HomeController(ILogger<HomeController> logger, IClientSrv clientSrv, IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv)
+        public HomeController(ILogger<HomeController> logger, IClientSrv clientSrv, IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv, IGlobalDataSrv globalDataSrv)
         {
             _logger = logger;
             _clientSrv = clientSrv;
             _produitSrv = produitSrv;
             _marqueSrv = marqueSrv;
             _categorieSrv = categorieSrv;
+            _globalDataSrv = globalDataSrv;
         }
 
         public IActionResult Index()
         {
             HttpContext.Session.SetString("ReturnUrl", HttpContext.Request.Path);
 
-            List<Produit> allProducts = _produitSrv.GetProduits();
+            List<Produit> allProducts = _globalDataSrv.Produits;
 
             HomeViewModel homeViewModel = new HomeViewModel();
 
@@ -92,10 +94,11 @@ namespace WOS.Front.Controllers
             return View();
         }
 
+        [Route("erreur")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(/*new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier }*/);
         }
 
         public static string HashPassword(string password)

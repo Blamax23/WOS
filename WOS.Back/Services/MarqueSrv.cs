@@ -12,27 +12,23 @@ namespace WOS.Back.Services
     public class MarqueSrv : IMarqueSrv
     {
         private readonly WOSDbContext _context;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public MarqueSrv(WOSDbContext context)
+        public MarqueSrv(WOSDbContext context, IGlobalDataSrv globalDataSrv)
         {
             _context = context;
-        }
-
-        public List<Marque> GetAllMarques()
-        {
-            List<Marque> marques = _context.Marques.ToList();
-            return marques;
+            _globalDataSrv = globalDataSrv;
         }
 
         public List<Marque> GetMarquesByHome()
         {
-            List<Marque> marques = _context.Marques.Where(m => m.IsHome == true).ToList();
+            List<Marque> marques = _globalDataSrv.Marques.Where(m => m.IsHome == true).ToList();
             return marques;
         }
 
         public Marque GetMarqueById(int id)
         {
-            Marque marque = _context.Marques.Find(id);
+            Marque marque = _globalDataSrv.Marques.Find(m => m.Id == id);
             return marque;
         }
 
@@ -52,6 +48,7 @@ namespace WOS.Back.Services
                 Console.WriteLine(ex.StackTrace);
                 throw;
             }
+            _globalDataSrv.RefreshCacheAsync(typeof(Marque));
         }
 
         public void ChangeStatusMarque(Marque marque)
@@ -67,6 +64,7 @@ namespace WOS.Back.Services
                 _context.Marques.Update(newMarque);
 
                 _context.SaveChanges();
+                _globalDataSrv.RefreshCacheAsync(typeof(Marque));
             }
         }
     }

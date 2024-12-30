@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,11 @@ namespace WOS.Model
         [Key]
         public int Id { get; set; }
 
+        [Column("client_id")]
         public int ClientId { get; set; }
+
+        [StringLength(150)]
+        public string? Nom { get; set; }
 
         [Required]
         [StringLength(255)]
@@ -32,7 +37,7 @@ namespace WOS.Model
 
         public bool Principale { get; set; }
 
-        public bool PointRelais { get; set; }
+        public bool? PointRelais { get; set; }
 
         // Navigation properties
         public virtual Client Client { get; set; }

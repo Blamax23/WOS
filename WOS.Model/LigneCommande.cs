@@ -13,9 +13,16 @@ namespace WOS.Model
         [Key]
         public int Id { get; set; }
 
+        [Column("commande_id")]
         public int CommandeId { get; set; }
+
+        [Column("produit_id")]
         public int ProduitId { get; set; }
+
+        [Column("produit_taille_id")]
         public int ProduitTailleId { get; set; }
+
+        [Column("produit_couleur_id")]
         public int ProduitCouleurId { get; set; }
 
         [Required]

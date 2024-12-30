@@ -2,6 +2,15 @@
 
 @model ViewFinalPurchase;
 
+@{
+    decimal totalAmount = 0;
+    foreach (var item in Model.Cart)
+    {
+        totalAmount += item.Quantity * item.Price;
+    }
+    totalAmount += (decimal)Model.ModeLivraison.PrixLivraison;
+}
+
 <div class="head-panier">
     <div class="step step-1 active">
         <div class="circle" id="step-1">1</div>
@@ -50,49 +59,72 @@
         <div class="mode-livraison-final">
             <h3>Mode de livraison</h3>
             <div class="delivery-mode">
-                <img src="@Url.Content(Model.ModeLivraison.PathLogo)"/>
-                <h3 class="name-delivery-mode">@Model.ModeLivraison.Nom</h3>
-                <p class="delivery-price"><string>@Model.ModeLivraison.PrixLivraison.ToString("C")</string></p>
+                <img src="@Url.Content(Model.ModeLivraison.PathLogo)" />
+                <div class="info-delivery">
+                    <h3 class="name-delivery-mode">@Model.ModeLivraison.Nom</h3>
+                    <p>Date de livraison estimée : 28 déc</p>
+                    <p class="delivery-price"><strong>@Model.ModeLivraison.PrixLivraison.ToString("C")</strong></p>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="">
-        <h2>Paiement </h2>
-        <div class="form-info-purchase">
-            <div class="fullname-zone">
-                <div class="name-zone">
-                    <label for="name">Nom</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-                <div class="firstname-zone">
-                    <label for="firstname">Prénom</label>
-                    <input type="text" id="firstname" name="firstname" required>
-                </div>
+        <div class="payment-zone">
+            <div class="payment-title-zone">
+                <h2>Paiement</h2>
+                <p><strong>@totalAmount.ToString("C")</strong></p>
             </div>
-            <div class="address-zone">
-                <div class="address-place-zone">
-                    <label for="address">Adresse</label>
-                    <input type="text" id="address" name="address" required>
-                </div>
-                <div class="postal-code-zone">
-                    <label for="postal-code">Code postal</label>
-                    <input type="text" id="postal-code" name="postal-code" maxlength="10" required>
-                </div>
-                <div class="city-zone">
-                    <label for="city">Ville</label>
-                    <input type="text" id="city" name="city" required>
-                </div>
-                <div class="country-zone">
-                    <select id="country" name="country">
-                        <option value="">Sélectionnez un pays</option>
-                    </select>
-                </div>
-            </div>
+            <div class="facturation-address">
+                <h3>Adresse de facturation</h3>
+                <div class="facturation-choice">
+                    <div class="same-address">
+                        <input type="radio" name="addressChoice" class="input-sameAdress" id="sameAddress" />
+                        <label for="sameAddress">J'utilise la même adresse que celle de livraison</label>
+                    </div>
 
-        </div>
-        <div class="btn-actions">
-            <button class="btn cancel-btn step-3-to-2">Annuler</button>
-            <button class="btn confirm-btn confirm-purchase">Suivant</button>
+                    <div class="change-address">
+                        <div class="input-zone">
+                            <input type="radio" name="addressChoice" class="input-changeAdress" id="changeAddress" />
+                            <label for="changeAddress">J'utilise une autre adresse que celle de livraison</label>
+                        </div>
+                        <div class="form-delivery-address">
+                            <div class="address-zone">
+                                <div class="input-div address-place-zone">
+                                    <label for="address">Adresse</label>
+                                    <input type="text" id="address" name="address" required>
+                                </div>
+                                <div class="input-div postal-code-zone">
+                                    <label for="postal-code">Code postal</label>
+                                    <input type="text" id="postal-code" name="postal-code" maxlength="10" required>
+                                </div>
+                                <div class="input-div city-zone">
+                                    <label for="city">Ville</label>
+                                    <input type="text" id="city" name="city" required>
+                                </div>
+                                <div class="input-div country-zone">
+                                    <label for="country">Pays</label>
+                                    <select id="country" name="country">
+                                        <option value="">Sélectionnez un pays</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="payment-info">
+                <form id="payment-form">
+                    <div id="payment-element">
+                        <!--Stripe.js injects the Payment Element-->
+                    </div>
+                    <button id="submit">
+                        <div class="spinner hidden" id="spinner"></div>
+                    </button>
+                    <div id="payment-message" class="hidden"></div>
+                </form>
+            </div>
+            <div class="btn-actions">
+                <button class="btn cancel-btn step-3-to-2">Précédent</button>
+                <button class="btn confirm-btn confirm-purchase">Payer</button>
+            </div>
         </div>
     </div>
 </div>
@@ -114,6 +146,20 @@
         error: function (xhr, status, error) {
             console.error('Erreur :', error);
         }
+    });
+
+    $(".panier-final").click(function () {
+        // On fait une requête ajax
+        $.ajax({
+            url: "/Panier/NextStepPurchase",
+            type: "POST",
+            data: {
+                actualStep: 2
+            },
+            success: function (data) {
+                $(".content").html(data);
+            }
+        });
     });
 
     // Click sur le bouton step-1-to-2
@@ -154,4 +200,141 @@
     // Si l'objet deliveryInfo n'est pas null
     if (deliveryInfo !== null) {
     }
+
+    $(document).ready(function () {
+        // Quand l'option "addressChoice" change (qu'on sélectionne une nouvelle adresse)
+        $('input[name="addressChoice"]').on('change', function () {
+            if ($('#changeAddress').is(':checked')) {
+                // Si "J'utilise une autre adresse" est sélectionnée, afficher le formulaire
+                $('.form-delivery-address').slideDown(300);
+            } else {
+                // Sinon, masquer le formulaire
+                $('.form-delivery-address').slideUp(300);
+            }
+        });
+    });
+
+    // This is your test publishable API key.
+    const stripe = Stripe("pk_test_51QaCRUAwc3ZcnwnKjpcFm0ZeGcbPw4dJ77Jen5cmNx8FLZzP14NmGcTZLQ0pw4GslcCLgF0t8soACBabk7CTL4ul000U04knI7");
+
+    // The items the customer wants to buy
+    const items = [{ id: "total", amount: "@totalAmount.ToString()" }];
+
+    let elements;
+
+    initialize();
+
+    document
+        .querySelector("#payment-form")
+        .addEventListener("submit", handleSubmit);
+
+    // Fetches a payment intent and captures the client secret
+    async function initialize() {
+        const response = await fetch(`/Panier/create-payment-intent?request=${encodeURIComponent(JSON.stringify({ items }))}`, {
+            method: "POST"
+        });
+        const { clientSecret, amount } = await response.json();
+
+        console.log(amount);
+
+        const appearance = {
+            theme: 'stripe',
+        };
+        elements = stripe.elements({ appearance, clientSecret });
+
+        const paymentElementOptions = {
+            layout: "accordion",
+        };
+
+        const paymentElement = elements.create("payment", paymentElementOptions);
+        paymentElement.mount("#payment-element");
+    }
+
+    async function handleSubmit(e) {
+        console.log("On rentre dans le submit");
+        e.preventDefault();
+        setLoading(true);
+
+        const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                // Make sure to change this to your payment completion page
+                return_url: "http://localhost:7076/Panier/ConfirmPurchase",
+            },
+        });
+
+        console.log(error);
+
+        if (error.type === "card_error" || error.type === "validation_error") {
+            showMessage(error.message);
+        } else {
+            showMessage("An unexpected error occurred.");
+        }
+
+        setLoading(false);
+    }
+
+    // ------- UI helpers -------
+
+    function showMessage(messageText) {
+        const messageContainer = document.querySelector("#payment-message");
+
+        messageContainer.classList.remove("hidden");
+        messageContainer.textContent = messageText;
+
+        setTimeout(function () {
+            messageContainer.classList.add("hidden");
+            messageContainer.textContent = "";
+        }, 4000);
+    }
+
+    // Show a spinner on payment submission
+    function setLoading(isLoading) {
+        // if (isLoading) {
+        //     // Disable the button and show a spinner
+        //     document.querySelector("#submit").disabled = true;
+        //     document.querySelector("#spinner").classList.remove("hidden");
+        //     document.querySelector("#button-text").classList.add("hidden");
+        // } else {
+        //     document.querySelector("#submit").disabled = false;
+        //     document.querySelector("#spinner").classList.add("hidden");
+        //     document.querySelector("#button-text").classList.remove("hidden");
+        // }
+    }
+
+    $(".confirm-purchase").on("click", function (e) {
+        // Validation des champs
+        if (!$('input[name="addressChoice"]:checked').length) {
+            alert('Veuillez sélectionner une option pour l\'adresse de facturation.');
+            return;
+        }
+
+        // Si "J'utilise une autre adresse que celle de livraison"
+        if ($('#changeAddress').is(':checked')) {
+            let isValid = true;
+            const fieldsToCheck = ['#address', '#postal-code', '#city', '#country'];
+
+            fieldsToCheck.forEach(function (field) {
+                const value = $(field).val().trim();
+                if (!value) {
+                    isValid = false;
+                    $(field).css('border', '1px solid red'); // Marque le champ en rouge
+                } else {
+                    $(field).css('border', ''); // Réinitialise le style si valide
+                }
+            });
+
+            if (!isValid) {
+                alert('Veuillez remplir tous les champs requis pour l\'adresse de facturation.');
+                return;
+            }
+        }
+
+        // Appel à handleSubmit si tout est valide
+        handleSubmit(e);  // Appeler handleSubmit après la validation
+    });
+
+    $('input, select').on('input change', function () {
+        $(this).css('border', '');
+    });
 </script>

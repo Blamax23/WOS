@@ -52,6 +52,9 @@ builder.Services.AddScoped<ICategorieSrv, CategorieSrv>();
 builder.Services.AddScoped<IAvisSrv, AvisSrv>();
 builder.Services.AddScoped<IMondialRelaySrv, MondialRelaySrv>();
 builder.Services.AddScoped<IModeLivraisonSrv, ModeLivraisonSrv>();
+builder.Services.AddScoped<IAdresseSrv, AdresseSrv>();
+builder.Services.AddSingleton<IGlobalDataSrv, GlobalDataSrv>();
+builder.Services.AddScoped<GlobalDataInitializer>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -80,13 +83,23 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<GlobalDataInitializer>();
+    await initializer.InitializeDataAsync();  // Charger les données
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/erreur");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseExceptionHandler("/erreur");
+// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+app.UseHsts();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles(new StaticFileOptions

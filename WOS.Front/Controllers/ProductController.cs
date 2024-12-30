@@ -16,13 +16,15 @@ namespace WOS.Front.Controllers
         private readonly IMarqueSrv _marqueSrv;
         private readonly ICategorieSrv _categorieSrv;
         private readonly IAvisSrv _avisSrv;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public ProductController(IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv, IAvisSrv avisSrv)
+        public ProductController(IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv, IAvisSrv avisSrv, IGlobalDataSrv globalDataSrv)
         {
             _produitSrv = produitSrv;
             _marqueSrv = marqueSrv;
             _categorieSrv = categorieSrv;
             _avisSrv = avisSrv;
+            _globalDataSrv = globalDataSrv;
         }
         // GET: ProductController
 
@@ -32,9 +34,9 @@ namespace WOS.Front.Controllers
         {
             ProductViewModel productViewModel = new ProductViewModel
             {
-                Produits = _produitSrv.GetProduits(),
-                Marques = _marqueSrv.GetAllMarques(),
-                Categories = _categorieSrv.GetAllCategories()
+                Produits = _globalDataSrv.Produits,
+                Marques = _globalDataSrv.Marques,
+                Categories = _globalDataSrv.Categories
             };
             return View(productViewModel);
         }
@@ -111,7 +113,7 @@ namespace WOS.Front.Controllers
                 });
             }
 
-            Produit lastProduit = _produitSrv.GetProduits().OrderByDescending(p => p.Id).FirstOrDefault();
+            Produit lastProduit = _globalDataSrv.Produits.OrderByDescending(p => p.Id).FirstOrDefault();
             int lastId = lastProduit == null ? 0 : lastProduit.Id;
 
             var newProduct = new Produit
@@ -197,7 +199,7 @@ namespace WOS.Front.Controllers
                 couleurs.Add(couleurEnum.GetName());
             }
 
-            List<Produit> products = _produitSrv.GetProduits();
+            List<Produit> products = _globalDataSrv.Produits;
 
             List<Produit> productsFiltered = products;
 
@@ -231,8 +233,8 @@ namespace WOS.Front.Controllers
             ProductViewModel productViewModel = new ProductViewModel
             {
                 Produits = productsFiltered,
-                Marques = _marqueSrv.GetAllMarques(),
-                Categories = _categorieSrv.GetAllCategories()
+                Marques = _globalDataSrv.Marques,
+                Categories = _globalDataSrv.Categories
             };
 
             return PartialView("_FilteredProducts", productsFiltered);

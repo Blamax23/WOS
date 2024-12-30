@@ -1,4 +1,4 @@
-.content {
+﻿.content {
     display: flex;
     flex-direction: column;
     min-height: 80vh;
@@ -43,7 +43,7 @@
 }
 
 .line {
-    flex: 1; /* S'�tend pour combler l'espace entre les cercles */
+    flex: 1; /* S'étend pour combler l'espace entre les cercles */
     height: .5vh;
     background: repeating-linear-gradient( to right, #bdc3c7 0, #bdc3c7 5px, transparent 5px, transparent 10px );
 }
@@ -248,12 +248,12 @@
     transition: max-height 0.3s ease-out;
 }
 
-    /* Lorsqu'on d�ploie l'accordion */
+    /* Lorsqu'on déploie l'accordion */
     .modes-home.expanded, .modes-relay.expanded {
         padding-bottom: 1em;
     }
 
-/* Ic�ne pivotante */
+/* Icône pivotante */
 .home-accordion i, .relay-accordion i {
     transition: transform 0.3s ease-out;
 }
@@ -307,7 +307,7 @@
     }
 
 .selected {
-    /*Couleur bleu ciel tr�s clair*/
+    /*Couleur bleu ciel très clair*/
     background-color: #d1ecf1;
 }
 
@@ -316,7 +316,13 @@
     margin-top: 2vh;
 }
 
-.panier-final{
+.recapitulatif{
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+}
+
+.panier-final, .mode-livraison-final {
     display: flex;
     flex-direction: column;
     width: 50%;
@@ -325,9 +331,14 @@
     border-radius: 15px;
     padding: 1em;
     cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-    .panier-final h3{
+    .panier-final .price{
+        font-size: 1.3em;
+    }
+
+    .panier-final h3, .mode-livraison-final h3 {
         margin: 0;
     }
 
@@ -365,6 +376,7 @@
     .panier-final .itemPanier {
         height: 10vh;
         padding: 0;
+        justify-content: left;
     }
 
     .panier-final .itemPanier img {
@@ -384,3 +396,128 @@
         .panier-final .item-details div p{
             font-size: 0.9em;
         }
+
+    .panier-final .item-infos{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+    }
+
+        .panier-final .item-infos .item-details{
+            width: 30%;
+        }
+
+        .mode-livraison-final .delivery-mode {
+            display: flex;
+            flex-direction: row;
+            height: 8vh;
+            align-items: center;
+        }
+
+    .mode-livraison-final .delivery-mode .info-delivery{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .mode-livraison-final .delivery-mode .info-delivery * {
+            margin: 0;
+            height: max-content;
+        }
+
+        .mode-livraison-final .delivery-mode img {
+            height: 100%;
+        }
+
+.payment-zone {
+    width: 50%;
+    margin: auto;
+    border: 3px solid black;
+    border-radius: 15px;
+    padding: 1em;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.payment-zone h2{
+    margin: 0;
+}
+
+.payment-title-zone{
+    display: flex;
+    justify-content: space-between;
+
+}
+
+.facturation-choice {
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+}
+
+.form-delivery-address {
+    margin-top: 3vh;
+    display: none;
+}
+
+/* Masquer l'input radio par défaut, seulement pour les ID spécifiques */
+#sameAddress, #changeAddress {
+    display: none;
+}
+
+    /* Style du label pour les radios spécifiques */
+    #sameAddress + label, #changeAddress + label {
+        position: relative;
+        padding-left: 35px;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 22px;
+        color: #333;
+        font-family: Arial, sans-serif;
+        display: inline-block;
+    }
+
+        /* Carré personnalisé */
+        #sameAddress + label::before, #changeAddress + label::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border: 2px solid #000;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Effet au survol */
+        #sameAddress + label:hover::before, #changeAddress + label:hover::before {
+            border-color: black;
+        }
+
+    /* Style lorsque coché */
+    #sameAddress:checked + label::before, #changeAddress:checked + label::before {
+        background-color: black;
+        border-color: black;
+    }
+
+    #sameAddress:checked + label::after, #changeAddress:checked + label::after {
+        content: '\2714'; /* Unicode pour la coche ✔ */
+        position: absolute;
+        top: 2px;
+        left: 5px;
+        font-size: 16px;
+        color: white;
+        font-weight: bold;
+    }
+
+    /* Option de focus */
+    #sameAddress:focus + label::before, #changeAddress:focus + label::before {
+        box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.3);
+    }
+
+.payment-info{
+    margin: 5vh auto;
+}

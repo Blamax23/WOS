@@ -10,8 +10,6 @@ namespace WOS.Dal.Interfaces
 {
     public interface IMarqueSrv
     {
-        List<Marque> GetAllMarques();
-
         List<Marque> GetMarquesByHome();
 
         Marque GetMarqueById(int id);

@@ -21,6 +21,11 @@ namespace WOS.Dal.Mapping
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
+            builder.Property(a => a.Nom)
+                .IsRequired(false)
+                .HasMaxLength(150)
+                .HasColumnName("nom");
+
             builder.Property(a => a.Rue)
                 .IsRequired()
                 .HasMaxLength(255)

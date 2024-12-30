@@ -12,49 +12,36 @@ namespace WOS.Back.Services
     public class CommandeSrv : ICommandeSrv
     {
         private readonly WOSDbContext _context;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public CommandeSrv(WOSDbContext context)
+        public CommandeSrv(WOSDbContext context, IGlobalDataSrv globalDataSrv)
         {
             _context = context;
-        }
-
-        public List<Commande> GetCommandes()
-        {
-            List<Commande> commandes = _context.Commandes.ToList();
-
-            foreach (Commande commande in commandes)
-            {
-                commande.Client = _context.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
-                commande.AdresseLivraison = _context.Adresses.FirstOrDefault(a => a.Id == commande.AdresseLivraisonId);
-                commande.Statut = _context.StatutsCommande.FirstOrDefault(s => s.Id == commande.StatutId);
-                commande.LignesCommande = _context.LignesCommande.Where(lc => lc.CommandeId == commande.Id).ToList();
-            }
-
-            return commandes;
+            _globalDataSrv = globalDataSrv;
         }
 
         public Commande GetCommandeById(int id)
         {
-            Commande commande = _context.Commandes.FirstOrDefault(c => c.Id == id);
+            Commande commande = _globalDataSrv.Commandes.FirstOrDefault(c => c.Id == id);
 
-            commande.Client = _context.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
-            commande.AdresseLivraison = _context.Adresses.FirstOrDefault(a => a.Id == commande.AdresseLivraisonId);
-            commande.Statut = _context.StatutsCommande.FirstOrDefault(s => s.Id == commande.StatutId);
-            commande.LignesCommande = _context.LignesCommande.Where(lc => lc.CommandeId == commande.Id).ToList();
+            commande.Client = _globalDataSrv.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
+            commande.AdresseLivraison = _globalDataSrv.Adresses.FirstOrDefault(a => a.Id == commande.AdresseLivraisonId);
+            commande.Statut = _globalDataSrv.StatutsCommande.FirstOrDefault(s => s.Id == commande.StatutId);
+            commande.LignesCommande = _globalDataSrv.LignesCommande.Where(lc => lc.CommandeId == commande.Id).ToList();
 
             return commande;
         }
 
         public List<Commande> GetCommandesByClientId(int id)
         {
-            List<Commande> commandes = _context.Commandes.Where(c => c.ClientId == id).ToList();
+            List<Commande> commandes = _globalDataSrv.Commandes.Where(c => c.ClientId == id).ToList();
 
             foreach (Commande commande in commandes)
             {
-                commande.Client = _context.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
-                commande.AdresseLivraison = _context.Adresses.FirstOrDefault(a => a.Id == commande.AdresseLivraisonId);
-                commande.Statut = _context.StatutsCommande.FirstOrDefault(s => s.Id == commande.StatutId);
-                commande.LignesCommande = _context.LignesCommande.Where(lc => lc.CommandeId == commande.Id).ToList();
+                commande.Client = _globalDataSrv.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
+                commande.AdresseLivraison = _globalDataSrv.Adresses.FirstOrDefault(a => a.Id == commande.AdresseLivraisonId);
+                commande.Statut = _globalDataSrv.StatutsCommande.FirstOrDefault(s => s.Id == commande.StatutId);
+                commande.LignesCommande = _globalDataSrv.LignesCommande.Where(lc => lc.CommandeId == commande.Id).ToList();
             }
 
             return commandes;
@@ -62,13 +49,26 @@ namespace WOS.Back.Services
 
         public void AddCommande(Commande commande)
         {
+            _context.Adresses.Add(commande.AdresseLivraison);
+            _context.SaveChanges();
+
             _context.Commandes.Add(commande);
+            _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Adresse));
+            _globalDataSrv.RefreshCacheAsync(typeof(Commande));
+
+            Commande commandeSaved = _globalDataSrv.Commandes.FirstOrDefault(c => c.NumeroCommande == commande.NumeroCommande);
+            Adresse adresseCommande = _globalDataSrv.Adresses.FirstOrDefault(a => a.CodePostal == commande.AdresseLivraison.CodePostal && a.ClientId == commande.ClientId);
+
+            _context.Commandes.FirstOrDefault(c => c == commandeSaved).AdresseLivraisonId = adresseCommande.Id;
+
             foreach (LigneCommande ligneCommande in commande.LignesCommande)
             {
+                ligneCommande.CommandeId = commandeSaved.Id;
                 _context.LignesCommande.Add(ligneCommande);
             }
-            _context.Adresses.Add(commande.AdresseLivraison);
-            _context.StatutsCommande.Add(commande.Statut);
+
             _context.SaveChanges();
         }
     }

@@ -9,7 +9,6 @@ namespace WOS.Dal.Interfaces
 {
     public interface IModeLivraisonSrv
     {
-        List<ModeLivraison> GetModeLivraisons();
         void UpdatePriceLivraison(int id, float newPrice);
         ModeLivraison GetModeLivraisonById(int id);
         ModeLivraison GetModeLivraisonByName(string name);

@@ -9,7 +9,6 @@ namespace WOS.Dal.Interfaces
 {
     public interface ICommandeSrv
     {
-        List<Commande> GetCommandes();
         Commande GetCommandeById(int id);
         List<Commande> GetCommandesByClientId(int id);
         void AddCommande(Commande commande);

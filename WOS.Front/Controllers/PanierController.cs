@@ -9,6 +9,11 @@ using WOS.Back.Services;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
+using System.Globalization;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Security.Claims;
 
 namespace WOS.Front.Controllers
 {
@@ -20,13 +25,19 @@ namespace WOS.Front.Controllers
         private readonly IProduitSrv _produitSrv;
         private readonly IMondialRelaySrv _mondialRelaySrv;
         private readonly IModeLivraisonSrv _modeLivraisonSrv;
+        private readonly ICommandeSrv _commandeSrv;
+        private readonly IGlobalDataSrv _globalDataSrv;
+        private readonly IAdresseSrv _adresseSrv;
 
-        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv, IModeLivraisonSrv modeLivraisonSrv)
+        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv, IModeLivraisonSrv modeLivraisonSrv, ICommandeSrv commandeSrv, IGlobalDataSrv globalDataSrv, IAdresseSrv adresseSrv)
         {
             _configuration = configuration;
             _produitSrv = produitSrv;
             _mondialRelaySrv = mondialRelaySrv;
             _modeLivraisonSrv = modeLivraisonSrv;
+            _commandeSrv = commandeSrv;
+            _globalDataSrv = globalDataSrv;
+            _adresseSrv = adresseSrv;
         }
 
         [HttpPost]
@@ -163,7 +174,7 @@ namespace WOS.Front.Controllers
             if(actualStep == 1)
             {
                 _mondialRelaySrv.ExempleRecherche();
-                var modesLivraison = _modeLivraisonSrv.GetModeLivraisons();
+                var modesLivraison = _globalDataSrv.ModeLivraisons;
                 return PartialView("_ViewInfoDelivery", modesLivraison);
             }
             else if (actualStep == 2)
@@ -196,6 +207,68 @@ namespace WOS.Front.Controllers
                 totalPrice += (decimal)modeLivraison.PrixLivraison;
                 viewFinalPurchase.TotalPrice = totalPrice.ToString();
 
+
+                //Int32.TryParse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value, out int clientId);
+                int clientId = 1;
+                // On crée l'adresse 
+                int adresseLivraisonId = 0;
+
+                Adresse adresseToSend = new Adresse
+                {
+                    ClientId = clientId,
+                    Rue = deliveryInfoObj.Address,
+                    Ville = deliveryInfoObj.City,
+                    CodePostal = deliveryInfoObj.ZipCode,
+                    Pays = deliveryInfoObj.Country,
+                    Principale = true,
+                    PointRelais = false,
+                };
+
+                if (!string.IsNullOrEmpty(deliveryInfoObj.ParcelShop.Name))
+                {
+                    _adresseSrv.AddAdresse(adresseToSend);
+
+                    adresseToSend = new Adresse
+                    {
+                        ClientId = clientId,
+                        Nom = deliveryInfoObj.ParcelShop.Name,
+                        Rue = deliveryInfoObj.ParcelShop.Address,
+                        Ville = deliveryInfoObj.ParcelShop.City,
+                        CodePostal = deliveryInfoObj.ParcelShop.ZipCode,
+                        Pays = deliveryInfoObj.ParcelShop.Country,
+                        Principale = false,
+                        PointRelais = true
+                    };
+                    _adresseSrv.ChangeAdressePrincipale();
+                    adresseLivraisonId = _globalDataSrv.Adresses.FirstOrDefault(a => a.PointRelais == true && a.Nom == adresseToSend.Nom).Id;
+                }
+                string numberOrder = GenerateOrderNumber();
+                // On crée la commande
+                Commande commande = new Commande
+                {
+                    ClientId = clientId,
+                    MontantTotal = totalPrice,
+                    DateCommande = DateTime.Now,
+                    StatutId = 1,
+                    NumeroCommande = numberOrder,
+                    AdresseLivraison = adresseToSend
+                };
+
+                foreach(var item in cartItems)
+                {
+                    Produit produit = _produitSrv.GetProduitById(item.ProductId);
+                    commande.LignesCommande.Add(new LigneCommande
+                    {
+                        PrixUnitaire = item.Price,
+                        Quantite = item.Quantity,
+                        ProduitId = item.ProductId,
+                        ProduitCouleurId = produit.ProduitCouleurs.FirstOrDefault().Id,
+                        ProduitTailleId = produit.ProduitTailles.FirstOrDefault().Id
+                    });
+                }
+                _adresseSrv.ChangeAdressePrincipale();
+                _commandeSrv.AddCommande(commande);
+
                 return PartialView("_ViewPayment", viewFinalPurchase);
             }
             else
@@ -226,7 +299,7 @@ namespace WOS.Front.Controllers
             }else if (actualStep == 3)
             {
                 // On récupère les modes de livraisons
-                var modesLivraison = _modeLivraisonSrv.GetModeLivraisons();
+                var modesLivraison = _globalDataSrv.ModeLivraisons;
                 return PartialView("_ViewInfoDelivery", modesLivraison);
             }
             else
@@ -251,6 +324,106 @@ namespace WOS.Front.Controllers
                 _modeLivraisonSrv.UpdatePriceLivraison(idModeLivraison, prix);
             }
             return Ok();
+        }
+
+        private PaymentIntentService CreatePaymentIntent(long? amount)
+        {
+            StripeConfiguration.ApiKey = "sk_test_VePHdqKTYQjKNInc7u56JBrQ";
+
+            var options = new PaymentIntentCreateOptions
+            {
+                Amount = amount,
+                Currency = "eur",
+                AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+                {
+                    Enabled = true,
+                },
+            };
+            var service = new PaymentIntentService();
+            service.Create(options);
+
+            return service;
+        }
+
+        //[Route("stripesecret")]
+        [Route("create-payment-intent")]
+        [HttpPost]
+        public ActionResult Get(string request)
+        {
+            PaymentIntentCreateRequest paymentIntentCreateRequest = JsonSerializer.Deserialize<PaymentIntentCreateRequest>(request);
+            // Configuration de Stripe
+            StripeConfiguration.ApiKey = "sk_test_51QaCRUAwc3ZcnwnKhHbrJveMJCMiiDidqRmYtHdW4GoOmELOHras2whfHzz2zGouzU5bF4VfOLXWzahmoGh83vqd00600F7Jn8";
+
+            var paymentIntentService = new PaymentIntentService();
+            var paymentIntent = paymentIntentService.Create(new PaymentIntentCreateOptions
+            {
+                Amount = CalculateOrderAmount(paymentIntentCreateRequest.Items),
+                Currency = "eur",
+                // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+                //AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+                //{
+                //    Enabled = true,
+                //},
+                PaymentMethodTypes = new List<string>
+                {
+                    "card", "klarna", "paypal" // Active les méthodes de paiement : carte bancaire et Klarna
+                },
+                PaymentMethodOptions = new PaymentIntentPaymentMethodOptionsOptions
+                {
+                    Klarna = new PaymentIntentPaymentMethodOptionsKlarnaOptions
+                    {
+                        PreferredLocale = "fr-FR", // Localisation française pour Klarna
+                    },
+                },
+            });
+
+            return Json(new { clientSecret = paymentIntent.ClientSecret, amount = paymentIntent.Amount });
+        }
+
+        private long CalculateOrderAmount(List<Item> items)
+        {
+            // Calculate the order total on the server to prevent
+            // people from directly manipulating the amount on the client
+            long total = 0;
+            foreach(var item in items)
+            {
+                string sanitizedInput = item.Amount.Replace(",", ".");
+
+                // Essayer de convertir en décimal
+                if (decimal.TryParse(sanitizedInput, System.Globalization.NumberStyles.Any,
+                                     System.Globalization.CultureInfo.InvariantCulture, out decimal decimalValue))
+                {
+                    total += (long)(decimalValue * 100);
+                }
+
+            }
+
+            return total;
+        }
+
+        private string GenerateOrderNumber()
+        {
+            string year = DateTime.Now.Year.ToString();
+            string countOrder = (_globalDataSrv.Commandes.Count + 1).ToString("D4");
+
+            Random random = new Random();
+            int randomNumber = random.Next(100000, 1000000);
+
+            return year + countOrder + randomNumber.ToString();
+        }
+
+        public class Item
+        {
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+            [JsonPropertyName("amount")]
+            public string Amount { get; set; }
+        }
+
+        public class PaymentIntentCreateRequest
+        {
+            [JsonPropertyName("items")]
+            public List<Item> Items { get; set; }
         }
     }
 }

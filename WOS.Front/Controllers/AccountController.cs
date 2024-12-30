@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using System.Net.Mail;
 using System.Net;
 using Microsoft.AspNetCore.Http.HttpResults;
+using WOS.Back.Services;
 
 namespace WOS.Front.Controllers
 {
@@ -28,8 +29,9 @@ namespace WOS.Front.Controllers
         private readonly ICategorieSrv _categorieSrv;
         private readonly IMarqueSrv _marqueSrv;
         private readonly IModeLivraisonSrv _modeLivraisonSrv;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public AccountController(IClientSrv clientSrv, IAdminSrv adminSrv, IConfiguration configuration, IAuthenticationSrv authenticationSrv, IProduitSrv produitSrv, ICommandeSrv commandeSrv, ICategorieSrv categorieSrv, IMarqueSrv marqueSrv, IModeLivraisonSrv modeLivraisonSrv)
+        public AccountController(IClientSrv clientSrv, IAdminSrv adminSrv, IConfiguration configuration, IAuthenticationSrv authenticationSrv, IProduitSrv produitSrv, ICommandeSrv commandeSrv, ICategorieSrv categorieSrv, IMarqueSrv marqueSrv, IModeLivraisonSrv modeLivraisonSrv, IGlobalDataSrv globalDataSrv)
         {
             _clientSrv = clientSrv;
             _adminSrv = adminSrv;
@@ -40,6 +42,7 @@ namespace WOS.Front.Controllers
             _categorieSrv = categorieSrv;
             _marqueSrv = marqueSrv;
             _modeLivraisonSrv = modeLivraisonSrv;
+            _globalDataSrv = globalDataSrv;
         }
 
         #region Account
@@ -70,11 +73,11 @@ namespace WOS.Front.Controllers
                 if (User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role).Value.ToString().Equals("Admin"))
                 {
                     accountViewModel.User = _adminSrv.GetAdminByEmail(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email).Value.ToString());
-                    accountViewModel.Produits = _produitSrv.GetProduits();
-                    accountViewModel.Commandes = _commandeSrv.GetCommandes();
-                    accountViewModel.Marques = _marqueSrv.GetAllMarques();
-                    accountViewModel.Categories = _categorieSrv.GetAllCategories();
-                    accountViewModel.ModeLivraisons = _modeLivraisonSrv.GetModeLivraisons();
+                    accountViewModel.Produits = _globalDataSrv.Produits;
+                    accountViewModel.Commandes = _globalDataSrv.Commandes;
+                    accountViewModel.Marques = _globalDataSrv.Marques;
+                    accountViewModel.Categories = _globalDataSrv.Categories;
+                    accountViewModel.ModeLivraisons = _globalDataSrv.ModeLivraisons;
                 }
                 else
                 {
@@ -121,7 +124,7 @@ namespace WOS.Front.Controllers
                 }
                 else
                 {
-                    if(email != admin.Email)
+                    if (email != admin.Email)
                         admin.Email = email;
                 }
 
@@ -131,7 +134,7 @@ namespace WOS.Front.Controllers
                 }
                 else
                 {
-                    if(prenom != admin.Prenom)
+                    if (prenom != admin.Prenom)
                         admin.Prenom = prenom;
                 }
 
@@ -141,11 +144,11 @@ namespace WOS.Front.Controllers
                 }
                 else
                 {
-                    if(nom != admin.Nom)
+                    if (nom != admin.Nom)
                         admin.Nom = nom;
                 }
 
-                if(password != null)
+                if (password != null)
                 {
                     if (HashPassword(password) != admin.MotDePasse)
                     {
@@ -185,7 +188,7 @@ namespace WOS.Front.Controllers
                 }
                 _clientSrv.UpdateClient(client);
             }
-            return Json(new { errorMessage = ""});
+            return Json(new { errorMessage = "" });
         }
 
         #endregion
@@ -430,6 +433,7 @@ namespace WOS.Front.Controllers
 
             var claims = new List<Claim>
                 {
+                    new Claim(ClaimTypes.Sid, client.Id.ToString()),
                     new Claim(ClaimTypes.Name, client.Nom),
                     new Claim(ClaimTypes.Email, client.Email),
                     new Claim(ClaimTypes.Role, "Client")
@@ -548,7 +552,7 @@ namespace WOS.Front.Controllers
                 {
                     builder.Append(bytes[i].ToString("x2"));
                 }
-                return builder.ToString().ToUpper() ;
+                return builder.ToString().ToUpper();
             }
         }
 

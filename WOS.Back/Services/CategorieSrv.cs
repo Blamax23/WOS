@@ -12,27 +12,23 @@ namespace WOS.Back.Services
     public class CategorieSrv : ICategorieSrv
     {
         private readonly WOSDbContext _context;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public CategorieSrv(WOSDbContext context)
+        public CategorieSrv(WOSDbContext context, IGlobalDataSrv globalDataSrv)
         {
             _context = context;
-        }
-
-        public List<Categorie> GetAllCategories()
-        {
-            List<Categorie> Categories = _context.Categories.ToList();
-            return Categories;
+            _globalDataSrv = globalDataSrv;
         }
 
         public List<Categorie> GetCategoriesByHome()
         {
-            var categories = _context.Categories.Where(c => c.IsHome == true).ToList();
+            var categories = _globalDataSrv.Categories.Where(c => c.IsHome == true).ToList();
             return categories;
         }
 
         public Categorie GetCategorieById(int id)
         {
-            Categorie Categorie = _context.Categories.Find(id);
+            Categorie Categorie = _globalDataSrv.Categories.Find(c => c.Id == id);
             return Categorie;
         }
 
@@ -40,6 +36,8 @@ namespace WOS.Back.Services
         {
             _context.Categories.Add(Categorie);
             _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Categorie));
         }
 
         public void ChangeStatusCategorie(Categorie Categorie)
@@ -55,6 +53,7 @@ namespace WOS.Back.Services
                 _context.Categories.Update(newCategorie);
 
                 _context.SaveChanges();
+                _globalDataSrv.RefreshCacheAsync(typeof(Categorie));
             }
         }
     }

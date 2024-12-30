@@ -12,10 +12,12 @@ namespace WOS.Back.Services
     public class QuestionSrv : IQuestionSrv
     {
         private readonly WOSDbContext _context;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public QuestionSrv(WOSDbContext context)
+        public QuestionSrv(WOSDbContext context, IGlobalDataSrv globalDataSrv)
         {
             _context = context;
+            _globalDataSrv = globalDataSrv;
         }
 
         public void AddQuestion(Question question)
@@ -23,22 +25,16 @@ namespace WOS.Back.Services
             // Code pour ajouter un Actualite
             _context.Questions.Add(question);
             _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Question));
         }
 
         public Question GetQuestion(int id)
         {
             // Code pour récupérer un Actualite
-            var quest = _context.Questions.Find(id);
+            var quest = _globalDataSrv.Questions.Find(q => q.Id == id);
 
             return quest;
-        }
-
-        public List<Question> GetAllQuestions()
-        {
-            // Code pour récupérer tous les Actualites
-            var questions = _context.Questions.ToList();
-
-            return questions;
         }
 
         public void DeleteQuestion(int id)
@@ -46,6 +42,7 @@ namespace WOS.Back.Services
             var quest = _context.Questions.Find(id);
             _context.Questions.Remove(quest);
             _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(Question));
         }
     }
 }

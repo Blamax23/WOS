@@ -12,25 +12,22 @@ namespace WOS.Back.Services
     public class ModeLivraisonSrv : IModeLivraisonSrv
     {
         private readonly WOSDbContext _context;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public ModeLivraisonSrv(WOSDbContext context)
+        public ModeLivraisonSrv(WOSDbContext context, IGlobalDataSrv globalDataSrv)
         {
             _context = context;
-        }
-
-        public List<ModeLivraison> GetModeLivraisons()
-        {
-            return _context.ModeLivraisons.ToList();
+            _globalDataSrv = globalDataSrv;
         }
 
         public ModeLivraison GetModeLivraisonById(int id)
         {
-            return _context.ModeLivraisons.FirstOrDefault(ml => ml.Id == id);
+            return _globalDataSrv.ModeLivraisons.FirstOrDefault(ml => ml.Id == id);
         }
 
         public ModeLivraison GetModeLivraisonByName(string name)
         {
-            return _context.ModeLivraisons.FirstOrDefault(ml => ml.Nom == name);
+            return _globalDataSrv.ModeLivraisons.FirstOrDefault(ml => ml.Nom == name);
         }
 
         public void UpdatePriceLivraison(int id, float newPrice)
@@ -40,6 +37,7 @@ namespace WOS.Back.Services
             modeLivraison.PrixLivraison = newPrice;
 
             _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(ModeLivraison));
         }
     }
 }

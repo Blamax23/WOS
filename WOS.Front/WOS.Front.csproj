@@ -31,4 +31,8 @@
 	  </None>-->
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Stripe.net" Version="47.2.0" />
+  </ItemGroup>
+
 </Project>

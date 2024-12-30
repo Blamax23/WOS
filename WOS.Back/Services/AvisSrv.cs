@@ -12,10 +12,12 @@ namespace WOS.Back.Services
     public class AvisSrv : IAvisSrv
     {
         private readonly WOSDbContext _context;
+        private readonly IGlobalDataSrv _globalDataSrv;
 
-        public AvisSrv(WOSDbContext context)
+        public AvisSrv(WOSDbContext context, IGlobalDataSrv globalDataSrv)
         {
             _context = context;
+            _globalDataSrv = globalDataSrv;
         }
 
         public void AddAvis(int idProduit, int idClient, string commentaire, double note)
@@ -31,16 +33,18 @@ namespace WOS.Back.Services
 
             _context.Avis.Add(avis);
             _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Avis));
         }
 
         public List<Avis> GetAvisByProduit(int idProduit)
         {
-            return _context.Avis.Where(a => a.ProduitId == idProduit).ToList();
+            return _globalDataSrv.Avis.Where(a => a.ProduitId == idProduit).ToList();
         }
 
         public List<Avis> GetAvisByClient(int idClient)
         {
-            return _context.Avis.Where(a => a.ClientId == idClient).ToList();
+            return _globalDataSrv.Avis.Where(a => a.ClientId == idClient).ToList();
         }
     }
 }
