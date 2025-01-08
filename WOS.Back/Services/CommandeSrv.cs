@@ -47,6 +47,18 @@ namespace WOS.Back.Services
             return commandes;
         }
 
+        public Commande GetCommandeByNumberOrder(string number)
+        {
+            Commande commande = _globalDataSrv.Commandes.FirstOrDefault(c => c.NumeroCommande == number);
+
+            commande.Client = _globalDataSrv.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
+            commande.AdresseLivraison = _globalDataSrv.Adresses.FirstOrDefault(a => a.Id == commande.AdresseLivraisonId);
+            commande.Statut = _globalDataSrv.StatutsCommande.FirstOrDefault(s => s.Id == commande.StatutId);
+            commande.LignesCommande = _globalDataSrv.LignesCommande.Where(lc => lc.CommandeId == commande.Id).ToList();
+
+            return commande;
+        }
+
         public void AddCommande(Commande commande)
         {
             _context.Adresses.Add(commande.AdresseLivraison);
@@ -65,11 +77,24 @@ namespace WOS.Back.Services
 
             foreach (LigneCommande ligneCommande in commande.LignesCommande)
             {
-                ligneCommande.CommandeId = commandeSaved.Id;
-                _context.LignesCommande.Add(ligneCommande);
+                LigneCommande lignetoAdd = ligneCommande;
+                lignetoAdd.Id = 0;
+                lignetoAdd.CommandeId = commandeSaved.Id;
+                _context.LignesCommande.Add(lignetoAdd);
             }
 
             _context.SaveChanges();
+        }
+
+        public void UpdateStatus(int idCommande)
+        {
+            Commande commande = _context.Commandes.FirstOrDefault(c => c.Id == idCommande);
+
+            commande.StatutId = commande.StatutId++;
+
+            _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Commande));
         }
     }
 }

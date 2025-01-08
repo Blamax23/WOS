@@ -91,6 +91,18 @@
         </div>
 
         <div class="tabProducts">
+            <div class="div-tri">
+                <div class="tri-zone">
+                    <p>Trier par :</p>
+                    <select name="tri">
+                        <option value="tendances" selected>Tendances</option>
+                        <option value="ascending-alphabet">A-Z</option>
+                        <option value="descending-alphabet">Z-A</option>
+                        <option value="ascending-price">Prix croissant</option>
+                        <option value="descending-price">Prix décroissant</option>
+                    </select>
+                </div>
+            </div>
             <div class="products">
                 @foreach (var produit in Model.Produits)
                 {
@@ -108,7 +120,7 @@
                             <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
                         </div>
                         <div class="product-info">
-                            <p class="product-name">@produit.Categorie.Nom @produit.Nom</p>
+                            <p class="product-name">@produit.Nom</p>
                             <div class="prices">
                                 @if (productWithPromo.PrixPromo != null)
                                 {
@@ -194,35 +206,21 @@
     // On met un gestionnaire d'événement pour le changement de prix des inputs
     $("#minPrice, #maxPrice").change(function () {
         // On récupère les valeurs de tous les inputs, les couleurs, etc
-        let minPrice = $("#minPrice").val() ? parseFloat($("#minPrice").val()) : null; 
-        let maxPrice = $("#maxPrice").val() ? parseFloat($("#maxPrice").val()) : null;
+        let filters = GetParameters();
 
-        // On récupère les couleurs sélectionnées
-        let selectedColors = $(".color-zone.selected-color").map(function () {
-            return $(this).find(".img-color").data("id-color");
-        }).get();
-
-        // On récupère les marques sélectionnées
-        let selectedMarqueIds = $(".marque input:checked").map(function () {
-            return $(this).attr("id");
-        }).get();
-
-        // On récupère les catégories sélectionnées
-        let selectedCategorieIds = $(".categorie input:checked").map(function () {
-            return $(this).attr("id");
-        }).get();
-
+        console.log(filters);
 
         // On envoie les données au serveur
         $.ajax({
             url: "/Product/GetProductFiltered",
             type: "POST",
             data: {
-                marque: selectedMarqueIds,
-                categorie: selectedCategorieIds,
-                couleur: selectedColors,
-                prixMin: minPrice,
-                prixMax: maxPrice
+                marque: filters.selectedMarqueIds,
+                categorie: filters.selectedCategorieIds,
+                couleur: filters.selectedColors,
+                prixMin: filters.minPrice,
+                prixMax: filters.maxPrice,
+                tri: filters.tri
             },
             success: function (data) {
                 $(".products").html(data);
@@ -237,9 +235,63 @@
     $(".color-zone, .marque input, .categorie input").click(function () {
         console.log("here");
         // On récupère les couleurs sélectionnées
+        let filters = GetParameters();
+
+        console.log(filters);
+
+        // On envoie les données au serveur
+        $.ajax({
+            url: "/Product/GetProductFiltered",
+            type: "POST",
+            data: {
+                marque: filters.selectedMarqueIds,
+                categorie: filters.selectedCategorieIds,
+                couleur: filters.selectedColors,
+                prixMin: filters.minPrice,
+                prixMax: filters.maxPrice,
+                tri: filters.tri
+            },
+            success: function (data) {
+                $(".products").html(data);
+            },
+            error: function (xhr, status, error) {
+                console.error("Erreur:", error);
+            }
+        });
+    });
+
+    // On met un gestionnaire d'événement quand le select tri change
+    $("select[name='tri']").change(function () {
+        let filters = GetParameters();
+
+        // On affiche le type de la variable tri
+        console.log(filters);
+
+        // On envoie les données au serveur
+        $.ajax({
+            url: "/Product/GetProductFiltered",
+            type: "POST",
+            data: {
+                marque: filters.selectedMarqueIds,
+                categorie: filters.selectedCategorieIds,
+                couleur: filters.selectedColors,
+                prixMin: filters.minPrice || "",
+                prixMax: filters.maxPrice || "",
+                tri: filters.tri
+            },
+            success: function (data) {
+                $(".products").html(data);
+            },
+            error: function (xhr, status, error) {
+                console.error("Erreur:", error);
+            }
+        });
+    });
+
+    function GetParameters() {
         // Récupérer les valeurs des prix
-        let minPrice = $("#minPrice").val() ? parseFloat($("#minPrice").val()) : null; // Convertit en float ou null si vide
-        let maxPrice = $("#maxPrice").val() ? parseFloat($("#maxPrice").val()) : null;
+        let minPrice = $("#minPrice").val() ? $("#minPrice").val() : ""; // Convertit en float ou null si vide
+        let maxPrice = $("#maxPrice").val() ? $("#maxPrice").val() : "";
 
         // Récupérer les ID des marques sélectionnées
         let selectedMarqueIds = $(".marque input:checked").map(function () {
@@ -256,32 +308,11 @@
             return $(this).find(".img-color").data("id-color"); // Récupère l'attribut data-id-color
         }).get(); // Retourne un tableau de chaînes
 
-        // Afficher les résultats dans la console
-        console.log("Min Price:", minPrice);
-        console.log("Max Price:", maxPrice);
-        console.log("Selected Marque IDs:", selectedMarqueIds);
-        console.log("Selected Categorie IDs:", selectedCategorieIds);
-        console.log("Selected Colors:", selectedColors);
+        // On récupère la valeur du select
+        let tri = $("select[name='tri']").val();
 
-        // On envoie les données au serveur
-        $.ajax({
-            url: "/Product/GetProductFiltered",
-            type: "POST",
-            data: {
-                marque: selectedMarqueIds,
-                categorie: selectedCategorieIds,
-                couleur: selectedColors,
-                prixMin: minPrice,
-                prixMax: maxPrice
-            },
-            success: function (data) {
-                $(".products").html(data);
-            },
-            error: function (xhr, status, error) {
-                console.error("Erreur:", error);
-            }
-        });
-    });
+        return { minPrice, maxPrice, selectedMarqueIds, selectedCategorieIds, selectedColors, tri };
+    }
 
 </script>
 

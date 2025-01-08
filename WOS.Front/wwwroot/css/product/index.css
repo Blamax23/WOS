@@ -201,3 +201,16 @@ p {
     .marque label, .categorie label {
         margin: .25em;
     }
+
+
+.div-tri{
+    display: flex;
+    justify-content: right;
+    width: 80%;
+    margin: 2.5vh auto;
+}
+.tri-zone{
+    display: flex;
+    right: 0;
+    gap: .5em;
+}

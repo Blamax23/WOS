@@ -155,6 +155,7 @@ namespace WOS.Back.Services
             _globalDataSrv.ModeLivraisons = GetModeLivraisons();
             _globalDataSrv.Avis = GetAllAvis();
             _globalDataSrv.Admins = GetAllAdmins();
+            _globalDataSrv.LignesCommande = GetLignesCommande();
         }
 
         public List<Admin> GetAllAdmins()
@@ -242,6 +243,11 @@ namespace WOS.Back.Services
             var questions = _context.Questions.ToList();
 
             return questions;
+        }
+
+        public List<LigneCommande> GetLignesCommande()
+        {
+            return _context.LignesCommande.ToList();
         }
     }
 }

@@ -32,9 +32,26 @@ namespace WOS.Front.Controllers
         [HttpGet]
         public ActionResult Index()
         {
+
+            // Dans les lignes commandes, on compte les id product qui reviennent le plus de fois
+            var products = _globalDataSrv.Produits;
+            var lignes = _globalDataSrv.LignesCommande;
+            // On classe dans tableau les product_id qui revienne le plus souvent
+            var p = lignes.GroupBy(l => l.ProduitId).OrderByDescending(g => g.Count()).ToList();
+            // On crée une liste de produit qui contient les produits triés
+            List<Produit> productsSorted = new List<Produit>();
+            List<Produit> productsNoSorted = new List<Produit>(products);
+            foreach (var prod in p)
+            {
+                productsSorted.Add(products.FirstOrDefault(p => p.Id == prod.Key));
+                productsNoSorted.Remove(products.FirstOrDefault(p => p.Id == prod.Key));
+            }
+
+            productsSorted.AddRange(productsNoSorted);
+
             ProductViewModel productViewModel = new ProductViewModel
             {
-                Produits = _globalDataSrv.Produits,
+                Produits = productsSorted,
                 Marques = _globalDataSrv.Marques,
                 Categories = _globalDataSrv.Categories
             };
@@ -171,7 +188,7 @@ namespace WOS.Front.Controllers
 
         [HttpPost]
         [Route("GetProductFiltered")]
-        public ActionResult GetProductFiltered(List<string> marque, List<string> categorie, List<string> couleur, string prixMin, string prixMax)
+        public ActionResult GetProductFiltered(List<string> marque, List<string> categorie, List<string> couleur, string prixMin = null, string prixMax = null, string tri = "tendances")
         {
             List<int> marques = new List<int>();
             List<int> categories = new List<int>();
@@ -238,6 +255,40 @@ namespace WOS.Front.Controllers
             };
 
             return PartialView("_FilteredProducts", productsFiltered);
+        }
+
+        [HttpPost]
+        [Route("GetProductSorted")]
+        public ActionResult GetProductSorted(string tri)
+        {
+            if(tri == "ascending-alphabet")
+                return PartialView("_FilteredProducts", _globalDataSrv.Produits.OrderBy(p => p.Nom).ToList());
+            else if(tri == "descending-alphabet")
+                return PartialView("_FilteredProducts", _globalDataSrv.Produits.OrderByDescending(p => p.Nom).ToList());
+            else if(tri == "ascending-price")
+                return PartialView("_FilteredProducts", _globalDataSrv.Produits.OrderBy(p => p.ProduitTailles.Min(pt => pt.Prix)).ToList());
+            else if(tri == "descending-price")
+                return PartialView("_FilteredProducts", _globalDataSrv.Produits.OrderByDescending(p => p.ProduitTailles.Min(pt => pt.Prix)).ToList());
+            else
+            {
+                // Dans les lignes commandes, on compte les id product qui reviennent le plus de fois
+                var products = _globalDataSrv.Produits;
+                var lignes = _globalDataSrv.LignesCommande;
+                // On classe dans tableau les product_id qui revienne le plus souvent
+                var p = lignes.GroupBy(l => l.ProduitId).OrderByDescending(g => g.Count()).ToList();
+                // On crée une liste de produit qui contient les produits triés
+                List<Produit> productsSorted = new List<Produit>();
+                List<Produit> productsNoSorted = products;
+                foreach (var prod in p)
+                {
+                    productsSorted.Add(products.FirstOrDefault(p => p.Id == prod.Key));
+                    productsNoSorted.Remove(products.FirstOrDefault(p => p.Id == prod.Key));
+                }
+
+                productsSorted.AddRange(productsNoSorted);
+
+                return PartialView("_FilteredProducts", productsSorted);
+            }
         }
 
         [HttpGet]

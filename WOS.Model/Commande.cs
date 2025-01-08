@@ -93,6 +93,7 @@ namespace WOS.Model
 
     public class ViewFinalPurchase
     {
+        public string OrderNumber { get; set; }
         public List<CartItem> Cart { get; set; }
 
         public DeliveryInfo DeliveryInfo { get; set; }

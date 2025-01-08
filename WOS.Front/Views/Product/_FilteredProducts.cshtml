@@ -14,7 +14,7 @@
             <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
         </div>
         <div class="product-info">
-            <p class="product-name">@produit.Categorie.Nom @produit.Nom</p>
+            <p class="product-name">@produit.Nom</p>
             <div class="prices">
                 @if (productWithPromo.PrixPromo != null)
                 {

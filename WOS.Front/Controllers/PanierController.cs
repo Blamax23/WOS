@@ -243,6 +243,9 @@ namespace WOS.Front.Controllers
                     adresseLivraisonId = _globalDataSrv.Adresses.FirstOrDefault(a => a.PointRelais == true && a.Nom == adresseToSend.Nom).Id;
                 }
                 string numberOrder = GenerateOrderNumber();
+
+                viewFinalPurchase.OrderNumber = numberOrder;
+
                 // On crée la commande
                 Commande commande = new Commande
                 {
@@ -326,23 +329,18 @@ namespace WOS.Front.Controllers
             return Ok();
         }
 
-        private PaymentIntentService CreatePaymentIntent(long? amount)
+        [HttpGet]
+        [Route("ConfirmPurchase")]
+        public ActionResult ConfirmPurchase(string numberOrder)
         {
-            StripeConfiguration.ApiKey = "sk_test_VePHdqKTYQjKNInc7u56JBrQ";
+            // On récupère la commande en fonction du numero de commande
+            Commande commande = _commandeSrv.GetCommandeByNumberOrder(numberOrder);
 
-            var options = new PaymentIntentCreateOptions
-            {
-                Amount = amount,
-                Currency = "eur",
-                AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
-                {
-                    Enabled = true,
-                },
-            };
-            var service = new PaymentIntentService();
-            service.Create(options);
+            _commandeSrv.UpdateStatus(commande.Id);
 
-            return service;
+            // Ajouter code pour création d'étiquette
+
+            return View(commande);
         }
 
         //[Route("stripesecret")]

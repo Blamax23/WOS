@@ -259,7 +259,7 @@
             elements,
             confirmParams: {
                 // Make sure to change this to your payment completion page
-                return_url: "http://localhost:7076/Panier/ConfirmPurchase",
+                return_url: "http://localhost:7076/Panier/ConfirmPurchase?numberOrder=@Model.OrderNumber",
             },
         });
 

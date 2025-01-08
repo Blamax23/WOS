@@ -12,5 +12,8 @@ namespace WOS.Dal.Interfaces
         Commande GetCommandeById(int id);
         List<Commande> GetCommandesByClientId(int id);
         void AddCommande(Commande commande);
+
+        Commande GetCommandeByNumberOrder(string number);
+        void UpdateStatus(int idCommande);
     }
 }
