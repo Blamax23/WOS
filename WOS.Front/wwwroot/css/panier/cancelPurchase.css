@@ -1,0 +1,129 @@
+/* Container du modal */
+.cart-modal {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Caché à droite par défaut */
+    width: 25vw; /* Largeur du panier */
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    z-index: 1000;
+    transition: right 0.3s ease-in-out; /* Animation */
+}
+
+/* Contenu du modal */
+.cart-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 95%;
+    padding: 20px;
+}
+
+/* Header */
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4vh;
+}
+
+    .cart-header h3 {
+        margin: 0;
+    }
+
+.close-cart-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Liste des articles */
+.cart-items {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding: 2vh 0;
+    position: relative;
+}
+
+.cart-item-image {
+    width: 25%;
+    height: auto;
+    object-fit: contain;
+}
+
+.cart-item-details {
+    flex-grow: 1;
+}
+
+.cart-item-name {
+    font-size: 16px;
+    margin: 0;
+    font-weight: bold;
+}
+
+.cart-item-price,
+.cart-item-quantity {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+/* Footer */
+.cart-footer {
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    height: 5%;
+}
+
+.cart-footer .confirm-btn{
+    width: 100%;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+    .checkout-btn:hover {
+        background-color: #218838;
+    }
+
+.quantity-input {
+    width: 3vw;
+    text-align: center;
+}
+
+.remove-btn {
+    background-color: white;
+    color: red;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 15px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+.cart-item-quantity{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+}

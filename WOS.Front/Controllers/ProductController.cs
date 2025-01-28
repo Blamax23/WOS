@@ -5,6 +5,9 @@ using WOS.Model;
 using System.Text.Json;
 using WOS.Dal.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System;
+using iText.Kernel.Geom;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace WOS.Front.Controllers
 {
@@ -17,6 +20,8 @@ namespace WOS.Front.Controllers
         private readonly ICategorieSrv _categorieSrv;
         private readonly IAvisSrv _avisSrv;
         private readonly IGlobalDataSrv _globalDataSrv;
+        private int pageNumber;
+        private int pageSize;
 
         public ProductController(IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv, IAvisSrv avisSrv, IGlobalDataSrv globalDataSrv)
         {
@@ -30,14 +35,15 @@ namespace WOS.Front.Controllers
 
         [Route("")]
         [HttpGet]
-        public ActionResult Index()
+        public ActionResult Index(int pageNumber = 1)
         {
-
+            this.pageNumber = pageNumber;
+            pageSize = 20;
             // Dans les lignes commandes, on compte les id product qui reviennent le plus de fois
             var products = _globalDataSrv.Produits;
             var lignes = _globalDataSrv.LignesCommande;
             // On classe dans tableau les product_id qui revienne le plus souvent
-            var p = lignes.GroupBy(l => l.ProduitId).OrderByDescending(g => g.Count()).ToList();
+            var p = lignes.GroupBy(l => l.ProduitId).OrderByDescending(g => g.Count()).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             // On crée une liste de produit qui contient les produits triés
             List<Produit> productsSorted = new List<Produit>();
             List<Produit> productsNoSorted = new List<Produit>(products);
@@ -222,39 +228,64 @@ namespace WOS.Front.Controllers
 
             if (marques.Count > 0)
             {
-                productsFiltered = productsFiltered.Where(p => marques.Contains(p.MarqueId.Value)).ToList();
+                productsFiltered = productsFiltered.Where(p => marques.Contains(p.MarqueId.Value)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             }
 
             if (categories.Count > 0)
             {
-                productsFiltered = productsFiltered.Where(p => categories.Contains(p.CategorieId.Value)).ToList();
+                productsFiltered = productsFiltered.Where(p => categories.Contains(p.CategorieId.Value)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             }
 
             if (couleurs.Count > 0)
             {
-                productsFiltered = productsFiltered.Where(p => p.ProduitCouleurs.Any(pc => couleurs.Contains(pc.Couleur))).ToList();
+                productsFiltered = productsFiltered.Where(p => p.ProduitCouleurs.Any(pc => couleurs.Contains(pc.Couleur))).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             }
 
             if (prixMinDecimal > 0)
             {
-                productsFiltered = productsFiltered.Where(p => p.ProduitTailles.Any(pt => pt.Prix >= prixMinDecimal)).ToList();
+                productsFiltered = productsFiltered.Where(p => p.ProduitTailles.Any(pt => pt.Prix >= prixMinDecimal)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             }
 
             if (prixMaxDecimal > 0)
             {
-                productsFiltered = productsFiltered.Where(p => p.ProduitTailles.Any(pt => pt.Prix <= prixMaxDecimal)).ToList();
+                productsFiltered = productsFiltered.Where(p => p.ProduitTailles.Any(pt => pt.Prix <= prixMaxDecimal)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             }
 
-
-
-            ProductViewModel productViewModel = new ProductViewModel
+            switch (tri)
             {
-                Produits = productsFiltered,
-                Marques = _globalDataSrv.Marques,
-                Categories = _globalDataSrv.Categories
-            };
+                case "ascending-alphabet":
+                    productsFiltered = productsFiltered.OrderBy(p => p.Nom).ToList();
+                    return PartialView("_FilteredProducts", productsFiltered);
+                case "descending-alphabet":
+                    productsFiltered = productsFiltered.OrderByDescending(p => p.Nom).ToList();
+                    return PartialView("_FilteredProducts", productsFiltered);
+                case "ascending-price":
+                    productsFiltered = productsFiltered.OrderBy(p => p.ProduitTailles.Min(pt => pt.Prix)).ToList();
+                    return PartialView("_FilteredProducts", productsFiltered);
+                case "descending-price":
+                    productsFiltered = productsFiltered.OrderByDescending(p => p.ProduitTailles.Min(pt => pt.Prix)).ToList();
+                    return PartialView("_FilteredProducts", productsFiltered);
+                default:
+                    // Dans les lignes commandes, on compte les id product qui reviennent le plus de fois
+                    var lignes = _globalDataSrv.LignesCommande;
+                    // On classe dans tableau les product_id qui revienne le plus souvent
+                    var p = lignes.GroupBy(l => l.ProduitId).OrderByDescending(g => g.Count()).ToList();
+                    // On crée une liste de produit qui contient les produits triés
+                    List<Produit> productsSorted = new List<Produit>();
+                    List<Produit> productsNoSorted = new List<Produit>(productsFiltered);
+                    foreach (var prod in p)
+                    {
+                        if(productsFiltered.FirstOrDefault(p => p.Id == prod.Key) != null)
+                        {
+                            productsSorted.Add(productsFiltered.FirstOrDefault(p => p.Id == prod.Key));
+                            productsNoSorted.Remove(productsFiltered.FirstOrDefault(p => p.Id == prod.Key));
+                        }
+                    }
 
-            return PartialView("_FilteredProducts", productsFiltered);
+                    productsSorted.AddRange(productsNoSorted);
+
+                    return PartialView("_FilteredProducts", productsSorted);
+            }
         }
 
         [HttpPost]
@@ -309,6 +340,44 @@ namespace WOS.Front.Controllers
             {
                 Expires = DateTimeOffset.Now.AddDays(7)
             });
+        }
+
+        [HttpPost]
+        [Route("UpdateProductActive")]
+        public ActionResult UpdateActive(string id, string active)
+        {
+            try
+            {
+                Int32.TryParse(id, out int productId);
+                bool.TryParse(active, out bool act);
+
+                _produitSrv.UpdateActiveProduit(productId, act);
+
+                return Ok(new { errorMessage = "" });
+            }
+            catch (Exception e)
+            {
+                return Ok(new { errorMessage = "Erreur dans la modification du statut Actif." });
+            }
+        }
+
+        [HttpPost]
+        [Route("UpdateProductTendance")]
+        public ActionResult UpdateTendance(string id, string tendance)
+        {
+            try
+            {
+                Int32.TryParse(id, out int productId);
+                bool.TryParse(tendance, out bool tend);
+
+                _produitSrv.UpdateTendanceProduit(productId, tend);
+
+                return Ok(new { errorMessage = "" });
+            }
+            catch (Exception e)
+            {
+                return Ok(new { errorMessage = "Erreur dans la modification du statut Tendance." });
+            }
         }
     }
 }

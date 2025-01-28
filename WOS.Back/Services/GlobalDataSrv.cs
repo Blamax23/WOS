@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using WOS.Dal.Context;
 using WOS.Dal.Interfaces;
 using WOS.Model;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace WOS.Back.Services
 {
@@ -119,6 +120,46 @@ namespace WOS.Back.Services
                 {
                     Questions = await context.Questions.ToListAsync();
                 }
+                else if (type == typeof(LigneCommande))
+                {
+                    LignesCommande = await context.LignesCommande.ToListAsync();
+                }
+            }
+        }
+
+        public async Task RefreshAllCacheAsync()
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<WOSDbContext>();
+
+                Produits = await context.Produits
+                                             .Include(p => p.ProduitImages)
+                                             .Include(p => p.ProduitCouleurs)
+                                             .Include(p => p.ProduitTailles)
+                                             .Include(p => p.Avis)
+                                             .Include(p => p.Marque)
+                                             .Include(p => p.Categorie)
+                                             .ToListAsync();
+                Categories = await context.Categories.ToListAsync();
+                Admins = await context.Admins.ToListAsync();
+                Adresses = await context.Adresses.ToListAsync();
+                Avis = await context.Avis.ToListAsync();
+                Clients = await context.Clients.ToListAsync();
+                Commandes = await context.Commandes
+                                              .Include(c => c.Client)
+                                              .Include(c => c.AdresseLivraison)
+                                              .Include(c => c.Statut)
+                                              .Include(c => c.LignesCommande)
+                                              .ToListAsync();
+                Marques = await context.Marques.ToListAsync();
+                ModeLivraisons = await context.ModeLivraisons.ToListAsync();
+                ProduitImages = await context.ProduitImages.ToListAsync();
+                ProduitCouleurs = await context.ProduitCouleurs.ToListAsync();
+                ProduitTailles = await context.ProduitTailles.ToListAsync();
+                Questions = await context.Questions.ToListAsync();
+                StatutsCommande = await context.StatutsCommande.ToListAsync();
+                LignesCommande = await context.LignesCommande.ToListAsync();
             }
         }
 
@@ -156,6 +197,8 @@ namespace WOS.Back.Services
             _globalDataSrv.Avis = GetAllAvis();
             _globalDataSrv.Admins = GetAllAdmins();
             _globalDataSrv.LignesCommande = GetLignesCommande();
+            _globalDataSrv.StatutsCommande = _context.StatutsCommande.ToList();
+            _globalDataSrv.Adresses = _context.Adresses.ToList();
         }
 
         public List<Admin> GetAllAdmins()

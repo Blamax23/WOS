@@ -23,6 +23,8 @@ namespace WOS.Model
         public List<Categorie> Categories { get; set; }
 
         public List<ModeLivraison> ModeLivraisons { get; set; }
+
+        public List<StatutCommande> StatutCommandes { get; set; }
     }
 
     public class HomeViewModel
@@ -47,5 +49,9 @@ namespace WOS.Model
         public List<Categorie> Categories { get; set; }
 
         public List<Avis> Avis { get; set; }
+
+        public int NbPages { get; set; }
+
+        public int Page { get; set; }
     }
 }

@@ -2,7 +2,14 @@
     ViewData["Title"] = "Privacy Policy";
 }
 
+<link rel="stylesheet" href="~/css/home/error.css" asp-append-version="true" />
 
 <div class="content">
-    <h1>Oups... On dirait qu'on a un cailloux dans la chaussure.</h1>
+    <div class="message">
+        <i class="bi bi-emoji-frown"></i>
+        <h1>Oups... On dirait qu'on a un cailloux dans la chaussure.</h1>
+        <p>Si le problème persiste, veuillez nous contacter <a asp-action="Index" asp-controller="Contact">ici</a>.</p>
+        <button class="confirm-btn" onclick="window.location.href='@Url.Action("Index", "Home")'">Retour à l'accueil</button>
+
+    </div>
 </div>

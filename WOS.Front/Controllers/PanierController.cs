@@ -14,6 +14,7 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Claims;
+using iText.Commons.Actions.Contexts;
 
 namespace WOS.Front.Controllers
 {
@@ -106,10 +107,15 @@ namespace WOS.Front.Controllers
             if (!string.IsNullOrEmpty(cartCookies))
             {
                 List<CartItem> cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartCookies);
-                CartItem itemToDelete = cartItems.FirstOrDefault(i => i.ProductId == idProduct && i.Size == size); 
+                CartItem itemToDelete = cartItems.FirstOrDefault(i => i.ProductId == idProduct && i.Size == size);
                 cartItems.Remove(itemToDelete);
                 SaveCartToCookies(context, cartItems);
             }
+        }
+
+        public void RemoveAllItemsFromCart(HttpContext context)
+        {
+            context.Response.Cookies.Delete("Cart");
         }
 
         [HttpPost]
@@ -171,7 +177,7 @@ namespace WOS.Front.Controllers
             HttpContext.Response.Cookies.Delete("CartStep");
             HttpContext.Response.Cookies.Append("CartStep", (actualStep + 1).ToString());
 
-            if(actualStep == 1)
+            if (actualStep == 1)
             {
                 _mondialRelaySrv.ExempleRecherche();
                 var modesLivraison = _globalDataSrv.ModeLivraisons;
@@ -226,7 +232,6 @@ namespace WOS.Front.Controllers
 
                 if (!string.IsNullOrEmpty(deliveryInfoObj.ParcelShop.Name))
                 {
-                    _adresseSrv.AddAdresse(adresseToSend);
 
                     adresseToSend = new Adresse
                     {
@@ -239,6 +244,8 @@ namespace WOS.Front.Controllers
                         Principale = false,
                         PointRelais = true
                     };
+
+                    _adresseSrv.AddAdresse(adresseToSend);
                     _adresseSrv.ChangeAdressePrincipale();
                     adresseLivraisonId = _globalDataSrv.Adresses.FirstOrDefault(a => a.PointRelais == true && a.Nom == adresseToSend.Nom).Id;
                 }
@@ -254,10 +261,11 @@ namespace WOS.Front.Controllers
                     DateCommande = DateTime.Now,
                     StatutId = 1,
                     NumeroCommande = numberOrder,
-                    AdresseLivraison = adresseToSend
+                    AdresseLivraison = adresseToSend,
+                    ModeLivraisonId = modeLivraison.Id
                 };
 
-                foreach(var item in cartItems)
+                foreach (var item in cartItems)
                 {
                     Produit produit = _produitSrv.GetProduitById(item.ProductId);
                     commande.LignesCommande.Add(new LigneCommande
@@ -271,6 +279,8 @@ namespace WOS.Front.Controllers
                 }
                 _adresseSrv.ChangeAdressePrincipale();
                 _commandeSrv.AddCommande(commande);
+
+                viewFinalPurchase.Domain = _configuration.GetSection("Site")["Domain"];
 
                 return PartialView("_ViewPayment", viewFinalPurchase);
             }
@@ -292,14 +302,15 @@ namespace WOS.Front.Controllers
             HttpContext.Response.Cookies.Delete("CartStep");
             HttpContext.Response.Cookies.Append("CartStep", (actualStep - 1).ToString());
 
-            if(actualStep == 2)
+            if (actualStep == 2)
             {
                 // On récupère ce qui est dans le panier
                 var cartItemsBytes = HttpContext.Session.Get("CartItems");
                 var cartItemsJson = System.Text.Encoding.UTF8.GetString(cartItemsBytes);
                 var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson);
                 return PartialView("_ViewFinalCart", cartItems);
-            }else if (actualStep == 3)
+            }
+            else if (actualStep == 3)
             {
                 // On récupère les modes de livraisons
                 var modesLivraison = _globalDataSrv.ModeLivraisons;
@@ -320,27 +331,64 @@ namespace WOS.Front.Controllers
 
         [HttpPost]
         [Route("UpdateDeliveryPrice")]
-        public IActionResult UpdateDeliveryPrice(int idModeLivraison, string newPrice)
+        public IActionResult UpdateDeliveryPrice(int idModeLivraison, string newPrice, string deliveryTime)
         {
-            if (float.TryParse(newPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float prix))
-            {
-                _modeLivraisonSrv.UpdatePriceLivraison(idModeLivraison, prix);
-            }
+            Int32.TryParse(deliveryTime, out int time);
+            float.TryParse(newPrice, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float prix);
+            _modeLivraisonSrv.UpdatePriceLivraison(idModeLivraison, prix, time);
             return Ok();
         }
 
         [HttpGet]
         [Route("ConfirmPurchase")]
-        public ActionResult ConfirmPurchase(string numberOrder)
+        public async Task<ActionResult> ConfirmPurchase(string numberOrder, string payment_intent, string payment_intent_client_secret, string redirect_status)
         {
-            // On récupère la commande en fonction du numero de commande
             Commande commande = _commandeSrv.GetCommandeByNumberOrder(numberOrder);
 
-            _commandeSrv.UpdateStatus(commande.Id);
+            string token = _modeLivraisonSrv.GetAuthUPS().Result;
 
-            // Ajouter code pour création d'étiquette
+            // On initialise les variables
+            byte[] etiquette = null;
+            string trackingNumber = null;
 
-            return View(commande);
+            commande.StatutId++;
+
+            if (commande.ModeLivraisonId != null)
+            {
+                string name = _modeLivraisonSrv.GetModeLivraisonById((int)commande.ModeLivraisonId).Nom;
+
+                switch (name)
+                {
+                    case "Mondial Relay":
+                        await _modeLivraisonSrv.GetEtiquetteFromMondialRelay();
+                        commande.LinkSuivi = "https://www.mondialrelay.fr/suivi-de-colis/?NumeroExpedition=" + trackingNumber;
+                        break;
+                    case "UPS Standard":
+                        (etiquette, trackingNumber) = _modeLivraisonSrv.GetEtiquetteFromUPS(token).Result;
+                        commande.LinkSuivi = "https://www.ups.com/track?loc=fr_FR&tracknum=" + trackingNumber;
+                        break;
+                }
+
+                commande.NumeroCommandeLivreur = trackingNumber;
+                commande.BinaryEtiquette = etiquette;
+            }
+
+            //_commandeSrv.UpdateStatus(commande.Id);
+            _commandeSrv.UpdateCommande(commande);
+
+            // On récupère tous les produits de la commande
+            ConfirmPurchaseModel confirmPurchaseModel = new ConfirmPurchaseModel() { Commande = commande };
+
+            foreach (var ligneCommande in commande.LignesCommande)
+            {
+                Produit produit = _produitSrv.GetProduitById(ligneCommande.ProduitId);
+                confirmPurchaseModel.Produits.Add(produit);
+            }
+
+            // On supprime le panier
+            RemoveAllItemsFromCart(HttpContext);
+
+            return View(confirmPurchaseModel);
         }
 
         //[Route("stripesecret")]
@@ -378,12 +426,42 @@ namespace WOS.Front.Controllers
             return Json(new { clientSecret = paymentIntent.ClientSecret, amount = paymentIntent.Amount });
         }
 
+        [HttpPost("GetCommande")]
+        public IActionResult GetCommande(string numberOrder)
+        {
+            try
+            {
+                var commande = _commandeSrv.GetCommandeByNumberOrder(numberOrder);
+
+                return Json(new { etiquette = commande.BinaryEtiquette });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("UpdateCommandeStatus")]
+        public IActionResult UpdateCommandeStatus(string commandeId, int statut)
+        {
+            // On récupère la commande
+            var commande = _commandeSrv.GetCommandeByNumberOrder(commandeId);
+
+            // On met à jour le statut
+            commande.StatutId = statut;
+
+            // On met à jour la commande
+            _commandeSrv.UpdateCommande(commande);
+
+            return RedirectToAction("Index", "Account");
+        }
+
         private long CalculateOrderAmount(List<Item> items)
         {
             // Calculate the order total on the server to prevent
             // people from directly manipulating the amount on the client
             long total = 0;
-            foreach(var item in items)
+            foreach (var item in items)
             {
                 string sanitizedInput = item.Amount.Replace(",", ".");
 

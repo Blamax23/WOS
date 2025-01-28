@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,8 @@ namespace WOS.Dal.Interfaces
         void AddProduit(Produit produit);
         List<double> GetAllTailles();
         void UpdateProduit(Produit produit);
+        public void UpdateActiveProduit(int id, bool actif);
+        public void UpdateTendanceProduit(int id, bool tendance);
         void DeleteProduit(int id);
     }
 }

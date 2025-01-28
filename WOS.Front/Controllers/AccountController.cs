@@ -48,7 +48,7 @@ namespace WOS.Front.Controllers
         #region Account
         [Route("")]
         [Authorize]
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(string section = null)
         {
             var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
@@ -78,6 +78,7 @@ namespace WOS.Front.Controllers
                     accountViewModel.Marques = _globalDataSrv.Marques;
                     accountViewModel.Categories = _globalDataSrv.Categories;
                     accountViewModel.ModeLivraisons = _globalDataSrv.ModeLivraisons;
+                    accountViewModel.StatutCommandes = _globalDataSrv.StatutsCommande;
                 }
                 else
                 {
@@ -86,6 +87,10 @@ namespace WOS.Front.Controllers
                     accountViewModel.Commandes = _commandeSrv.GetCommandesByClientId(clientView.Id);
                 }
             }
+
+            // On modifie le cookie activeSection pour afficher la bonne section
+            if(section != null)
+                HttpContext.Response.Cookies.Append("activeSection", section);
 
             return View(accountViewModel);
         }
@@ -489,10 +494,7 @@ namespace WOS.Front.Controllers
             _authenticationSrv.SendEmail(admin.Email, subject, body);
 
             var returnUrl = HttpContext.Session.GetString("ReturnUrl");
-            if (returnUrl != null)
-                return Redirect(returnUrl);
-            else
-                return View(admin);
+            return View(admin);
         }
 
         //[Authorize(Roles = "Admin")]

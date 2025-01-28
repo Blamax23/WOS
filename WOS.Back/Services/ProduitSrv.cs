@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -123,8 +124,13 @@ namespace WOS.Back.Services
 
         public void UpdateProduit(Produit produit)
         {
+            // Récupérer l'entité directement à partir du contexte
             Produit produitToUpdate = _context.Produits.FirstOrDefault(p => p.Id == produit.Id);
 
+            if (produitToUpdate == null)
+                throw new Exception("Produit introuvable");
+
+            // Appliquer les modifications directement sur l'entité suivie
             produitToUpdate.Nom = produit.Nom;
             produitToUpdate.Description = produit.Description;
             produitToUpdate.Actif = produit.Actif;
@@ -133,6 +139,39 @@ namespace WOS.Back.Services
             produitToUpdate.ProduitImages = produit.ProduitImages;
             produitToUpdate.ProduitTailles = produit.ProduitTailles;
             produitToUpdate.ProduitCouleurs = produit.ProduitCouleurs;
+            produitToUpdate.IsTendance = produit.IsTendance;
+
+            // Sauvegarder les changements
+            _context.SaveChanges();
+
+            // Recharger le cache global
+            _globalDataSrv.RefreshCacheAsync(typeof(Produit));
+
+            // On vide produitTuUpdate pour éviter les problèmes de références
+            produitToUpdate = null;
+        }
+
+        public void UpdateActiveProduit(int id, bool actif)
+        {
+            Produit produit = _context.Produits.FirstOrDefault(p => p.Id == id);
+
+            if (produit == null)
+                throw new Exception("Produit introuvable");
+
+            produit.Actif = actif;
+
+            _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(Produit));
+        }
+
+        public void UpdateTendanceProduit(int id, bool tendance)
+        {
+            Produit produit = _context.Produits.FirstOrDefault(p => p.Id == id);
+
+            if (produit == null)
+                throw new Exception("Produit introuvable");
+
+            produit.IsTendance = tendance;
 
             _context.SaveChanges();
             _globalDataSrv.RefreshCacheAsync(typeof(Produit));

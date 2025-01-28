@@ -126,6 +126,11 @@
         transition: height 0.5s ease-in-out;
     }
 
+.carousel-avis h3{
+    margin: 0;
+    padding: 1em 0;
+}
+
 .rotate {
     transform: rotate(90deg);
     transition: transform 0.5s ease-in-out;

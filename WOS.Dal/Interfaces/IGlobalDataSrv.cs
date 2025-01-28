@@ -11,6 +11,7 @@ namespace WOS.Dal.Interfaces
     public interface IGlobalDataSrv
     {
         Task RefreshCacheAsync(Type type);
+        Task RefreshAllCacheAsync();
         public List<Categorie> Categories { get; set; }
         public List<Marque> Marques { get; set; }
         public List<Produit> Produits { get; set; }

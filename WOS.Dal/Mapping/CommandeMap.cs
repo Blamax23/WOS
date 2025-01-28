@@ -42,6 +42,14 @@ namespace WOS.Dal.Mapping
                 .IsRequired(true)
                 .HasColumnName("numero_commande");
 
+            builder.Property(c => c.ModeLivraisonId)
+                .IsRequired(false)
+                .HasColumnName("mode_livraison_id");
+
+            builder.Property(c => c.BinaryEtiquette)
+                .IsRequired(false)
+                .HasColumnName("binary_etiquette");
+
             builder.HasOne(c => c.Client)
                 .WithMany(cl => cl.Commandes)
                 .HasForeignKey(c => c.ClientId);

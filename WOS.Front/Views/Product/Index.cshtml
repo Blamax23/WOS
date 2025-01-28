@@ -106,34 +106,52 @@
             <div class="products">
                 @foreach (var produit in Model.Produits)
                 {
-                    ProduitTaille productWithPromo = new ProduitTaille();
-                    if (produit.ProduitTailles.Where(t => t.PrixPromo != null).Count() > 0)
+                    @if(produit.ProduitTailles.Any(pt => pt.Stock > 0))
                     {
-                        productWithPromo = produit.ProduitTailles.Where(t => t.PrixPromo != null).OrderBy(t => t.PrixPromo).First();
-                    }
-                    else
-                    {
-                        productWithPromo = produit.ProduitTailles.OrderBy(t => t.Prix).First();
-                    }
-                    <a href="@Url.Action("ViewProduct", "Product", new { id = produit.Id })" class="product">
-                        <div class="product-img">
-                            <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
-                        </div>
-                        <div class="product-info">
-                            <p class="product-name">@produit.Nom</p>
-                            <div class="prices">
-                                @if (productWithPromo.PrixPromo != null)
-                                {
-                                    <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
-                                }
-                                else
-                                {
-                                    <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
-                                }
+                        ProduitTaille productWithPromo = new ProduitTaille();
+                        if (produit.ProduitTailles.Where(t => t.PrixPromo != null).Count() > 0)
+                        {
+                            productWithPromo = produit.ProduitTailles.Where(t => t.PrixPromo != null).OrderBy(t => t.PrixPromo).First();
+                        }
+                        else
+                        {
+                            productWithPromo = produit.ProduitTailles.OrderBy(t => t.Prix).First();
+                        }
+                        <a href="@Url.Action("ViewProduct", "Product", new { id = produit.Id })" class="product">
+                            <div class="product-img">
+                                <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
                             </div>
-                        </div>
-                    </a>
+                            <div class="product-info">
+                                <p class="product-name">@produit.Nom</p>
+                                <div class="prices">
+                                    @if (productWithPromo.PrixPromo != null)
+                                    {
+                                        <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
+                                    }
+                                    else
+                                    {
+                                        <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
+                                    }
+                                </div>
+                            </div>
+                        </a>
+                    }
                 }
+            </div>
+            <div class="select-pages">
+                <i class="bi bi-chevron-left"></i>
+                @for(int i = 1; i <= Model.NbPages; i++)
+                {
+                    if(i != 1)
+                    {
+                        if (new[] { Model.Page - 1, Model.Page, Model.Page + 1 }.Contains(i))
+                        {
+                            <span>@i</span>
+                        }
+                    }
+                    <span>@i</span>
+                }
+                <i class="bi bi-chevron-right"></i>
             </div>
         </div>
     </div>
@@ -155,8 +173,10 @@
 
             // Récupère tous les IDs des marques sélectionnées
             let selectedMarqueIds = $(".marque input:checked").map(function () {
-                return $(this).attr("id"); // Retourne les IDs des marques cochées
+                return $(this).attr("id").split("-")[1] // Retourne les IDs des marques cochées
             }).get(); // Retourne un tableau
+
+            console.log("MARQUE ID : " + selectedMarqueIds)
 
             // Parcourt toutes les catégories
             $(".categorie").each(function () {

@@ -40,6 +40,8 @@ if (!Directory.Exists(pathFolder))
 
 builder.Services.LoadServices(connectionString);
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddScoped<IClientSrv, ClientSrv>();
 builder.Services.AddScoped<IAdminSrv, AdminSrv>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -80,6 +82,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
     options.AddPolicy("Client", policy => policy.RequireRole("Client"));
 });
+
+builder.Services.AddHostedService<DailyTaskService>();
 
 var app = builder.Build();
 

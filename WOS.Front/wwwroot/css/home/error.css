@@ -1,0 +1,33 @@
+/* PAGE ERREUR */
+
+.content{
+    min-height: 80vh;
+    display: flex;
+}
+
+.message{
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    text-align: center;
+    align-items: center;
+}
+
+.message i{
+    font-size: 10em;
+}
+
+.message h1{
+    margin: 0;
+}
+
+.message p{
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.message button{
+    margin: 2.5vh 0;
+}
+

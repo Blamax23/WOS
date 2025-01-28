@@ -38,6 +38,12 @@ namespace WOS.Model
         [Column("numero_commande")]
         public string NumeroCommande { get; set; }
 
+        [Column("mode_livraison_id")]
+        public int? ModeLivraisonId { get; set; }
+
+        [Column("binary_etiquette")]
+        public byte[]? BinaryEtiquette { get; set; }
+
         // Navigation properties
         public virtual Client Client { get; set; }
         public virtual Adresse AdresseLivraison { get; set; }
@@ -103,10 +109,18 @@ namespace WOS.Model
         public string ModePaiement { get; set; }
 
         public string TotalPrice { get; set; }
+
+        public string Domain { get; set; }
     }
 
     public class AmountDto
     {
         public string Amount { get; set; }
+    }
+
+    public class ConfirmPurchaseModel
+    {
+        public Commande Commande { get; set; }
+        public List<Produit> Produits { get; set; } = new List<Produit>();
     }
 }

@@ -16,6 +16,8 @@ namespace WOS.Dal.Interfaces
 
         void AddMarque(Marque marque);
 
-        void ChangeStatusMarque(Marque marque);
+        void UpdateHomeMarque(int id, bool tendance);
+
+        void DeleteMarque(int id);
     }
 }

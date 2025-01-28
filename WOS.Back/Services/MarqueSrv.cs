@@ -51,21 +51,29 @@ namespace WOS.Back.Services
             _globalDataSrv.RefreshCacheAsync(typeof(Marque));
         }
 
-        public void ChangeStatusMarque(Marque marque)
+        public void UpdateHomeMarque(int id, bool tendance)
         {
-            Marque newMarque = _context.Marques.Find(marque.Id);
-            if (newMarque != null)
-            {
-                if (!newMarque.IsHome.Value)
-                    newMarque.IsHome = true;
-                else
-                    newMarque.IsHome = false;
+            Marque marque = _context.Marques.FirstOrDefault(p => p.Id == id);
 
-                _context.Marques.Update(newMarque);
+            if (marque == null)
+                throw new Exception("Marque introuvable");
 
-                _context.SaveChanges();
-                _globalDataSrv.RefreshCacheAsync(typeof(Marque));
-            }
+            marque.IsHome = tendance;
+
+            _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(Marque));
+        }
+
+        public void DeleteMarque(int id)
+        {
+            Marque marque = _context.Marques.FirstOrDefault(p => p.Id == id);
+
+            if (marque == null)
+                throw new Exception("Marque introuvable");
+
+            _context.Marques.Remove(marque);
+            _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(Marque));
         }
     }
 }

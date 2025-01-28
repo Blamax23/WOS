@@ -34,6 +34,30 @@ namespace WOS.Model
         public virtual ICollection<ProduitImage> ProduitImages { get; set; }
         public virtual ICollection<Avis> Avis { get; set; }
         public virtual ICollection<LigneCommande> LignesCommande { get; set; }
+
+        public Produit()
+        {
+
+        }
+        public Produit(Produit other)
+        {
+            // Copy constructor
+            Id = other.Id;
+            Nom = other.Nom;
+            Description = other.Description;
+            DateCreation = other.DateCreation;
+            Actif = other.Actif;
+            CategorieId = other.CategorieId;
+            MarqueId = other.MarqueId;
+            IsTendance = other.IsTendance;
+            Categorie = other.Categorie;
+            Marque = other.Marque;
+            ProduitTailles = other.ProduitTailles;
+            ProduitCouleurs = other.ProduitCouleurs;
+            ProduitImages = other.ProduitImages;
+            Avis = other.Avis;
+            LignesCommande = other.LignesCommande;
+        }
     }
 
     public class CartItem

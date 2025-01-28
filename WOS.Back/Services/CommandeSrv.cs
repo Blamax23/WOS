@@ -59,15 +59,24 @@ namespace WOS.Back.Services
             return commande;
         }
 
+        public Commande GetCommandeByNumberOrderDelivery(string number)
+        {
+
+           Commande commande = _globalDataSrv.Commandes.FirstOrDefault(c => c.NumeroCommandeLivreur == number);
+
+            commande.Client = _globalDataSrv.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
+            commande.AdresseLivraison = _globalDataSrv.Adresses.FirstOrDefault(a => a.Id == commande.AdresseLivraisonId);
+            commande.Statut = _globalDataSrv.StatutsCommande.FirstOrDefault(s => s.Id == commande.StatutId);
+            commande.LignesCommande = _globalDataSrv.LignesCommande.Where(lc => lc.CommandeId == commande.Id).ToList();
+
+            return commande;
+        }
+
         public void AddCommande(Commande commande)
         {
-            _context.Adresses.Add(commande.AdresseLivraison);
-            _context.SaveChanges();
-
             _context.Commandes.Add(commande);
             _context.SaveChanges();
 
-            _globalDataSrv.RefreshCacheAsync(typeof(Adresse));
             _globalDataSrv.RefreshCacheAsync(typeof(Commande));
 
             Commande commandeSaved = _globalDataSrv.Commandes.FirstOrDefault(c => c.NumeroCommande == commande.NumeroCommande);
@@ -75,22 +84,38 @@ namespace WOS.Back.Services
 
             _context.Commandes.FirstOrDefault(c => c == commandeSaved).AdresseLivraisonId = adresseCommande.Id;
 
-            foreach (LigneCommande ligneCommande in commande.LignesCommande)
-            {
-                LigneCommande lignetoAdd = ligneCommande;
-                lignetoAdd.Id = 0;
-                lignetoAdd.CommandeId = commandeSaved.Id;
-                _context.LignesCommande.Add(lignetoAdd);
-            }
+            //foreach (LigneCommande ligneCommande in commande.LignesCommande)
+            //{
+            //    LigneCommande lignetoAdd = ligneCommande;
+            //    lignetoAdd.Id = 0;
+            //    lignetoAdd.CommandeId = commandeSaved.Id;
+            //    _context.LignesCommande.Add(lignetoAdd);
+            //}
 
             _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(LigneCommande));
         }
 
         public void UpdateStatus(int idCommande)
         {
             Commande commande = _context.Commandes.FirstOrDefault(c => c.Id == idCommande);
 
-            commande.StatutId = commande.StatutId++;
+            commande.StatutId++;
+
+            _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Commande));
+        }
+
+        public void UpdateCommande(Commande commande)
+        {
+            Commande commandeToUpdate = _context.Commandes.FirstOrDefault(c => c.Id == commande.Id);
+
+            commandeToUpdate.StatutId = commande.StatutId;
+            commandeToUpdate.NumeroCommandeLivreur = commande.NumeroCommandeLivreur;
+            commandeToUpdate.LinkSuivi = commande.LinkSuivi;
+            commandeToUpdate.ModeLivraisonId = commande.ModeLivraisonId;
+            commandeToUpdate.BinaryEtiquette = commande.BinaryEtiquette;
 
             _context.SaveChanges();
 

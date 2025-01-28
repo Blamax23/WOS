@@ -30,17 +30,12 @@
         box-sizing: unset;
     }
 
-    .shoe-carousel-container {
-        width: 100%;
-        overflow: hidden;
-    }
-
 .shoe-carousel-container {
-    width: 100%;
     overflow: hidden;
 }
 
 .shoe-carousel {
+    width: 200%;
     display: flex;
     overflow-x: scroll;
     scroll-snap-type: x mandatory;
@@ -122,4 +117,3 @@
 .promoPrice {
     color: red;
 }
-

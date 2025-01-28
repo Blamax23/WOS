@@ -29,6 +29,9 @@ namespace WOS.Dal.Mapping
                 .HasColumnName("path_logo")
                 .HasMaxLength(255);
 
+            builder.Property(ml => ml.JoursLivraisonMini)
+                .HasColumnName("jours_livraison_mini");
+
             builder.Property(ml => ml.PrixLivraison)
                 .HasColumnName("prix_livraison");
         }

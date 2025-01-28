@@ -16,6 +16,6 @@ namespace WOS.Dal.Interfaces
 
         void AddCategorie(Categorie Categorie);
 
-        void ChangeStatusCategorie(Categorie Categorie);
+        void UpdateHomeCategory(int id, bool tendance);
     }
 }

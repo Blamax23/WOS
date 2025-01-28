@@ -50,7 +50,7 @@
             </div>
 
             <div class="info-sections">
-                <div class="info-account active">
+                <div class="info-account">
                     <div class="formUpdateInfo">
                         <div class="head-profile">
                             <h2>Profil</h2>
@@ -110,40 +110,100 @@
                 <div class="info-commandes">
                     <div class="head-commandes">
                         <h2>Commandes</h2>
-                        <a asp-controller="Account" asp-action="FormCommande">Ajouter une commande</a>
                     </div>
                     @if (Model.Commandes.Count > 0)
                     {
-                        @foreach (var commande in Model.Commandes)
+                        @foreach (var commande in Model.Commandes.OrderByDescending(c => c.DateCommande))
                         {
                             <div class="commande">
-                                <div class="picture-zone-commande">
-                                    <img src="@commande.LignesCommande.FirstOrDefault().Produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url" class="imagePresCommande" />
+                                <div class="head-informations">
+                                    <div class="picture-zone-commande">
+                                        @if (commande.LignesCommande.Count() > 0)
+                                        {
+                                            Produit produit = Model.Produits.FirstOrDefault(p => p.Id == commande.LignesCommande.FirstOrDefault().ProduitId);
+                                            <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url)" class="imagePresCommande" />
+                                        }
+                                    </div>
+                                    <div class="info-zone-commande">
+                                        <div class="title-zone-info">
+                                            @* @if (commande.LignesCommande.Count() > 0)
+                                {
+                                Produit produit = Model.Produits.FirstOrDefault(p => p.Id == commande.LignesCommande.FirstOrDefault().ProduitId);
+                                <h3>@produit.Nom</h3>
+                                } *@
+                                            <h3>Commande n°@commande.NumeroCommande</h3>
+                                        </div>
+                                        <div class="detail-zone-info">
+                                            <div class="date-commande">
+                                                <p><strong>Date : </strong></p>
+                                                @commande.DateCommande
+                                            </div>
+                                            <div class="statut-commande">
+                                                <p><strong>Statut : </strong></p>
+                                                <p>@commande.Statut.Libelle</p>
+                                            </div>
+                                            <div class="total-commande">
+                                                <p><strong>Total : </strong></p>
+                                                <p>@commande.MontantTotal.ToString("C")</p>
+                                            </div>
+                                            <div class="livraison-estimee">
+                                                <p><strong>Date de livraison estimée : </strong></p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="info-zone-commande">
-                                    <div class="title-zone-info">
-                                        <h3>@commande.LignesCommande.FirstOrDefault().Produit.Nom</h3>
-                                    </div>
-                                    <div class="detail-zone-info">
-                                        <div class="date-commande">
-                                            <p>Date : @commande.DateCommande</p>
-                                        </div>
-                                        <div class="statut-commande">
-                                            <p>Statut : @commande.Statut</p>
-                                        </div>
-                                        <div class="total-commande">
-                                            <p>Total : @commande.MontantTotal €</p>
-                                        </div>
-                                    </div>
-                                    <div class="list-produits">
-                                        <ul>
-                                            @foreach (var ligne in commande.LignesCommande)
+                                <div class="btns-commande">
+                                    <button class="showMoreCommande confirm-btn">Voir détails</button>
+                                    <button class="showActions confirm-btn">Voir actions</button>
+                                </div>
+                                <div class="details-commande hidden">
+                                    <h3>Détails</h3>
+                                    <div class="list-produits-commande">
+                                        @if (commande.LignesCommande.Count() > 0)
+                                        {
+                                            @foreach (var itemCommande in commande.LignesCommande)
                                             {
-                                                <li>@ligne.Produit.Nom</li>
+                                                Produit produit = Model.Produits.FirstOrDefault(p => p.Id == itemCommande.ProduitId);
+                                                <div class="produit-commande">
+                                                    <div class="picture-zone-item">
+                                                        <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url)" class="imagePresCommande" />
+                                                    </div>
+                                                    <div class="info-zone-item">
+                                                        <div class="title-zone-item">
+                                                            <h3>@produit.Nom</h3>
+                                                        </div>
+                                                        <div class="detail-zone-item">
+                                                            <div class="taille-item">
+                                                                <p><strong>Taille : </strong></p>
+                                                                <p>@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == itemCommande.ProduitTailleId).Taille</p>
+                                                            </div>
+                                                            <div class="quantite-item">
+                                                                <p><strong>Quantité : </strong></p>
+                                                                <p>@itemCommande.Quantite</p>
+                                                            </div>
+                                                            <div class="prix-item">
+                                                                <p><strong>Prix : </strong></p>
+                                                                <p>@((itemCommande.PrixUnitaire * itemCommande.Quantite).ToString("C"))</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             }
-                                        </ul>
+                                        }
                                     </div>
-                                    <a asp-controller="Account" asp-action="GetCommande" asp-route-id="@commande.Id">Voir</a>
+                                </div>
+                                <div class="actions-commande hidden">
+                                    <h3>Actions</h3>
+                                    <div class="list-actions">
+                                        <div class="etiquette" data-commande-id="@commande.NumeroCommande">
+                                            <i class="bi bi-file-earmark-arrow-down"></i>
+                                            <p>Télécharger l'étiquette d'envoi</p>
+                                        </div>
+                                        <div class="updateStatus open-modal-btn" data-commande-id="@commande.NumeroCommande" data-status-id="@commande.Statut.Id">
+                                            <i class="bi bi-pencil-square"></i>
+                                            <p>Modifier le statut</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         }
@@ -227,7 +287,7 @@
                                             <tr>
                                                 <td>
                                                     <select class="input-size">
-                                                        @for (double i = 36; i <= 48; i+=0.5)
+                                                        @for (double i = 36; i <= 48; i += 0.5)
                                                         {
                                                             <option value="@i">@i</option>
                                                         })
@@ -289,7 +349,7 @@
                                                 <div class="color-zone-product">
                                                     <p><strong>Couleurs : </strong></p>
                                                     <div class="allColorsProduct">
-                                                        @foreach(var couleur in produit.ProduitCouleurs.Where(c => c.ProduitId == produit.Id))
+                                                        @foreach (var couleur in produit.ProduitCouleurs.Where(c => c.ProduitId == produit.Id))
                                                         {
                                                             <div class="color-box">
                                                                 <div class="color-show" style="background-color: @couleur.CodeHex"></div>
@@ -299,21 +359,28 @@
                                                     </div>
                                                 </div>
                                                 <div class="active-zone">
-                                                    <form method="post" asp-action="UpdateActive" asp-asp-controller="Product" class="formUpdateActiveProduct">
-                                                        <label for="active">Est ce que le produit est actif ?</label>
+                                                    <div class="formUpdateActiveProduct">
+                                                        <label for="active">Est-ce que le produit est actif ?</label>
                                                         <input type="checkbox" name="active" class="inputActiveProduct" @(produit.Actif ? "checked" : "") />
+                                                        <input type="hidden" name="productId" value="@produit.Id" />
                                                         <button type="submit" class="confirm-btn btnUpdateProductActive hidden">Modifier</button>
-                                                    </form>
+                                                    </div>
+                                                    <div class="formUpdateTendanceProduct">
+                                                        <label for="tendance">Est ce que le produit est en tendance ?</label>
+                                                        <input type="checkbox" name="tendance" class="inputTendanceProduct" @(produit.IsTendance ? "checked" : "") />
+                                                        <input type="hidden" name="productId" value="@produit.Id" />
+                                                        <button type="submit" class="confirm-btn btnUpdateProductTendance hidden">Modifier</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="detail-produit">
                                         <div class="div-delete-product">
-                                            <button class="btn cancel-btn delete-product">Supprimer</button>
+                                            <button class="btn cancel-btn delete-product" data-product-id="@produit.Id">Supprimer</button>
                                         </div>
                                         <div class="waitToShow">
-                                            <button class="showMore confirm-btn">Voir plus</button>
+                                            <button class="showMoreStock confirm-btn">Voir plus</button>
                                         </div>
                                         <div class="stockList hidden">
                                             <h3>Tailles disponibles</h3>
@@ -330,7 +397,7 @@
                                                                 <th></th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody>
+                                                        <tbody data-id-produit="@produit.Id">
 
                                                             @foreach (var stock in produit.ProduitTailles)
                                                             {
@@ -342,6 +409,11 @@
                                                                     <td class="updatePriceRow">Modifier</td>
                                                                 </tr>
                                                             }
+                                                            <tr class="addRowButton">
+                                                                <td colspan="5" style="text-align:center; padding:0">
+                                                                    <button class="btn btn-primary confirm-btn">Ajouter une ligne</button>
+                                                                </td>
+                                                            </tr>
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -417,8 +489,8 @@
                                 <textarea type="text" class="textDescCat"></textarea>
                             </div>
                             <div class="active-zone">
-                                <label for="home">Page d'accueil'</label>
-                                <input type="checkbox" name="home" class="inputHome" />
+                                <label for="home">Page d'accueil</label>
+                                <input type="checkbox" name="home" class="inputHome" value="true" />
                             </div>
                             <div class="btnFormAddCategorie">
                                 <a class="cancel-btn cancelAddCategorie">Annuler</a>
@@ -434,50 +506,57 @@
                             {
                                 @for (var i = 0; i < Model.Marques.Count(); i++)
                                 {
-                                    <div class="marque">
-                                        <div class="head-zone-marqueShow" id="marque-@i">
-                                            <div class="zone-right-marque">
-                                                <div class="nameMarque">
-                                                    <h3>@Model.Marques[i].Nom</h3>
-                                                </div>
-                                                <div class="descMarque">
-                                                    <p>@Model.Marques[i].Description</p>
-                                                    <form method="post" asp-action="UpdateMarque" asp-controller="Marque" class="formUpdateMarque">
-                                                        <label for="isHomeCat">Est ce que la marque est affichée en page d'accueil ?</label>
-                                                        <input type="checkbox" class="inputIsHomeMarque" @(Model.Marques[i].IsHome.Value ? "checked" : "") />
-                                                        <input type="hidden" value="@Model.Marques[i].Id" name="id" />
-                                                        <button type="submit" class="submitUpdateMarque hidden confirm-btn">Modifier</button>
-                                                    </form>
-                                                </div>
+                                    <div class="marque" data-id-produit="@Model.Marques[i].Id">
+                                        <div class="entete-marque">
+                                            <div class="nameMarque">
+                                                <h3>@Model.Marques[i].Nom</h3>
                                             </div>
-                                            <div class="zone-left-marque">
-                                                <i class="bi bi-chevron-right"></i>
+                                            <div class="descMarque">
+                                                <p>@Model.Marques[i].Description</p>
+                                                <div class="active-zone">
+                                                    <div class="formUpdateHomeMarque">
+                                                        <label for="active">Est-ce que la marque est en page d'accueil ?</label>
+                                                        <input type="checkbox" name="tendance" class="inputActiveMarque" @(Model.Marques[i].IsHome.Value ? "checked" : "") />
+                                                        <input type="hidden" name="marqueId" value="@Model.Marques[i].Id" />
+                                                        <button type="submit" class="confirm-btn btnUpdateMarqueHome hidden">Modifier</button>
+                                                    </div>
+                                                    <p class="errorUpdateMarque"></p>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="bottom-zone-marque hidden" id="categories-@i">
-                                            @if (Model.Categories.Where(c => c.IdMarque == Model.Marques[i].Id).Count() == 0)
-                                            {
-                                                <h3>Aucun modèle n'a encore été ajouté pour cette marque.</h3>
-                                            }
-                                            else
-                                            {
-                                                <ul>
-                                                    @foreach (var cat in Model.Categories.Where(c => c.IdMarque == Model.Marques[i].Id))
-                                                    {
-                                                        <div class="categorie">
-                                                            <div class="name">
-                                                                <h3>@cat.Nom</h3>
+                                        <div class="detail-produit">
+                                            <div class="div-delete-product">
+                                                <button class="btn cancel-btn delete-marque" data-marque-id="@Model.Marques[i].Id">Supprimer</button>
+                                            </div>
+                                            <div class="waitToShow">
+                                                <button class="showMoreCategory confirm-btn">Voir plus</button>
+                                            </div>
+                                            <div class="categoryList hidden">
+                                                <h3>Catégories</h3>
+                                                @if (Model.Categories.Where(c => c.IdMarque == Model.Marques[i].Id).Count() == 0)
+                                                {
+                                                    <h3>Aucun modèle n'a encore été ajouté pour cette marque.</h3>
+                                                }
+                                                else
+                                                {
+                                                    <ul>
+                                                        @foreach (var cat in Model.Categories.Where(c => c.IdMarque == Model.Marques[i].Id))
+                                                        {
+                                                            <div class="categorie">
+                                                                <div class="name">
+                                                                    <h3>@cat.Nom</h3>
+                                                                </div>
+                                                                <div class="formUpdateHomeCategory">
+                                                                    <label for="active">Est-ce que la catégorie est en page d'accueil ?</label>
+                                                                    <input type="checkbox" name="tendance" class="inputActiveCategory" @(cat.IsHome.Value ? "checked" : "") />
+                                                                    <input type="hidden" name="categoryId" value="@cat.Id" />
+                                                                    <button type="submit" class="confirm-btn btnUpdateCategoryHome hidden">Modifier</button>
+                                                                </div>
                                                             </div>
-                                                            <form method="post" asp-action="UpdateCategorie" asp-controller="Categorie" class="formUpdateCat">
-                                                                <label for="isHomeCat">Est ce que la catégorie est affichée en page d'accueil ?</label>
-                                                                <input type="checkbox" class="inputIsHomeCat" @(Model.Categories[i].IsHome.Value ? "checked" : "") />
-                                                                <input type="hidden" value="@cat.Id" name="id" />
-                                                                <button type="submit" class="submitUpdateCategorie hidden confirm-btn">Modifier</button>
-                                                            </form>
-                                                        </div>
-                                                    }
-                                                </ul>
-                                            }
+                                                        }
+                                                    </ul>
+                                                }
+                                            </div>
                                         </div>
                                     </div>
                                 }
@@ -489,7 +568,7 @@
                     <div class="head-livraison">
                         <h1>Mode de livraison</h1>
                     </div>
-                    @foreach(var mode in Model.ModeLivraisons)
+                    @foreach (var mode in Model.ModeLivraisons)
                     {
                         <div class="mode-livraison">
                             <div class="left-zone">
@@ -501,10 +580,9 @@
                                 </div>
                                 <form class="price-zone">
                                     <label for="price">Prix</label>
-                                    <script>
-                                        console.log("@mode.PrixLivraison.ToString(System.Globalization.CultureInfo.InvariantCulture)");
-                                    </script>
                                     <input type="number" name="price" class="input-price" step="0.01" value="@mode.PrixLivraison.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                    <label for="deliveryTime">Durée de livraison (j)</label>
+                                    <input type="number" name="deliveryTime" class="input-delivery-time" value="@mode.JoursLivraisonMini" />
                                     <button type="submit" class="confirm-btn update-delivery-mode" data-mode-id="@mode.Id">Modifier</button>
                                 </form>
                             </div>
@@ -517,6 +595,28 @@
         {
 
         }
+    </div>
+</div>
+
+<div class="modal-delete">
+    <div class="modal-content">
+        <h2>Voulez-vous vraiment supprimer cet élément ?</h2>
+        <div class="modal-btns">
+            <button class="confirm-btn">Confirmer</button>
+            <button class="cancel-btn">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-status-commande">
+    <div class="modal-content">
+        <h2>Modifier le statut de la commande</h2>
+        <form method="post" asp-action="UpdateCommandeStatus" asp-controller="Panier">
+            <select name="statut" class="inputStatut">
+            </select>
+            <input type="hidden" name="commandeId" class="inputCommandeId" />
+            <button type="submit" class="confirm-btn">Modifier</button>
+        </form>
     </div>
 </div>
 
@@ -702,6 +802,17 @@
         const sideNav = document.getElementById('sideNav');
         const menuItems = sideNav.querySelectorAll('li');
 
+        // On regarde si le cookie activeSection est déclaré
+        const activeSection = document.cookie.split(';').find(cookie => cookie.includes('activeSection'));
+        if (activeSection) {
+            const sectionId = activeSection.split('=')[1];
+            document.querySelector(`.${sectionId}`).classList.add('active');
+        } else {
+            // On enregistre le cookie activeSection pour info-account
+            document.cookie = `activeSection=info-account; path=/`;
+            document.querySelector('.info-account').classList.add('active');
+        }
+
         // Gestion du toggle menu
         toggleBtn.addEventListener('click', () => {
             sideNav.classList.toggle('active');
@@ -726,6 +837,8 @@
 
                 // Afficher la section sélectionnée
                 document.querySelector(`.${sectionId}`).classList.add('active');
+
+                document.cookie = `activeSection=${sectionId}; path=/`;
 
                 // Fermer le menu sur mobile
                 sideNav.classList.remove('active');
@@ -868,6 +981,64 @@
             });
         });
     });
+
+    // $('.addRowButton button').click(function () {
+    //     // Création de la nouvelle ligne
+    //     var newRow = $('<tr>');
+
+    //     // Création des cellules avec les inputs
+    //     var cells = `
+    //             <td><input type="text" class="form-control" name="taille" placeholder="Taille"></td>
+    //             <td><input type="number" class="form-control" name="quantite" placeholder="Quantité"></td>
+    //             <td><input type="number" class="form-control" name="prix" placeholder="Prix" step="0.01"></td>
+    //             <td><input type="number" class="form-control" name="promo" placeholder="Promotion" step="0.01"></td>
+    //             <td><button class="btn btn-success confirm-btn addRowTableStock">Confirmer</button></td>
+    //         `;
+
+    //     // Ajout des cellules à la nouvelle ligne
+    //     newRow.html(cells);
+
+    //     // Insertion de la nouvelle ligne avant le bouton "Ajouter une ligne"
+    //     $('.addRowButton').before(newRow);
+    // });
+
+    // $('.addRowTableStock').on('click' function () {
+    //     // On récupère les valeurs des inputs qui sont dans le tr de "addRowButton"
+    //     const taille = $(this).parent().siblings().find('input[name="taille"]').val();
+    //     const quantite = $(this).parent().siblings().find('input[name="quantite"]').val();
+    //     const prix = $(this).parent().siblings().find('input[name="prix"]').val();
+    //     const promo = $(this).parent().siblings().find('input[name="promo"]').val();
+
+    //     // On fait une requête ajax pour ajouter la nouvelle ligne en bdd
+    //     $.ajax({
+    //         url: '@Url.Action("AddRowTableStock", "Product")',
+    //         type: 'POST',
+    //         data: {
+    //             taille: taille,
+    //             quantite: quantite,
+    //             prix: prix,
+    //             promo: promo
+    //         },
+    //         success: function (response) {
+    //             // On crée une nouvelle ligne avec les valeurs récupérées
+    //             const newRow = `
+    //                 <tr>
+    //                     <td>${taille}</td>
+    //                     <td>${quantite}</td>
+    //                     <td>${prix}</td>
+    //                     <td>${promo}</td>
+    //                     <td class="updatePriceRow">Modifier</td>
+    //                 </tr>
+    //             `;
+
+    //             // On ajoute la nouvelle ligne au tableau
+    //             $('#stockTable tbody').append(newRow);
+    //         },
+    //         error: function (error) {
+    //             console.error(error);
+    //         }
+    //     });
+    // })
 
     let deleteCases = $('.caseDeleteRow');
     // On ajoute un gestionnaire d'événement pour chaque case
@@ -1238,12 +1409,140 @@
     $(".formUpdateActiveProduct .inputActiveProduct").on("click", function (event) {
         event.stopPropagation();
         // Cibler le bouton dans le même formulaire et enlever la classe 'hidden'
-        $(this).closest("form").find(".btnUpdateProductActive").removeClass("hidden");
+        $(this).closest("div").find(".btnUpdateProductActive").removeClass("hidden");
     });
 
-    let deroules = $(".showMore");
+    $(".formUpdateTendanceProduct .inputTendanceProduct").on("click", function (event) {
+        event.stopPropagation();
+        // Cibler le bouton dans le même formulaire et enlever la classe 'hidden'
+        $(this).closest("div").find(".btnUpdateProductTendance").removeClass("hidden");
+    });
+
+    $(".formUpdateHomeMarque .inputActiveMarque").on("click", function (event) {
+        event.stopPropagation();
+        // Cibler le bouton dans le même formulaire et enlever la classe 'hidden'
+        $(this).closest("div").find(".btnUpdateMarqueHome").removeClass("hidden");
+    });
+
+    $(".formUpdateHomeCategory .inputActiveCategory").on("click", function (event) {
+        event.stopPropagation();
+        // Cibler le bouton dans le même formulaire et enlever la classe 'hidden'
+        $(this).closest("div").find(".btnUpdateCategoryHome").removeClass("hidden");
+    });
+
+    $(".btnUpdateCategoryHome").on('click', function (event) {
+        const button = $(this); // Sauvegarde de la référence au bouton
+        const url = '@Url.Action("UpdateTendanceCategory", "Categorie")';
+        const data = {
+            id: button.siblings('input[name="categoryId"]').val(),
+            tendance: button.siblings('input[name="tendance"]').prop('checked')
+        };
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            success: function (response) {
+                if (response.errorMessage != "") {
+                    $('.errorUpdateCategory').text(response.errorMessage);
+                } else {
+                    button.addClass('hidden'); // Utilisation explicite de la référence
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    });
+
+    $(".btnUpdateMarqueHome").on('click', function (event) {
+        const button = $(this); // Sauvegarde de la référence au bouton
+        const url = '@Url.Action("UpdateMarque", "Marque")';
+        const data = {
+            id: button.siblings('input[name="marqueId"]').val(),
+            tendance: button.siblings('input[name="tendance"]').prop('checked')
+        };
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            success: function (response) {
+                if (response.errorMessage != "") {
+                    $('.errorUpdateMarque').text(response.errorMessage);
+                } else {
+                    button.addClass('hidden'); // Utilisation explicite de la référence
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    });
+
+    $(".btnUpdateProductTendance").on('click', function (event) {
+        const button = $(this); // Sauvegarde de la référence au bouton
+        const url = '@Url.Action("UpdateTendance", "Product")';
+        const data = {
+            id: button.siblings('input[name="productId"]').val(),
+            tendance: button.siblings('input[name="tendance"]').prop('checked')
+        };
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            success: function (response) {
+                if (response.errorMessage != "") {
+                    $('.errorUpdateProfil').text(response.errorMessage);
+                } else {
+                    button.addClass('hidden'); // Utilisation explicite de la référence
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    });
+
+    $(".btnUpdateProductActive").on('click', function (event) {
+        const button = $(this); // Sauvegarde de la référence au bouton
+        const url = '@Url.Action("UpdateActive", "Product")';
+        const data = {
+            id: button.siblings('input[name="productId"]').val(),
+            active: button.siblings('input[name="active"]').prop('checked')
+        };
+
+        console.log(data);
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            success: function (response) {
+                if (response.errorMessage != "") {
+                    $('.errorUpdateProfil').text(response.errorMessage);
+                } else {
+                    button.addClass('hidden'); // Utilisation explicite de la référence
+                }
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+    });
+
+    $('.confirm-btn').click(function () {
+        // Trouver la ligne "ajouter" et l'ajouter après la ligne du produit
+        var newRow = '<tr><td colspan="5" style="text-align:center;">Nouvelle ligne ajoutée</td></tr>';
+
+        // Ajoute la nouvelle ligne sous chaque ligne de produit
+        $(this).closest('tr').before(newRow);
+    });
+
+    let deroulesStock = $(".showMoreStock");
     // On affiche les stocks quand on clique sur le bouton
-    deroules.each((index, deroule) => {
+    deroulesStock.each((index, deroule) => {
         $(deroule).on('click', () => {
             let stockList = $(deroule).parent().siblings('.stockList');
             if (stockList.hasClass('hidden')) {
@@ -1256,190 +1555,108 @@
         });
     });
 
-    // Clic sur le bouton modifier
-    // let btnUpdateRowStock = $(".updatePriceRow");
-    // btnUpdateRowStock.each((index, btn) => {
-    //     $(btn).on('click', () => {
-    //         let row = $(btn).parent();
-    //         let inputs = row.find('td');
-    //         let taille = inputs.eq(0).text();
-    //         let stock = inputs.eq(1).text();
-    //         let prix = inputs.eq(2).text();
-    //         let promo = inputs.eq(3).text();
-
-    //         // On remplace les valeurs par des inputs
-    //         inputs.eq(1).html(`<input type="number" class="input-quantity" value="${stock}" />`);
-    //         inputs.eq(2).html(`<input type="number" class="input-price" value="${prix}" />`);
-    //         inputs.eq(3).html(`<input type="number" class="input-promo" value="${promo}" />`);
-
-    //         // On modifie le bouton pour qu'il confirme
-    //         $(btn).text('Confirmer');
-    //         $(btn).removeClass('updatePriceRow');
-    //         $(btn).addClass('confirmUpdatePriceRow');
-    //         $(btn).addClass('confirm-btn');
-
-    //         // On ajoute un bouton pour annuler
-    //         row.append('<td class="cancelUpdatePriceRow cancel-btn">Annuler</td>');
-
-    //         // On ajoute un autre th dans le thead du tableau
-    //         let thead = $('#stockTable thead tr');
-    //         thead.append('<th class="headBtnCancel"></th>');
-
-    //         let cancelUpdatePriceRow = $(".cancelUpdatePriceRow");
-
-    //         cancelUpdatePriceRow.each((index, btn) => {
-    //             $(btn).on('click', () => {
-    //                 let row = $(btn).parent();
-    //                 let inputs = row.find('input');
-    //                 let stock = inputs.eq(0).val();
-    //                 let prix = inputs.eq(1).val();
-    //                 let promo = inputs.eq(2).val();
-
-    //                 console.log(inputs);
-    //                 console.log(inputs.eq(0).val());
-    //                 console.log(inputs.eq(1).val());
-    //                 console.log(inputs.eq(2).val());
-    //                 console.log(stock);
-    //                 console.log(prix);
-    //                 console.log(promo);
-
-    //                 // On remplace les inputs par les anciennes valeurs
-    //                 inputs.eq(0).replaceWith(`${stock}`);
-    //                 inputs.eq(1).replaceWith(`${prix}`);
-    //                 inputs.eq(2).replaceWith(`${promo}`);
-
-    //                 // On remet le bouton modifier
-
-    //                 let tdUpdate = row.find('.confirmUpdatePriceRow');
-    //                 console.log(tdUpdate);
-    //                 console.log($(btn));
-    //                 $(tdUpdate).text('Modifier');
-    //                 $(tdUpdate).removeClass('confirmUpdatePriceRow').addClass('updatePriceRow');
-
-    //                 // On supprime le bouton annuler
-    //                 row.find('.cancelUpdatePriceRow').remove();
-
-    //                 // On supprime le td au dessus de ce bouton annulé
-    //                 thead.find('.headBtnCancel').remove();
-    //             });
-    //         });
-
-    //         let confirmUpdatePriceRow = $(".confirmUpdatePriceRow");
-    //         confirmUpdatePriceRow.each((index, btn) => {
-    //             $(btn).on('click', () => {
-    //                 // On récupère le tr
-    //                 let tr = $(btn).parent().parent();
-    //                 // on récupère la valeur de son champ data-id
-    //                 let idProduit = $(tr).data('id-produit');
-    //                 let taille = $(tr).data('id-taille');
-    //                 console.log(idProduit);
-    //                 console.log(taille);
-
-
-    //                 let row = $(btn).parent();
-    //                 let inputs = row.find('input');
-    //                 let stock = inputs.eq(0).val();
-    //                 let prix = inputs.eq(0).val();
-    //                 let promo = inputs.eq(0).val();
-
-    //                 console.log(inputs);
-    //                 console.log(taille);
-    //                 console.log(stock);
-    //                 console.log(prix);
-    //                 console.log(promo);
-
-    //                 // On remplace les inputs par les nouvelles valeurs
-    //                 inputs.eq(0).replaceWith(`${stock}`);
-    //                 inputs.eq(1).replaceWith(`${prix}`);
-    //                 inputs.eq(2).replaceWith(`${promo}`);
-
-    //                 // On remet le bouton modifier
-    //                 console.log(btn);
-    //                 console.log($(btn));
-    //                 $(btn).text('Modifier');
-    //                 $(btn).removeClass('confirmUpdatePriceRow');
-    //                 $(btn).addClass('updatePriceRow');
-
-    //                 // On supprime le bouton annuler
-    //                 row.find('.cancelUpdatePriceRow').remove();
-
-    //                 // On supprime le th ajouté
-    //                 $('#stockTable thead tr th:last-child').remove();
-
-
-    //                 // On récupère le tr
-    //                 tr = $(btn).parent().parent();
-    //                 // on récupère la valeur de son champ data-id
-
-
-
-    //                 // On met à jour les valeurs dans la base de données
-    //                 let size = taille;
-    //                 let quantity = stock;
-    //                 let price = prix;
-    //                 let priceProm = promo;
-    //                 // On crée un objet stockData
-    //                 let stockData = {
-    //                     size: size,
-    //                     quantity: quantity,
-    //                     price: price,
-    //                     priceProm: priceProm
-    //                 };
-    //                 let url = `/Product/UpdateStockProduct?id=${idProduit}&StockData=${stockData}`;
-    //                 $.ajax({
-    //                     url: url,
-    //                     type: 'POST',
-    //                     success: function (data) {
-    //                         console.log(data);
-    //                     },
-    //                     error: function (error) {
-    //                         console.log(error);
-    //                     }
-    //                 });
-    //             });
-    //         });
-
-    //     });
-    // });
+    let deroulesCategory = $(".showMoreCategory");
+    // On affiche les stocks quand on clique sur le bouton
+    deroulesCategory.each((index, deroule) => {
+        $(deroule).on('click', () => {
+            let stockList = $(deroule).parent().siblings('.categoryList');
+            if (stockList.hasClass('hidden')) {
+                stockList.removeClass('hidden');
+                $(deroule).text('Voir moins');
+            } else {
+                stockList.addClass('hidden');
+                $(deroule).text('Voir plus');
+            }
+        });
+    });
 
     // On attache l'événement "Update" à un parent statique
     $(document).ready(function () {
-        // On ajoute un petit bouton supprimer en haut à droite de chaque produit
-        // let products = $('.produit');
-        // products.each((index, product) => {
-        //     let deleteButton = $('<button class="btn cancel-btn delete-product">Supprimer</button>');
-        //     $(product).append(deleteButton);
-        // });
 
         // On ajoute un gestionnaire d'événement pour chaque bouton supprimer
         let deleteButtons = $('.delete-product');
-        deleteButtons.each((index, button) => {
-            $(button).on('click', () => {
-                let product = $(button).parent();
-                let productId = product.data('id-produit');
-                console.log('Suppression du produit', productId);
+        let deleteButtonsMarque = $('.delete-marque');
+        let productId;
+        let marqueId;
 
+        // Ouvrir le modal au clic sur un bouton de suppression
+        deleteButtons.each((index, button) => {
+            $(button).on('click', function () {
+                productId = undefined;
+                marqueId = undefined;
+                productId = $(button).data('product-id'); // Récupérer l'ID du produit
+                $('.modal-delete').fadeIn(); // Afficher le modal
+            });
+        });
+
+        deleteButtonsMarque.each((index, button) => {
+            $(button).on('click', function () {
+                productId = undefined;
+                marqueId = undefined;
+                marqueId = $(button).data('marque-id'); // Récupérer l'ID du produit
+                $('.modal-delete').fadeIn(); // Afficher le modal
+            });
+        });
+
+        // Confirmer la suppression
+        $('.modal-delete .confirm-btn').on('click', function () {
+            if (productId) {
                 // Envoi de la requête AJAX pour supprimer le produit
                 $.ajax({
                     url: `/Product/DeleteProduct?id=${productId}`,
                     type: 'POST',
                     success: function (response) {
                         console.log('Produit supprimé:', response);
-                        product.remove(); // Supprime le produit du DOM
+
+                        // Supprimer le produit du DOM
+                        $(`.delete-product[data-id-produit="${productId}"]`).closest('.product-item').remove();
+
+                        // Fermer le modal
+                        $('.modal-delete').fadeOut();
                     },
                     error: function (error) {
                         console.error('Erreur lors de la suppression:', error);
                     }
                 });
+            }
 
-            });
+            if (marqueId) {
+                // Envoi de la requête AJAX pour supprimer le produit
+                $.ajax({
+                    url: `/Marque/DeleteMarque?id=${marqueId}`,
+                    type: 'POST',
+                    success: function (response) {
+                        console.log('Produit supprimé:', response);
+
+                        // Supprimer la marque du DOM
+                        $(`.delete-marque[data-marque-id="${marqueId}"]`).closest('.marque').remove();
+
+                        // Fermer le modal
+                        $('.modal-delete').fadeOut();
+                    },
+                    error: function (error) {
+                        console.error('Erreur lors de la suppression:', error);
+                    }
+                });
+            }
+        });
+
+        // Annuler et fermer le modal
+        $('.modal-delete .cancel-btn').on('click', function () {
+            $('.modal-delete').fadeOut(); // Fermer le modal
+        });
+
+        // Optionnel : fermer le modal en cliquant en dehors du contenu
+        $('.modal-delete').on('click', function (e) {
+            if ($(e.target).is('.modal-delete')) {
+                $('.modal-delete').fadeOut();
+            }
         });
 
         // Événement délégué pour le bouton "Modifier"
         let stockTable = $('#stockTable');
         console.log(stockTable);
         $('#stockTableShow tbody').on('click', '.updatePriceRow', function () {
-            console.log('Bouton Modifier cliqué');
 
             let btn = $(this); // Le bouton (td)
             let row = btn.closest('tr'); // La ligne parente
@@ -1465,13 +1682,10 @@
 
             let thead = $('#stockTableShow thead tr');
             thead.append('<th class="headBtnCancel"></th>');
-
-            console.log('Passé en mode édition');
         });
 
         // Événement délégué pour le bouton "Confirmer"
         $('#stockTableShow tbody').on('click', '.confirmUpdatePriceRow', function () {
-            console.log('Bouton Confirmer cliqué');
 
             let btn = $(this); // Le bouton (td)
             let row = btn.closest('tr'); // La ligne parente
@@ -1508,8 +1722,6 @@
                 priceProm: promo
             };
 
-            console.log('StockItem JSON:', stockItem);
-
             // Envoi des données au serveur via AJAX
             let data = JSON.stringify(stockItem);
             let url = `/Product/UpdateStockProduct?id=${productId}&stockData=${data}`;
@@ -1519,7 +1731,6 @@
                 type: 'POST',
                 contentType: 'application/json', // Indique que les données envoyées sont en JSON
                 success: function (response) {
-                    console.log('Réponse du serveur:', response);
                     alert('Mise à jour effectuée avec succès.');
                 },
                 error: function (error) {
@@ -1527,13 +1738,10 @@
                     alert('Erreur lors de la mise à jour. Veuillez réessayer.');
                 }
             });
-
-            console.log('Requête envoyée à:', url);
         });
 
         // Événement délégué pour le bouton "Annuler"
         $('#stockTableShow tbody').on('click', '.cancelUpdatePriceRow', function () {
-            console.log('Bouton Annuler cliqué');
 
             let btn = $(this); // Le bouton (td)
             let row = btn.closest('tr'); // La ligne parente
@@ -1560,8 +1768,6 @@
 
             let thead = $('#stockTableShow thead tr');
             thead.find('.headBtnCancel').remove();
-
-            console.log('Modifications annulées');
         });
     });
 
@@ -1577,17 +1783,18 @@
     btnUpdateDelivery.each((index, button) => {
         $(button).on('click', () => {
             event.preventDefault();
-            // On récupère le data-mode-id 
+            // On récupère le data-mode-id
             let modeId = $(button).data('mode-id');
             // On récupère la valeur de l'input à cote
             let price = $(button).siblings('.input-price').val();
+            // On récupère la valeur de l'input à cote
+            let deliveryTime = $(button).siblings('.input-delivery-time').val();
 
             // On effectue une requête AJAX pour modifier le prix
             $.ajax({
-                url: `/Panier/UpdateDeliveryPrice?idModeLivraison=${modeId}&newPrice=${price}`,
+                url: `/Panier/UpdateDeliveryPrice?idModeLivraison=${modeId}&newPrice=${price}&deliveryTime=${deliveryTime}`,
                 type: 'POST',
                 success: function (response) {
-                    console.log('Prix modifié:', response);
                     alert('Prix modifié avec succès.');
                 },
                 error: function (error) {
@@ -1595,6 +1802,157 @@
                     alert('Erreur lors de la modification. Veuillez réessayer.');
                 }
             });
+        });
+    });
+
+</script>
+
+<script>
+
+    // Fermeture du modal avec le bouton "Annuler"
+    $('.cancel-btn').on('click', function () {
+        $('.modal-status-commande').fadeOut();
+    });
+
+    // Fermeture du modal en cliquant en dehors du contenu
+    $('.modal-status-commande').on('click', function (e) {
+        if ($(e.target).is('.modal-status-commande')) {
+            $('.modal-status-commande').fadeOut();
+        }
+    });
+</script>
+
+<script>
+    // gestionnaire de click sur showMoreCommande
+    let showMoreCommande = $(".showMoreCommande");
+    showMoreCommande.on('click', function () {
+        let commandeList = $(this).parent().siblings('.details-commande');
+        if (commandeList.hasClass('hidden')) {
+            commandeList.removeClass('hidden');
+            $(this).text('Masquer détails');
+        } else {
+            commandeList.addClass('hidden');
+            $(this).text('Voir détails');
+        }
+    });
+
+    // gestionnaire de click sur showActions
+    let showMoreActions = $(".showActions");
+    showMoreActions.on('click', function () {
+        let actionsList = $(this).parent().siblings('.actions-commande');
+        if (actionsList.hasClass('hidden')) {
+            actionsList.removeClass('hidden');
+            $(this).text('Masquer actions');
+        } else {
+            actionsList.addClass('hidden');
+            $(this).text('Voir actions');
+        }
+    });
+
+    // gestionnaire de click sur la div etiquette
+    let etiquetteCommande = $(".etiquette");
+    etiquetteCommande.on('click', function () {
+        // on récupère le data-commande-id
+        let commandeId = $(this).data('commande-id');
+
+        // On fait une requête POST ajax vers DownloadEtiquette de PanierController
+        $.ajax({
+            url: `/Panier/GetCommande?numberOrder=${commandeId}`,
+            type: 'POST',
+            success: function (response) {
+                // Décoder le Base64 en tableau de bytes
+                const binaryString = atob(response.etiquette); // Décodage Base64
+                const byteArray = Uint8Array.from(binaryString, char => char.charCodeAt(0)); // Conversion en tableau de bytes
+
+                // Créer un Blob pour représenter le GIF
+                const gifBlob = new Blob([byteArray], { type: "image/gif" });
+
+                // Charger le GIF dans une balise <img>
+                const gifUrl = URL.createObjectURL(gifBlob);
+                const img = new Image();
+                img.src = gifUrl;
+
+                img.onload = function () {
+                    // Créer un canvas pour convertir l'image en PNG
+                    const canvas = document.createElement("canvas");
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0);
+
+                    // Extraire l'image PNG du canvas
+                    canvas.toBlob(function (pngBlob) {
+                        // Créer une URL pour le Blob PNG
+                        const pngUrl = URL.createObjectURL(pngBlob);
+
+                        // Créer un lien pour le téléchargement
+                        const link = document.createElement("a");
+                        link.href = pngUrl;
+                        link.download = `etiquette_commande_${commandeId}.png`;
+
+                        // Ajouter le lien, déclencher le clic et le supprimer
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        // Libérer la mémoire
+                        URL.revokeObjectURL(pngUrl);
+                        URL.revokeObjectURL(gifUrl);
+                    }, "image/png");
+                };
+
+                img.onerror = function () {
+                    console.error("Impossible de charger l'image GIF.");
+                };
+            },
+            error: function (error) {
+                console.error('Erreur lors du téléchargement:', error);
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        // Ouvrir le modal
+        $(".open-modal-btn").on("click", function () {
+            const commandeId = $(this).data("commande-id");
+            const statutActuelId = $(this).data("status-id");
+            $(".modal-status-commande .inputCommandeId").val(commandeId);
+
+            // On ajoute les status dans le select InputStatut
+            const statusList = @Html.Raw(Json.Serialize(Model.StatutCommandes.Select(s => s.Libelle).ToList()));
+            const statusId = @Html.Raw(Json.Serialize(Model.StatutCommandes.Select(s => s.Id).ToList()));
+            const selectInput = $(".modal-status-commande .inputStatut");
+            selectInput.empty(); // On vide les options actuelles
+
+            for(var i = 0; i<statusList.length; i++){
+                if (statusId[i] >= statutActuelId) {
+                    const option = `<option value="${statusId[i]}">${statusList[i]}</option>`;
+                    selectInput.append(option);
+                }
+            }
+
+            // Bloquer le scroll
+            $("body").css("overflow", "hidden");
+
+            // Afficher le modal
+            $(".modal-status-commande").fadeIn();
+        });
+
+        // Fermer le modal
+        $(".modal-status-commande").on("click", function (e) {
+            if ($(e.target).hasClass("modal-status-commande")) {
+                $(this).fadeOut();
+
+                // Réactiver le scroll
+                $("body").css("overflow", "auto");
+            }
+        });
+
+        // Réactiver le scroll après soumission (si nécessaire)
+        $("form").on("submit", function () {
+            $(".modal-status-commande").fadeOut();
+            $("body").css("overflow", "auto");
         });
     });
 

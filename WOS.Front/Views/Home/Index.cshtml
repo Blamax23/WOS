@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <link rel="stylesheet" href="~/css/home/accueil.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/items/itemSneaker.css" asp-append-version="true" />
 
 <div class="content">
     <div class="homescreen">
@@ -32,28 +33,38 @@
                             <div class="shoe-carousel">
                                 @if (row.Produits.Count() > 0)
                                 {
-                                    foreach (var product in row.Produits)
+                                    @foreach (var produit in row.Produits)
                                     {
-                                        <div class="shoe-card">
-                                            <img src="@Url.Content(@product.ProduitImages.FirstOrDefault(i => i.Principale).Url)" alt="@product.Nom" />
-                                            <div class="shoe-details">
-                                                <h3>@product.Categorie.Nom @product.Nom</h3>
-                                                <div class="price-product-zone">
-                                                    @{
-                                                        ProduitTaille lessPrice = product.ProduitTailles.OrderBy(t => t.Prix).FirstOrDefault();
-                                                    }
-                                                    @if (@lessPrice.PrixPromo != 0 && @lessPrice.PrixPromo != null)
-                                                    {
-                                                        <p class="promoPrice">@lessPrice.PrixPromo.00 €</p>
-                                                        <p class="oldPrice">@lessPrice.Prix.00 €</p>
-                                                    }
-                                                    else
-                                                    {
-                                                        <p class="standardPrice">@lessPrice.Prix.00 €</p>
-                                                    }
+                                        @if (produit.ProduitTailles.Any(pt => pt.Stock > 0) && produit.Actif)
+                                        {
+                                            ProduitTaille productWithPromo = new ProduitTaille();
+                                            if (produit.ProduitTailles.Where(t => t.PrixPromo != null).Count() > 0)
+                                            {
+                                                productWithPromo = produit.ProduitTailles.Where(t => t.PrixPromo != null).OrderBy(t => t.PrixPromo).First();
+                                            }
+                                            else
+                                            {
+                                                productWithPromo = produit.ProduitTailles.OrderBy(t => t.Prix).First();
+                                            }
+                                            <a href="@Url.Action("ViewProduct", "Product", new { id = produit.Id })" class="product">
+                                                <div class="product-img">
+                                                    <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
                                                 </div>
-                                            </div>
-                                        </div>
+                                                <div class="product-info">
+                                                    <p class="product-name">@produit.Nom</p>
+                                                    <div class="prices">
+                                                        @if (productWithPromo.PrixPromo != null)
+                                                        {
+                                                            <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        }
                                     }
                                 }
                                 else

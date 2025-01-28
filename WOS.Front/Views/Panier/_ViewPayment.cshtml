@@ -9,6 +9,8 @@
         totalAmount += item.Quantity * item.Price;
     }
     totalAmount += (decimal)Model.ModeLivraison.PrixLivraison;
+
+    var dateLivraison = DateOnly.FromDateTime(DateTime.Now).AddDays(Model.ModeLivraison.JoursLivraisonMini.Value);
 }
 
 <div class="head-panier">
@@ -62,7 +64,7 @@
                 <img src="@Url.Content(Model.ModeLivraison.PathLogo)" />
                 <div class="info-delivery">
                     <h3 class="name-delivery-mode">@Model.ModeLivraison.Nom</h3>
-                    <p>Date de livraison estimée : 28 déc</p>
+                    <p>Date de livraison estimée : @dateLivraison</p>
                     <p class="delivery-price"><strong>@Model.ModeLivraison.PrixLivraison.ToString("C")</strong></p>
                 </div>
             </div>
@@ -115,9 +117,6 @@
                     <div id="payment-element">
                         <!--Stripe.js injects the Payment Element-->
                     </div>
-                    <button id="submit">
-                        <div class="spinner hidden" id="spinner"></div>
-                    </button>
                     <div id="payment-message" class="hidden"></div>
                 </form>
             </div>
@@ -259,7 +258,7 @@
             elements,
             confirmParams: {
                 // Make sure to change this to your payment completion page
-                return_url: "http://localhost:7076/Panier/ConfirmPurchase?numberOrder=@Model.OrderNumber",
+                return_url: "@Model.Domain" + "Panier/ConfirmPurchase?numberOrder=@Model.OrderNumber",
             },
         });
 

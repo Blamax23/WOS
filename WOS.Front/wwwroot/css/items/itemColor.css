@@ -5,7 +5,7 @@
     align-items: center;
     border-radius: 5px;
     box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
-    width: 3.5vw;
+    width: 4.5vw;
     padding: .5em 0;
 }
 
@@ -19,5 +19,5 @@
 .color-name{
     text-align: center;
     margin: 0;
-    width: 3vw;
+    width: max-content;
 }

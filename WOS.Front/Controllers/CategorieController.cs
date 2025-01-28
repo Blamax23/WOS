@@ -5,6 +5,7 @@ using WOS.Model;
 using System.Text.Json;
 using WOS.Dal.Interfaces;
 using WOS.Dal.Context;
+using WOS.Back.Services;
 
 namespace WOS.Front.Controllers
 {
@@ -48,18 +49,22 @@ namespace WOS.Front.Controllers
         }
 
         [HttpPost]
-        [Route("UpdateCategorie")]
-        public ActionResult UpdateCategorie(string id, bool isHome)
+        [Route("UpdateTendanceCategory")]
+        public ActionResult UpdateTendanceCategory(string id, string tendance)
         {
-            Int32.TryParse(id, out int idCategorie);
+            try
+            {
+                Int32.TryParse(id, out int catId);
+                bool.TryParse(tendance, out bool tend);
 
-            Categorie cat = _categorieSrv.GetCategorieById(idCategorie);
+                _categorieSrv.UpdateHomeCategory(catId, tend);
 
-            _categorieSrv.ChangeStatusCategorie(cat);
-
-            _globalDataSrv.RefreshCacheAsync(typeof(Categorie));
-
-            return RedirectToAction("Index", "Account");
+                return Ok(new { errorMessage = "" });
+            }
+            catch (Exception e)
+            {
+                return Ok(new { errorMessage = "Erreur dans la modification du statut Tendance." });
+            }
         }
     }
 }

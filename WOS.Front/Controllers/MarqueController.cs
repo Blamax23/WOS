@@ -6,6 +6,7 @@ using System.Text.Json;
 using WOS.Dal.Interfaces;
 using WOS.Dal.Context;
 using WOS.Back.Services;
+using System;
 
 namespace WOS.Front.Controllers
 {
@@ -45,15 +46,39 @@ namespace WOS.Front.Controllers
 
         [HttpPost]
         [Route("UpdateMarque")]
-        public ActionResult UpdateMarque(string id, bool isHome)
+        public ActionResult UpdateMarque(string id, string tendance)
         {
-            Int32.TryParse(id, out int idCategorie);
+            try
+            {
+                Int32.TryParse(id, out int marqueId);
+                bool.TryParse(tendance, out bool tend);
 
-            Marque marque = _marqueSrv.GetMarqueById(idCategorie);
+                _marqueSrv.UpdateHomeMarque(marqueId, tend);
 
-            _marqueSrv.ChangeStatusMarque(marque);
+                return Ok(new { errorMessage = "" });
+            }
+            catch (Exception e)
+            {
+                return Ok(new { errorMessage = "Erreur dans la modification du statut Tendance." });
+            }
+        }
 
-            return RedirectToAction("Index", "Account");
+        [HttpPost]
+        [Route("DeleteMarque")]
+        public ActionResult DeleteMarque(string id)
+        {
+            try
+            {
+                Int32.TryParse(id, out int marqueId);
+
+                _marqueSrv.DeleteMarque(marqueId);
+
+                return Ok(new { errorMessage = "" });
+            }
+            catch (Exception e)
+            {
+                return Ok(new { errorMessage = "Erreur dans la suppression de la marque." });
+            }
         }
     }
 }

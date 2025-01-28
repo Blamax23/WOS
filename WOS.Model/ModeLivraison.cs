@@ -25,5 +25,8 @@ namespace WOS.Model
 
         [Column("prix_livraison")]
         public float PrixLivraison { get; set; }
+
+        [Column("jours_livraison_mini")]
+        public int? JoursLivraisonMini { get; set; }
     }
 }

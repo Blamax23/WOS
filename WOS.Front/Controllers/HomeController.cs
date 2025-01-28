@@ -38,10 +38,15 @@ namespace WOS.Front.Controllers
 
             HomeViewModel homeViewModel = new HomeViewModel();
 
+            var random = new Random();
+            var randomList = allProducts.Where(p => p.IsTendance)
+                                        .OrderBy(p => random.Next())
+                                        .ToList();
+
             RowHomeModel rowHomeModelTendance = new RowHomeModel()
             {
                 Name = "Tendances",
-                Produits = allProducts.Where(p => p.IsTendance).ToList()
+                Produits = randomList
             };
 
             homeViewModel.RowHome.Add(rowHomeModelTendance);

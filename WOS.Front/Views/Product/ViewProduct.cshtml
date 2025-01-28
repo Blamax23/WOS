@@ -65,47 +65,54 @@
                     <i class="bi bi-chevron-right"></i>
                 </div>
                 <div class="carousel-avis">
-                    <p class="arrow left" onclick="prevSlide()"><i class="bi bi-caret-left-fill"></i></p>
-                    <div class="list-avis">
-                        <div class="list-inner">
-                            @foreach (var avis in Model.Avis)
-                            {
-                                <div class="avis">
-                                    <div class="head-avis">
-                                        <div class="name-zone">
-                                            <i class="bi bi-person-circle"></i>
-                                            <p><strong>@avis.Client.Prenom</strong></p>
-                                        </div>
-                                        <div class="stars">
-                                            @{
-                                                var stopI = 0;
-                                            }
-                                            @for (int i = 1; i < avis.Note; i++)
-                                            {
-                                                <i class="bi bi-star-fill"></i>
-                                                stopI = i;
-                                            }
-                                            @if (stopI + 0.5 == avis.Note)
-                                            {
-                                                stopI++;
-                                                <i class="bi bi-star-half"></i>
-                                            }
-                                            @for (int i = stopI + 1; i <= 5; i++)
-                                            {
-                                                <i class="bi bi-star"></i>
-                                            }
+                    @if(Model.Avis.Count > 0)
+                    {
+                        <p class="arrow left" onclick="prevSlide()"><i class="bi bi-caret-left-fill"></i></p>
+                        <div class="list-avis">
+                            <div class="list-inner">
+                                @foreach (var avis in Model.Avis)
+                                {
+                                    <div class="avis">
+                                        <div class="head-avis">
+                                            <div class="name-zone">
+                                                <i class="bi bi-person-circle"></i>
+                                                <p><strong>@avis.Client.Prenom</strong></p>
+                                            </div>
+                                            <div class="stars">
+                                                @{
+                                                    var stopI = 0;
+                                                }
+                                                @for (int i = 1; i < avis.Note; i++)
+                                                {
+                                                    <i class="bi bi-star-fill"></i>
+                                                    stopI = i;
+                                                }
+                                                @if (stopI + 0.5 == avis.Note)
+                                                {
+                                                    stopI++;
+                                                    <i class="bi bi-star-half"></i>
+                                                }
+                                                @for (int i = stopI + 1; i <= 5; i++)
+                                                {
+                                                    <i class="bi bi-star"></i>
+                                                }
 
+                                            </div>
                                         </div>
+                                        <div class="content-avis">
+                                            <p>@avis.Commentaire</p>
+                                        </div>
+                                        <p class="date-avis">@avis.DateAvis.ToShortDateString()</p>
                                     </div>
-                                    <div class="content-avis">
-                                        <p>@avis.Commentaire</p>
-                                    </div>
-                                    <p class="date-avis">@avis.DateAvis.ToShortDateString()</p>
-                                </div>
-                            }
+                                }
+                            </div>
                         </div>
-                    </div>
-                    <p class="arrow right" onclick="nextSlide()"><i class="bi bi-caret-right-fill"></i></p>
+                        <p class="arrow right" onclick="nextSlide()"><i class="bi bi-caret-right-fill"></i></p>
+                    }
+                    else
+                    {
+                        <h3>Aucun avis pour le moment.</h3>
+                    }
                 </div>
             </div>
             <div class="info-zone livraison-zone">

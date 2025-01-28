@@ -40,21 +40,17 @@ namespace WOS.Back.Services
             _globalDataSrv.RefreshCacheAsync(typeof(Categorie));
         }
 
-        public void ChangeStatusCategorie(Categorie Categorie)
+        public void UpdateHomeCategory(int id, bool tendance)
         {
-            Categorie newCategorie = _context.Categories.Find(Categorie.Id);
-            if (newCategorie != null)
-            {
-                if (!newCategorie.IsHome.Value)
-                    newCategorie.IsHome = true;
-                else
-                    newCategorie.IsHome = false;
+            Categorie cat = _context.Categories.FirstOrDefault(p => p.Id == id);
 
-                _context.Categories.Update(newCategorie);
+            if (cat == null)
+                throw new Exception("Catégorie introuvable");
 
-                _context.SaveChanges();
-                _globalDataSrv.RefreshCacheAsync(typeof(Categorie));
-            }
+            cat.IsHome = tendance;
+
+            _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(Categorie));
         }
     }
 }

@@ -266,10 +266,230 @@
 /* ========================== Partie Commandes ========================= */
 /* ===================================================================== */
 
+.head-commandes h2 {
+    font-size: 2em;
+    margin: 5vh 5vw;
+}
+.commande {
+    display: flex;
+    flex-direction: column;
+    border: 3px solid black;
+    border-radius: 15px;
+    width: 70%;
+    margin: 5vh auto;
+}
+
+.head-informations, .produit-commande {
+    display: flex;
+    flex-direction: row;
+    height: min-content;
+    gap: 1em;
+}
+
+.picture-zone-commande, .picture-zone-item {
+    width: 25%;
+    aspect-ratio: 2/1;
+    object-fit: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .picture-zone-commande img, .picture-zone-item img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        position: relative;
+    }
+
+.info-zone-commande, .info-zone-item {
+    width: 75%;
+}
+
+.detail-zone-info, .detail-zone-item {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+}
+
+    .detail-zone-info div, .detail-zone-item div {
+        display: flex;
+        flex-direction: column;
+        width: 25%;
+        flex-wrap: wrap;
+        word-wrap: break-word;
+    }
+
+        .detail-zone-info div p, .detail-zone-item div p {
+            margin: 0;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+.btns-commande {
+    display: flex;
+    flex-direction: column;
+    margin: .5em;
+    gap: .5em;
+}
+
+.details-commande h3 {
+    font-size: 1.25em;
+    margin-left: .5em;
+}
+
+.produit-commande {
+    min-height: 15vh;
+    margin-bottom: 1vh;
+    border-bottom: 1px solid rgba(98, 106, 115, 0.5);
+    margin: 0 1em;
+    gap: 0;
+}
+
+    .produit-commande .picture-zone-item {
+        height: 50%;
+    }
+
+        .produit-commande .picture-zone-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+.title-zone-item h3 {
+    margin: 2vh 0;
+}
+
+.detail-zone-item div {
+    width: 15%;
+}
+
+.actions-commande{
+    margin: 0 0 2vh 0;
+}
+
+.actions-commande h3 {
+    font-size: 1.25em;
+    margin-left: .5em;
+}
+
+.list-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+    justify-content: center;
+}
+
+    .list-actions div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 20%;
+        text-align: center;
+        cursor: pointer;
+    }
+
+        .list-actions div:hover{
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+
+        .list-actions i {
+            font-size: 2.5em;
+            width: max-content;
+            cursor: pointer;
+            margin: auto;
+        }
+
+    .list-actions p {
+        height: 2.5em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+
+/* Modal container */
+.modal-status-commande {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none; 
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Modal content */
+.modal-status-commande .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Contenu du modal */
+/*.modal-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}*/
+
+/* Animation pour l'apparition */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Bouton de fermeture */
+.modal-content h2 {
+    margin: 0 0 15px;
+    font-size: 20px;
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content select,
+.modal-content button {
+    font-size: 16px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 20%;
+    box-sizing: border-box;
+    margin: auto;
+}
+
+/* Ajout d'un curseur "not-allowed" pour les options non modifiables */
+.inputStatut option:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+
 /* ===================================================================== */
 /* ========================== Partie Produits ========================== */
 /* ===================================================================== */
-
 input:invalid {
     display: block; /* Assurez-vous que l'élément soit visible */
 }
@@ -576,7 +796,7 @@ select.input-size {
     margin-right: none;
 }
 
-.div-delete-product .delete-product{
+.div-delete-product .delete-product, .delete-marque {
     width: 100%;
     margin-bottom: 1vh;
 }
@@ -585,16 +805,16 @@ select.input-size {
     display: flex;
 }
 
-.produit {
+.produit, .marque {
     width: 80%;
     display: flex;
     flex-direction: column;
     margin: auto;
-    border: 1px solid rgb(98, 106, 115);
+    border: 2px solid rgb(98, 106, 115);
     margin-top: 5vh;
 }
 
-.entete-produit {
+.entete-produit, .entete-marque {
     display: flex;
     justify-content: space-between;
     padding: 5vh 5vw;
@@ -602,20 +822,20 @@ select.input-size {
     border-radius: 15px;
 }
 
-    .entete-produit .left-zone-product-show{
+    .entete-produit .left-zone-product-show {
         display: flex;
         height: 40vh;
         min-width: 60%;
     }
 
-        .entete-produit .left-zone-product-show img{
+        .entete-produit .left-zone-product-show img {
             object-fit: cover;
         }
 
-        .entete-produit h3 {
-            font-size: 2em;
-            margin: 0;
-        }
+    .entete-produit h3 {
+        font-size: 2em;
+        margin: 0;
+    }
 
     .entete-produit a {
         text-decoration: none;
@@ -623,6 +843,15 @@ select.input-size {
 
     .entete-produit .bi-chevron-right {
         font-size: 5em;
+    }
+
+.entete-marque {
+    flex-direction: column;
+    padding: 1em;
+}
+
+    .entete-marque h3 {
+        margin: 0;
     }
 
 .allColorsProduct {
@@ -634,25 +863,29 @@ select.input-size {
 }
 
 
-.formUpdateActiveProduct {
-    margin: 3vh 0;
+.formUpdateActiveProduct, .formUpdateTendanceProduct, .formUpdateHomeMarque, .formUpdateHomeCategory {
+    margin: 1vh 0;
     font-size: 1em;
     display: flex;
     height: 2em;
     align-items: center;
 }
 
-    .formUpdateActiveProduct label {
+    .formUpdateActiveProduct label, .formUpdateTendanceProduct label, .formUpdateHomeMarque label, .formUpdateHomeCategory label {
         font-size: 1em;
         display: inline;
         height: min-content;
     }
 
-    .formUpdateActiveProduct input {
+    .formUpdateActiveProduct input, .formUpdateTendanceProduct input, .formUpdateHomeMarque input, .formUpdateHomeCategory input {
         width: max-content;
         width: min-content;
         transform: scale(2);
         margin: 0 2vh;
+    }
+
+    .formUpdateTendanceProduct label, .formUpdateActiveProduct label {
+        font-size: 0.9em;
     }
 
 .center-zone-product-show {
@@ -671,33 +904,33 @@ select.input-size {
         color: black;
     }
 
-.detail-produit{
+.detail-produit {
     padding: 1em;
 }
 
-.showMore{
+.showMoreStock, .showMoreCategory {
     width: 100%;
 }
 
-.right-zone-show-product{
+.right-zone-show-product {
     display: flex;
 }
 
-.showStock{
+.showStock {
     transform: rotate(90deg);
 }
 
-.confirmUpdatePriceRow, .cancelUpdatePriceRow{
+.confirmUpdatePriceRow, .cancelUpdatePriceRow {
     border-radius: 0;
 }
 
-.confirmUpdatePriceRow{
+.confirmUpdatePriceRow {
     background-color: green;
     color: white;
     border: 1px solid green;
 }
 
-.cancelUpdatePriceRow{
+.cancelUpdatePriceRow {
     background-color: red;
     color: white;
     border: 1px solid red;
@@ -706,6 +939,16 @@ select.input-size {
 .hidden {
     display: none;
 }
+
+.addRowButton td .confirm-btn {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+}
+
+    .addRowButton td .confirm-btn:focus {
+        outline: none;
+    }
 
 /* ===================================================================== */
 /* ========================== Partie Marques =========================== */
@@ -971,13 +1214,13 @@ select.input-size {
     }
 
 .categorie {
-    border: 2px solid black;
+    border-top: 1px solid #ccc;
     padding: 1em;
 }
 
     .categorie h3 {
         font-size: 1.5em;
-        margin: .5em 0;
+        margin: 0 0;
         padding: 0;
     }
 
@@ -990,6 +1233,10 @@ select.input-size {
     width: min-content;
     transform: scale(1.5);
     margin: 0 2vh;
+}
+
+.categoryList ul {
+    padding: 0;
 }
 
 .hidden {
@@ -1027,34 +1274,71 @@ select.input-size {
     margin: 5vh auto;
 }
 
-.mode-livraison .left-zone{
-    width: min-content;
-    height:30vh;
-    display: flex;
-    object-fit: contain;
-}
+    .mode-livraison .left-zone {
+        width: min-content;
+        height: 30vh;
+        display: flex;
+        object-fit: contain;
+    }
 
-    .mode-livraison .right-zone{
+    .mode-livraison .right-zone {
         display: flex;
         flex-direction: column;
         width: 50%;
     }
 
-    .mode-livraison .right-zone .name-zone h3 {
-        font-size: 1.5em;
-    }
-
-    .mode-livraison .right-zone .price-zone{
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-        .mode-livraison .right-zone .price-zone button {
-            margin: .5em 0;
+        .mode-livraison .right-zone .name-zone h3 {
+            font-size: 1.5em;
+            margin: 1vh 0;
         }
 
-        .mode-livraison .right-zone .price-zone input {
-            height: 1em;
-            padding: .5em;
+        .mode-livraison .right-zone .price-zone {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: .5em;
         }
+
+            .mode-livraison .right-zone .price-zone button {
+                margin: .5em 0;
+            }
+
+            .mode-livraison .right-zone .price-zone input {
+                height: 1em;
+                padding: .5em;
+            }
+
+/* ===================================================================== */
+/* ============================ Partie Modal =========================== */
+/* ===================================================================== */
+
+/* Modal container */
+.modal-delete {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none; /* Masqué par défaut */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Modal content */
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal buttons */
+.modal-btns {
+    display: flex;
+    justify-content: center;
+    margin-top: 3vh;
+    gap: 1vw;
+}
