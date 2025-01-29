@@ -21,7 +21,7 @@ namespace WOS.Front.Controllers
         private readonly IAvisSrv _avisSrv;
         private readonly IGlobalDataSrv _globalDataSrv;
         private int pageNumber;
-        private int pageSize;
+        private int pageSize = 2;
 
         public ProductController(IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv, IAvisSrv avisSrv, IGlobalDataSrv globalDataSrv)
         {
@@ -35,32 +35,49 @@ namespace WOS.Front.Controllers
 
         [Route("")]
         [HttpGet]
-        public ActionResult Index(int pageNumber = 1)
+        public ActionResult Index([FromQuery] string pageSeen = "1")
         {
-            this.pageNumber = pageNumber;
-            pageSize = 20;
-            // Dans les lignes commandes, on compte les id product qui reviennent le plus de fois
+            int page = Int32.TryParse(pageSeen, out page) ? page : 1;
+            this.pageNumber = page;
+
+            // Récupération des données
             var products = _globalDataSrv.Produits;
             var lignes = _globalDataSrv.LignesCommande;
-            // On classe dans tableau les product_id qui revienne le plus souvent
-            var p = lignes.GroupBy(l => l.ProduitId).OrderByDescending(g => g.Count()).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-            // On crée une liste de produit qui contient les produits triés
-            List<Produit> productsSorted = new List<Produit>();
-            List<Produit> productsNoSorted = new List<Produit>(products);
-            foreach (var prod in p)
-            {
-                productsSorted.Add(products.FirstOrDefault(p => p.Id == prod.Key));
-                productsNoSorted.Remove(products.FirstOrDefault(p => p.Id == prod.Key));
-            }
 
-            productsSorted.AddRange(productsNoSorted);
+            // On regroupe par ProduitId, trie par nombre d'occurrences et applique la pagination
+            var p = lignes
+                .GroupBy(l => l.ProduitId)
+                .OrderByDescending(g => g.Count())
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Liste triée des produits
+            List<Produit> productsSorted = FiltrerEtTrierProduits(
+                    _globalDataSrv.Produits,
+                    new List<int>(),  // Pas de filtre de marque
+                    new List<int>(),  // Pas de filtre de catégorie
+                    new List<string>(),  // Pas de filtre de couleur
+                    null,
+                    null,
+                    "tendances",
+                    pageNumber,
+                    pageSize
+                );
+
+            int nbPages = (int)Math.Ceiling((double)productsSorted.Count / pageSize);
+
+            HttpContext.Session.SetInt32("NbPages", nbPages);
 
             ProductViewModel productViewModel = new ProductViewModel
             {
-                Produits = productsSorted,
+                Produits = productsSorted.Skip((page - 1) * pageSize).Take(pageSize).ToList(),
                 Marques = _globalDataSrv.Marques,
-                Categories = _globalDataSrv.Categories
+                Categories = _globalDataSrv.Categories,
+                NbPages = nbPages,
+                Page = pageNumber
             };
+
             return View(productViewModel);
         }
 
@@ -194,13 +211,24 @@ namespace WOS.Front.Controllers
 
         [HttpPost]
         [Route("GetProductFiltered")]
-        public ActionResult GetProductFiltered(List<string> marque, List<string> categorie, List<string> couleur, string prixMin = null, string prixMax = null, string tri = "tendances")
+        public ActionResult GetProductFiltered(List<string> marque, List<string> categorie, List<string> couleur, string prixMin = null, string prixMax = null, string tri = "tendances", int page = 0)
         {
             List<int> marques = new List<int>();
             List<int> categories = new List<int>();
             List<string> couleurs = new List<string>();
             decimal.TryParse(prixMin, out decimal prixMinDecimal);
             decimal.TryParse(prixMax, out decimal prixMaxDecimal);
+
+            int pageNumber = 0;
+            if(page == 0)
+            {
+                pageNumber = HttpContext.Session.GetInt32("PageNumber") ?? 1;
+            }
+            else
+            {
+                pageNumber = page;
+            }
+            HttpContext.Session.SetInt32("PageNumber", pageNumber);
 
             foreach (var item in marque)
             {
@@ -224,7 +252,24 @@ namespace WOS.Front.Controllers
 
             List<Produit> products = _globalDataSrv.Produits;
 
-            List<Produit> productsFiltered = products;
+            List<Produit> productsFiltered = FiltrerEtTrierProduits(
+                _globalDataSrv.Produits,
+                marques,
+                categories,
+                couleurs,
+                prixMinDecimal > 0 ? prixMinDecimal : (decimal?)null,
+                prixMaxDecimal > 0 ? prixMaxDecimal : (decimal?)null,
+                tri,
+                pageNumber,
+                pageSize
+            );
+
+            int nbPages = (int)Math.Ceiling((double)productsFiltered.Count / pageSize);
+
+            HttpContext.Session.SetInt32("NbPages", nbPages);
+
+            productsFiltered = productsFiltered.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
 
             if (marques.Count > 0)
             {
@@ -275,7 +320,7 @@ namespace WOS.Front.Controllers
                     List<Produit> productsNoSorted = new List<Produit>(productsFiltered);
                     foreach (var prod in p)
                     {
-                        if(productsFiltered.FirstOrDefault(p => p.Id == prod.Key) != null)
+                        if (productsFiltered.FirstOrDefault(p => p.Id == prod.Key) != null)
                         {
                             productsSorted.Add(productsFiltered.FirstOrDefault(p => p.Id == prod.Key));
                             productsNoSorted.Remove(productsFiltered.FirstOrDefault(p => p.Id == prod.Key));
@@ -292,13 +337,13 @@ namespace WOS.Front.Controllers
         [Route("GetProductSorted")]
         public ActionResult GetProductSorted(string tri)
         {
-            if(tri == "ascending-alphabet")
+            if (tri == "ascending-alphabet")
                 return PartialView("_FilteredProducts", _globalDataSrv.Produits.OrderBy(p => p.Nom).ToList());
-            else if(tri == "descending-alphabet")
+            else if (tri == "descending-alphabet")
                 return PartialView("_FilteredProducts", _globalDataSrv.Produits.OrderByDescending(p => p.Nom).ToList());
-            else if(tri == "ascending-price")
+            else if (tri == "ascending-price")
                 return PartialView("_FilteredProducts", _globalDataSrv.Produits.OrderBy(p => p.ProduitTailles.Min(pt => pt.Prix)).ToList());
-            else if(tri == "descending-price")
+            else if (tri == "descending-price")
                 return PartialView("_FilteredProducts", _globalDataSrv.Produits.OrderByDescending(p => p.ProduitTailles.Min(pt => pt.Prix)).ToList());
             else
             {
@@ -379,5 +424,67 @@ namespace WOS.Front.Controllers
                 return Ok(new { errorMessage = "Erreur dans la modification du statut Tendance." });
             }
         }
+
+        private List<Produit> FiltrerEtTrierProduits(
+    List<Produit> produits,
+    List<int> marques,
+    List<int> categories,
+    List<string> couleurs,
+    decimal? prixMin,
+    decimal? prixMax,
+    string tri,
+    int page,
+    int pageSize)
+        {
+            var produitsFiltres = produits.AsQueryable();
+
+            // Filtrage
+            if (marques.Any())
+                produitsFiltres = produitsFiltres.Where(p => marques.Contains(p.MarqueId.Value));
+
+            if (categories.Any())
+                produitsFiltres = produitsFiltres.Where(p => categories.Contains(p.CategorieId.Value));
+
+            if (couleurs.Any())
+                produitsFiltres = produitsFiltres.Where(p => p.ProduitCouleurs.Any(pc => couleurs.Contains(pc.Couleur)));
+
+            if (prixMin.HasValue)
+                produitsFiltres = produitsFiltres.Where(p => p.ProduitTailles.Any(pt => pt.Prix >= prixMin.Value));
+
+            if (prixMax.HasValue)
+                produitsFiltres = produitsFiltres.Where(p => p.ProduitTailles.Any(pt => pt.Prix <= prixMax.Value));
+
+            // Tri
+            switch (tri)
+            {
+                case "ascending-alphabet":
+                    produitsFiltres = produitsFiltres.OrderBy(p => p.Nom);
+                    break;
+                case "descending-alphabet":
+                    produitsFiltres = produitsFiltres.OrderByDescending(p => p.Nom);
+                    break;
+                case "ascending-price":
+                    produitsFiltres = produitsFiltres.OrderBy(p => p.ProduitTailles.Min(pt => pt.Prix));
+                    break;
+                case "descending-price":
+                    produitsFiltres = produitsFiltres.OrderByDescending(p => p.ProduitTailles.Min(pt => pt.Prix));
+                    break;
+                case "tendances":
+                default:
+                    var tendances = _globalDataSrv.LignesCommande
+                        .GroupBy(l => l.ProduitId)
+                        .OrderByDescending(g => g.Count())
+                        .Select(g => g.Key)
+                        .ToList();
+
+                    produitsFiltres = produitsFiltres
+                        .OrderByDescending(p => tendances.IndexOf(p.Id)); // Trier selon l'ordre des tendances
+                    break;
+            }
+
+            // Pagination
+            return produitsFiltres.ToList();
+        }
+
     }
 }

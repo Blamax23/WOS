@@ -4,6 +4,8 @@
 
 @{
     ViewData["Title"] = "Contactez-nous !";
+    var queryString = Context.Request.QueryString.Value;
+    var baseUrl = "?page=";
 }
 
 <link rel="stylesheet" href="~/css/product/index.css" asp-append-version="true" />
@@ -139,20 +141,37 @@
                 }
             </div>
             <div class="select-pages">
-                <i class="bi bi-chevron-left"></i>
-                @for(int i = 1; i <= Model.NbPages; i++)
+                <!-- Bouton précédent -->
+                <a href="#" class="pagination-link @(Model.Page == 1 ? "disabled" : "")" data-page="@(Model.Page - 1)">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+
+                @for (int i = 1; i <= Model.NbPages; i++)
                 {
-                    if(i != 1)
+                    if (i == 1 || i == Model.NbPages || Math.Abs(i - Model.Page) <= 1)
                     {
-                        if (new[] { Model.Page - 1, Model.Page, Model.Page + 1 }.Contains(i))
+                        if (i == Model.Page)
                         {
-                            <span>@i</span>
+                            <a href="#" class="active" data-page="@i">@i</a>
+                        }
+                        else
+                        {
+                            <a href="#" class="pagination-link" data-page="@i">@i</a>
                         }
                     }
-                    <span>@i</span>
+                    else if (i == Model.Page - 2 || i == Model.Page + 2)
+                    {
+                        <span>...</span>
+                    }
                 }
-                <i class="bi bi-chevron-right"></i>
+
+                <!-- Bouton suivant -->
+                <a href="#" class="pagination-link @(Model.Page == Model.NbPages ? "disabled" : "")" data-page="@(Model.Page + 1)">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
             </div>
+
+
         </div>
     </div>
 </div>
@@ -371,4 +390,83 @@
 </script>
 
 <script>
+    function loadProducts(pageNumber) {
+        let filters = GetParameters();
+
+        $.ajax({
+            url: "/Product/GetProductFiltered",
+            type: "POST",
+            data: {
+                marque: filters.selectedMarqueIds,
+                categorie: filters.selectedCategorieIds,
+                couleur: filters.selectedColors,
+                prixMin: filters.minPrice || "",
+                prixMax: filters.maxPrice || "",
+                tri: filters.tri,
+                page: pageNumber
+            },
+            success: function (data) {
+                $(".products").html(data);
+
+                updatePagination(pageNumber, HttpContext.Session.GetInt32("NbPages", nbPages));
+            },
+            error: function () {
+                alert("Erreur lors du chargement des produits.");
+            }
+        });
+    }
+
+    $(document).on("click", ".pagination-link", function (e) {
+        e.preventDefault();
+        if (!$(this).hasClass("disabled")) {
+            let page = $(this).data("page");
+            loadProducts(page);
+        }
+    });
+
+    function updatePagination(page, nbPages) {
+        let paginationHTML = '';
+
+        // Bouton précédent
+        paginationHTML += `
+            <a href="#" class="pagination-link ${page == 1 ? 'disabled' : ''}" data-page="${page - 1}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        `;
+
+        // Pages numérotées
+        for (let i = 1; i <= nbPages; i++) {
+            if (i == 1 || i == nbPages || Math.abs(i - page) <= 1) {
+                if (i == page) {
+                    paginationHTML += `<a href="#" class="active" data-page="${i}">${i}</a>`;
+                } else {
+                    paginationHTML += `<a href="#" class="pagination-link" data-page="${i}">${i}</a>`;
+                }
+            } else if (i == page - 2 || i == page + 2) {
+                paginationHTML += '<span>...</span>';
+            }
+        }
+
+        // Bouton suivant
+        paginationHTML += `
+            <a href="#" class="pagination-link ${page == nbPages ? 'disabled' : ''}" data-page="${page + 1}">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        `;
+
+        // Injecte le HTML dans le conteneur de la pagination
+        document.getElementById('select-pages').innerHTML = paginationHTML;
+
+        // Ajoute les événements de clic pour chaque lien de pagination
+        document.querySelectorAll('.pagination-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                let newPage = parseInt(this.getAttribute('data-page'));
+                if (newPage >= 1 && newPage <= nbPages) {
+                    loadProducts(newPage);  // Recharge les produits avec la nouvelle page
+                }
+            });
+        });
+    }
+
 </script>
