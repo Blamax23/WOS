@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.ResponseCompression;
 using WOS.Front.Services;
+using System.Globalization;
 
 IConfiguration configuration = new ConfigurationBuilder()
             .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
@@ -85,6 +86,9 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddHostedService<DailyTaskService>();
 
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -101,9 +105,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseExceptionHandler("/erreur");
-// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-app.UseHsts();
+//app.UseExceptionHandler("/erreur");
+//// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+//app.UseHsts();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles(new StaticFileOptions

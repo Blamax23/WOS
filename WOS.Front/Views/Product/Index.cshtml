@@ -28,8 +28,8 @@
                             <i class="bi bi-chevron-right"></i>
                         </div>
                         <div class="listFilters priceInputs">
-                            <input type="number" id="minPrice" placeholder="Min" />
-                            <input type="number" id="maxPrice" placeholder="Max" />
+                            <input type="number" id="minPrice" placeholder="Min" min="0" max="20000" />
+                            <input type="number" id="maxPrice" placeholder="Max" min="0" max="20000"/>
                         </div>
                     </li>
                     <li class="zoneMarque">
@@ -105,73 +105,73 @@
                     </select>
                 </div>
             </div>
-            <div class="products">
-                @foreach (var produit in Model.Produits)
-                {
-                    @if(produit.ProduitTailles.Any(pt => pt.Stock > 0))
+            <div class="div-products">
+                <div class="products">
+                    @foreach (var produit in Model.Produits)
                     {
-                        ProduitTaille productWithPromo = new ProduitTaille();
-                        if (produit.ProduitTailles.Where(t => t.PrixPromo != null).Count() > 0)
+                        @if (produit.ProduitTailles.Any(pt => pt.Stock > 0))
                         {
-                            productWithPromo = produit.ProduitTailles.Where(t => t.PrixPromo != null).OrderBy(t => t.PrixPromo).First();
-                        }
-                        else
-                        {
-                            productWithPromo = produit.ProduitTailles.OrderBy(t => t.Prix).First();
-                        }
-                        <a href="@Url.Action("ViewProduct", "Product", new { id = produit.Id })" class="product">
-                            <div class="product-img">
-                                <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
-                            </div>
-                            <div class="product-info">
-                                <p class="product-name">@produit.Nom</p>
-                                <div class="prices">
-                                    @if (productWithPromo.PrixPromo != null)
-                                    {
-                                        <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
-                                    }
-                                    else
-                                    {
-                                        <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
-                                    }
+                            ProduitTaille productWithPromo = new ProduitTaille();
+                            if (produit.ProduitTailles.Where(t => t.PrixPromo != null).Count() > 0)
+                            {
+                                productWithPromo = produit.ProduitTailles.Where(t => t.PrixPromo != null).OrderBy(t => t.PrixPromo).First();
+                            }
+                            else
+                            {
+                                productWithPromo = produit.ProduitTailles.OrderBy(t => t.Prix).First();
+                            }
+                            <a href="@Url.Action("ViewProduct", "Product", new { id = produit.Id })" class="product">
+                                <div class="product-img">
+                                    <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
                                 </div>
-                            </div>
-                        </a>
-                    }
-                }
-            </div>
-            <div class="select-pages">
-                <!-- Bouton précédent -->
-                <a href="#" class="pagination-link @(Model.Page == 1 ? "disabled" : "")" data-page="@(Model.Page - 1)">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
-
-                @for (int i = 1; i <= Model.NbPages; i++)
-                {
-                    if (i == 1 || i == Model.NbPages || Math.Abs(i - Model.Page) <= 1)
-                    {
-                        if (i == Model.Page)
-                        {
-                            <a href="#" class="active" data-page="@i">@i</a>
-                        }
-                        else
-                        {
-                            <a href="#" class="pagination-link" data-page="@i">@i</a>
+                                <div class="product-info">
+                                    <p class="product-name">@produit.Nom</p>
+                                    <div class="prices">
+                                        @if (productWithPromo.PrixPromo != null)
+                                        {
+                                            <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
+                                        }
+                                        else
+                                        {
+                                            <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
+                                        }
+                                    </div>
+                                </div>
+                            </a>
                         }
                     }
-                    else if (i == Model.Page - 2 || i == Model.Page + 2)
+                </div>
+                <div class="select-pages">
+                    <!-- Bouton précédent -->
+                    <a href="#" class=" chevron pagination-link @(Model.Page == 1 ? "disabled" : "")" data-page="@(Model.Page - 1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+
+                    @for (int i = 1; i <= Model.NbPages; i++)
                     {
-                        <span>...</span>
+                        if (i == 1 || i == Model.NbPages || Math.Abs(i - Model.Page) <= 1)
+                        {
+                            if (i == Model.Page)
+                            {
+                                <a href="#" class="number-link pagination-link active" data-page="@i">@i</a>
+                            }
+                            else
+                            {
+                                <a href="#" class="number-link pagination-link" data-page="@i">@i</a>
+                            }
+                        }
+                        else if (i == Model.Page - 2 || i == Model.Page + 2)
+                        {
+                            <span>...</span>
+                        }
                     }
-                }
 
-                <!-- Bouton suivant -->
-                <a href="#" class="pagination-link @(Model.Page == Model.NbPages ? "disabled" : "")" data-page="@(Model.Page + 1)">
-                    <i class="bi bi-chevron-right"></i>
-                </a>
+                    <!-- Bouton suivant -->
+                    <a href="#" class="pagination-link @(Model.Page == Model.NbPages ? "disabled" : "")" data-page="@(Model.Page + 1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>  
             </div>
-
-
         </div>
     </div>
 </div>
@@ -262,7 +262,11 @@
                 tri: filters.tri
             },
             success: function (data) {
-                $(".products").html(data);
+                if (data.nbPages == 0) {
+                    $(".div-products").html("<div class=\"no-product-found\"><i class=\"bi bi-emoji-frown\"></i><h3> Il n'y a encore aucun produit correspondant à ces critères.</h3></div>");
+                } else {
+                    $(".div-products").html(data.html.result);
+                }
             },
             error: function (xhr, status, error) {
                 console.error("Erreur:", error);
@@ -291,7 +295,11 @@
                 tri: filters.tri
             },
             success: function (data) {
-                $(".products").html(data);
+                if (data.nbPages == 0) {
+                    $(".div-products").html("<div class=\"no-product-found\"><i class=\"bi bi-emoji-frown\"></i><h3> Il n'y a encore aucun produit correspondant à ces critères.</h3></div>");
+                } else {
+                    $(".div-products").html(data.html.result);
+                }
             },
             error: function (xhr, status, error) {
                 console.error("Erreur:", error);
@@ -319,7 +327,11 @@
                 tri: filters.tri
             },
             success: function (data) {
-                $(".products").html(data);
+                if (data.nbPages == 0) {
+                    $(".div-products").html("<div class=\"no-product-found\"><i class=\"bi bi-emoji-frown\"></i><h3> Il n'y a encore aucun produit correspondant à ces critères.</h3></div>");
+                } else {
+                    $(".div-products").html(data.html.result);
+                }
             },
             error: function (xhr, status, error) {
                 console.error("Erreur:", error);
@@ -406,9 +418,12 @@
                 page: pageNumber
             },
             success: function (data) {
-                $(".products").html(data);
-
-                updatePagination(pageNumber, HttpContext.Session.GetInt32("NbPages", nbPages));
+                if (data.nbPages == 0) {
+                    $(".div-products").html("<div class=\"no-product-found\"><i class=\"bi bi-emoji-frown\"></i><h3> Il n'y a encore aucun produit correspondant à ces critères.</h3></div>");
+                    updatePagination(pageNumber, data.nbPages);
+                } else {
+                    $(".div-products").html(data.html.result);
+                }
             },
             error: function () {
                 alert("Erreur lors du chargement des produits.");
@@ -429,7 +444,7 @@
 
         // Bouton précédent
         paginationHTML += `
-            <a href="#" class="pagination-link ${page == 1 ? 'disabled' : ''}" data-page="${page - 1}">
+            <a href="#" class="chevron pagination-link ${page == 1 ? 'disabled' : ''}" data-page="${page - 1}">
                 <i class="bi bi-chevron-left"></i>
             </a>
         `;
@@ -438,9 +453,9 @@
         for (let i = 1; i <= nbPages; i++) {
             if (i == 1 || i == nbPages || Math.abs(i - page) <= 1) {
                 if (i == page) {
-                    paginationHTML += `<a href="#" class="active" data-page="${i}">${i}</a>`;
+                    paginationHTML += `<a href="#" class="number-link pagination-link active" data-page="${i}">${i}</a>`;
                 } else {
-                    paginationHTML += `<a href="#" class="pagination-link" data-page="${i}">${i}</a>`;
+                    paginationHTML += `<a href="#" class="number-link pagination-link" data-page="${i}">${i}</a>`;
                 }
             } else if (i == page - 2 || i == page + 2) {
                 paginationHTML += '<span>...</span>';
@@ -449,7 +464,7 @@
 
         // Bouton suivant
         paginationHTML += `
-            <a href="#" class="pagination-link ${page == nbPages ? 'disabled' : ''}" data-page="${page + 1}">
+            <a href="#" class=" chevron pagination-link ${page == nbPages ? 'disabled' : ''}" data-page="${page + 1}">
                 <i class="bi bi-chevron-right"></i>
             </a>
         `;

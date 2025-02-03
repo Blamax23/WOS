@@ -81,7 +81,8 @@ namespace WOS.Back.Services
                 var content = new StringContent("grant_type=client_credentials", Encoding.UTF8, "application/x-www-form-urlencoded");
 
                 // Appeler l'endpoint OAuth
-                var response = await client.PostAsync("https://wwwcie.ups.com/security/v1/oauth/token", content);
+                //var response = await client.PostAsync("https://wwwcie.ups.com/security/v1/oauth/token", content);
+                var response = await client.PostAsync("https://onlinetools.ups.com/security/v1/oauth/token", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -266,7 +267,8 @@ namespace WOS.Back.Services
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
                 var Version = "v2409"; // Remplace par la version appropriée
-                var request = await client.PostAsync("https://wwwcie.ups.com/api/shipments/" + Version + "/ship", postData);
+                //var request = await client.PostAsync("https://wwwcie.ups.com/api/shipments/" + Version + "/ship", postData);
+                var request = await client.PostAsync("https://onlinetools.ups.com/api/shipments/" + Version + "/ship", postData);
                 var response = await request.Content.ReadAsStringAsync();
                 byte[] base64Image;
                 string trackingNumber;

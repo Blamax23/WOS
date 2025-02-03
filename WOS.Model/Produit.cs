@@ -80,4 +80,19 @@ namespace WOS.Model
         [JsonPropertyName("url")]
         public string ImageUrl { get; set; }
     }
+
+    public class ProductsListViewModel
+    {
+        public List<Produit> Produits { get; set; }
+
+        public PaginationModel Pagination { get; set; }
+
+    }
+
+    public class PaginationModel
+    {
+        public int Page { get; set; }
+
+        public int NbPages { get; set; }
+    }
 }

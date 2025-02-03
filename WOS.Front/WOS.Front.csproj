@@ -34,6 +34,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.12" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
+    <PackageReference Include="MigraDocCore.DocumentObjectModel" Version="1.3.65" />
+    <PackageReference Include="MigraDocCore.Rendering" Version="1.3.65" />
     <PackageReference Include="Stripe.net" Version="47.2.0" />
   </ItemGroup>
 

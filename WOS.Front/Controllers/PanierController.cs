@@ -15,6 +15,13 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Claims;
 using iText.Commons.Actions.Contexts;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf.IO;
+using PdfSharp.Pdf;
+using MigraDocCore.DocumentObjectModel;
+using MigraDocCore.DocumentObjectModel.MigraDoc.DocumentObjectModel.Shapes;
+using MigraDocCore.DocumentObjectModel.Tables;
+using MigraDocCore.Rendering;
 
 namespace WOS.Front.Controllers
 {
@@ -353,6 +360,9 @@ namespace WOS.Front.Controllers
 
             commande.StatutId++;
 
+            // On crée la facture
+            //CreateInvoice(commande);
+
             if (commande.ModeLivraisonId != null)
             {
                 string name = _modeLivraisonSrv.GetModeLivraisonById((int)commande.ModeLivraisonId).Nom;
@@ -486,6 +496,120 @@ namespace WOS.Front.Controllers
             int randomNumber = random.Next(100000, 1000000);
 
             return year + countOrder + randomNumber.ToString();
+        }
+
+        private void CreateInvoice(Commande commande)
+        {
+            Client client = _globalDataSrv.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
+            Document document = new Document(); 
+
+            Section section = document.AddSection();
+
+            // On met deux paragraphLeftes côte à côte
+
+            Paragraph paragraphLeft = section.AddParagraph();
+            paragraphLeft.Format.Font.Size = 12;
+            paragraphLeft.Format.Font.Bold = true;
+            // On ajoute sur la même ligne une image et du texte
+            string cheminImage = "C:\\Users\\Maxim\\source\\repos\\WOS\\WOS.Front\\wwwroot\\src\\WosLogos\\logoWosBlack.png";
+            //string cheminImage = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "src", "WosLogos", "logoWosBlack.png");
+            ImageSource.IImageSource imageSource = ImageSource.FromFile(cheminImage);
+            paragraphLeft.AddImage(imageSource).Width = "3cm";
+            paragraphLeft.AddText("SNEAKERS");
+            paragraphLeft.AddLineBreak();
+            paragraphLeft.AddText("Maxime BAILLY");
+            paragraphLeft.AddLineBreak();
+            paragraphLeft.AddText("257 rue des Blés d'or");
+            paragraphLeft.AddLineBreak();
+            paragraphLeft.AddText("01000 St Denis lès Bourg");
+            paragraphLeft.AddLineBreak();
+            paragraphLeft.AddText("France");
+            paragraphLeft.AddLineBreak();
+            paragraphLeft.AddText("SIRET : 981 978 281 00013");
+
+            paragraphLeft = section.AddParagraph();
+
+            paragraphLeft.Format.Alignment = ParagraphAlignment.Left;
+
+            Paragraph paragraphRight = section.AddParagraph();
+            paragraphRight.Format.Alignment = ParagraphAlignment.Right;
+            paragraphRight.Format.Font.Size = 12;
+
+            paragraphRight.AddText(client.Prenom + " " + client.Nom);
+            paragraphRight.AddLineBreak();
+            paragraphRight.AddText(client.Adresses.FirstOrDefault(a => a.Principale).Rue);
+            paragraphRight.AddLineBreak();
+            paragraphRight.AddText(client.Adresses.FirstOrDefault(a => a.Principale).CodePostal + " " + client.Adresses.FirstOrDefault(a => a.Principale).Ville);
+            paragraphRight.AddLineBreak();
+            paragraphRight.AddText(client.Adresses.FirstOrDefault(a => a.Principale).Pays);
+            paragraphRight.AddLineBreak();
+
+
+            // On ferme la section et on en ouvre une nouvelle
+            section = document.AddSection();
+            section.AddParagraph("Facture n°" + commande.NumeroCommande).Format.Font.Size = 12;
+            section.AddParagraph("Date : " + DateTime.Now.ToString("dd/MM/yyyy")).Format.Font.Size = 12;
+            
+            // On ajoute un tableau
+            var table = section.AddTable();
+            table.Borders.Width = 0.75;
+            table.Borders.Color = Colors.Black;
+            table.Borders.Visible = true;
+
+            // On ajoute les colonnes
+            table.AddColumn("5cm");
+            table.AddColumn("3cm");
+            table.AddColumn("3cm");
+            table.AddColumn("3cm");
+            table.AddColumn("3cm");
+
+            // On ajoute les en-têtes
+            var row = table.AddRow();
+            row.Shading.Color = Colors.LightGray;
+            row.Cells[0].AddParagraph("DESCRIPTION");
+            row.Cells[1].AddParagraph("QUANTITÉ");
+            row.Cells[1].AddParagraph("TAILLE");
+            row.Cells[2].AddParagraph("PRIX UNITAIRE");
+            row.Cells[3].AddParagraph("MONTANT HT");
+
+            // On ajoute les lignes
+            foreach (var ligneCommande in commande.LignesCommande)
+            {
+                Produit produit = _produitSrv.GetProduitById(ligneCommande.ProduitId);
+                row = table.AddRow();
+                row.Cells[0].AddParagraph(produit.Nom);
+                row.Cells[1].AddParagraph(ligneCommande.Quantite.ToString());
+                row.Cells[2].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Taille);
+                row.Cells[3].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix.ToString());
+                row.Cells[4].AddParagraph((ligneCommande.Quantite * produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix).ToString());
+            }
+
+            // On récupère le Mode de livraison
+            ModeLivraison modeLivraison = _modeLivraisonSrv.GetModeLivraisonById(commande.ModeLivraisonId.Value);
+
+            // On convertit le prix de livraison de float a decimal
+            decimal prixLivraison = decimal.Parse(modeLivraison.PrixLivraison.ToString(), CultureInfo.InvariantCulture);
+
+            // On ajoute le total dans une nouvelle section avec le sous-total qui est le total des produits et que le total HT qui est le total avec frais de port
+            section = document.AddSection();
+            section.AddParagraph("Sous-total : " + commande.MontantTotal + " €").Format.Font.Size = 12;
+            section.AddParagraph("Frais de port : " + prixLivraison + " €").Format.Font.Size = 12;
+            section.AddParagraph("Total HT : " + (commande.MontantTotal + prixLivraison) + " €").Format.Font.Size = 12;
+
+            // On ajoute une nouvelle section en bas de page pour la TVA et les coordonnées bancaires
+            section = document.AddSection();
+            section.AddParagraph("TVA non applicable, art. 293 B du CGI").Format.Font.Size = 12;
+            section.AddParagraph("Règlement par chèque ou virement bancaire").Format.Font.Size = 12;
+            section.AddParagraph("IBAN : FR76 3000 3032 0000 0200 0000 007").Format.Font.Size = 12;
+            section.AddParagraph("BIC : SOGEFRPP").Format.Font.Size = 12;
+            
+            // On sauvegarde le document
+            PdfDocumentRenderer pdfRenderer = new PdfDocumentRenderer(true);
+            pdfRenderer.Document = document;
+            pdfRenderer.RenderDocument();
+            pdfRenderer.PdfDocument.Save("C:/Users/Maxim/Downloads/Facture_" + commande.NumeroCommande + ".pdf");
+
+            pdfRenderer.PdfDocument.Close();
         }
 
         public class Item

@@ -8,6 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using iText.Kernel.Geom;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using System.Text;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace WOS.Front.Controllers
 {
@@ -20,16 +26,18 @@ namespace WOS.Front.Controllers
         private readonly ICategorieSrv _categorieSrv;
         private readonly IAvisSrv _avisSrv;
         private readonly IGlobalDataSrv _globalDataSrv;
+        private readonly ICompositeViewEngine _viewEngine;
         private int pageNumber;
-        private int pageSize = 2;
+        private int pageSize = 4;
 
-        public ProductController(IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv, IAvisSrv avisSrv, IGlobalDataSrv globalDataSrv)
+        public ProductController(IProduitSrv produitSrv, IMarqueSrv marqueSrv, ICategorieSrv categorieSrv, IAvisSrv avisSrv, IGlobalDataSrv globalDataSrv, ICompositeViewEngine viewEngine)
         {
             _produitSrv = produitSrv;
             _marqueSrv = marqueSrv;
             _categorieSrv = categorieSrv;
             _avisSrv = avisSrv;
             _globalDataSrv = globalDataSrv;
+            _viewEngine = viewEngine;
         }
         // GET: ProductController
 
@@ -213,6 +221,7 @@ namespace WOS.Front.Controllers
         [Route("GetProductFiltered")]
         public ActionResult GetProductFiltered(List<string> marque, List<string> categorie, List<string> couleur, string prixMin = null, string prixMax = null, string tri = "tendances", int page = 0)
         {
+            ProductsListViewModel productsListViewModel = new ProductsListViewModel();
             List<int> marques = new List<int>();
             List<int> categories = new List<int>();
             List<string> couleurs = new List<string>();
@@ -220,7 +229,7 @@ namespace WOS.Front.Controllers
             decimal.TryParse(prixMax, out decimal prixMaxDecimal);
 
             int pageNumber = 0;
-            if(page == 0)
+            if (page == 0)
             {
                 pageNumber = HttpContext.Session.GetInt32("PageNumber") ?? 1;
             }
@@ -228,7 +237,6 @@ namespace WOS.Front.Controllers
             {
                 pageNumber = page;
             }
-            HttpContext.Session.SetInt32("PageNumber", pageNumber);
 
             foreach (var item in marque)
             {
@@ -266,71 +274,29 @@ namespace WOS.Front.Controllers
 
             int nbPages = (int)Math.Ceiling((double)productsFiltered.Count / pageSize);
 
+            if (pageNumber > nbPages)
+            {
+                pageNumber = nbPages;
+            }
+
             HttpContext.Session.SetInt32("NbPages", nbPages);
+            HttpContext.Session.SetInt32("PageNumber", pageNumber);
 
             productsFiltered = productsFiltered.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
-
-            if (marques.Count > 0)
+            productsListViewModel.Produits = productsFiltered;
+            productsListViewModel.Pagination = new PaginationModel
             {
-                productsFiltered = productsFiltered.Where(p => marques.Contains(p.MarqueId.Value)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-            }
+                Page = pageNumber,
+                NbPages = nbPages
+            };
 
-            if (categories.Count > 0)
+            //return PartialView("_FilteredProducts", productsListViewModel);
+            return Json(new
             {
-                productsFiltered = productsFiltered.Where(p => categories.Contains(p.CategorieId.Value)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-            }
-
-            if (couleurs.Count > 0)
-            {
-                productsFiltered = productsFiltered.Where(p => p.ProduitCouleurs.Any(pc => couleurs.Contains(pc.Couleur))).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-            }
-
-            if (prixMinDecimal > 0)
-            {
-                productsFiltered = productsFiltered.Where(p => p.ProduitTailles.Any(pt => pt.Prix >= prixMinDecimal)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-            }
-
-            if (prixMaxDecimal > 0)
-            {
-                productsFiltered = productsFiltered.Where(p => p.ProduitTailles.Any(pt => pt.Prix <= prixMaxDecimal)).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-            }
-
-            switch (tri)
-            {
-                case "ascending-alphabet":
-                    productsFiltered = productsFiltered.OrderBy(p => p.Nom).ToList();
-                    return PartialView("_FilteredProducts", productsFiltered);
-                case "descending-alphabet":
-                    productsFiltered = productsFiltered.OrderByDescending(p => p.Nom).ToList();
-                    return PartialView("_FilteredProducts", productsFiltered);
-                case "ascending-price":
-                    productsFiltered = productsFiltered.OrderBy(p => p.ProduitTailles.Min(pt => pt.Prix)).ToList();
-                    return PartialView("_FilteredProducts", productsFiltered);
-                case "descending-price":
-                    productsFiltered = productsFiltered.OrderByDescending(p => p.ProduitTailles.Min(pt => pt.Prix)).ToList();
-                    return PartialView("_FilteredProducts", productsFiltered);
-                default:
-                    // Dans les lignes commandes, on compte les id product qui reviennent le plus de fois
-                    var lignes = _globalDataSrv.LignesCommande;
-                    // On classe dans tableau les product_id qui revienne le plus souvent
-                    var p = lignes.GroupBy(l => l.ProduitId).OrderByDescending(g => g.Count()).ToList();
-                    // On crée une liste de produit qui contient les produits triés
-                    List<Produit> productsSorted = new List<Produit>();
-                    List<Produit> productsNoSorted = new List<Produit>(productsFiltered);
-                    foreach (var prod in p)
-                    {
-                        if (productsFiltered.FirstOrDefault(p => p.Id == prod.Key) != null)
-                        {
-                            productsSorted.Add(productsFiltered.FirstOrDefault(p => p.Id == prod.Key));
-                            productsNoSorted.Remove(productsFiltered.FirstOrDefault(p => p.Id == prod.Key));
-                        }
-                    }
-
-                    productsSorted.AddRange(productsNoSorted);
-
-                    return PartialView("_FilteredProducts", productsSorted);
-            }
+                html = RenderPartialViewToString("_FilteredProducts", productsListViewModel),
+                nbPages = nbPages
+            });
         }
 
         [HttpPost]
@@ -478,7 +444,7 @@ namespace WOS.Front.Controllers
                         .ToList();
 
                     produitsFiltres = produitsFiltres
-                        .OrderByDescending(p => tendances.IndexOf(p.Id)); // Trier selon l'ordre des tendances
+                        .OrderBy(p => tendances.IndexOf(p.Id)); // Trier selon l'ordre des tendances
                     break;
             }
 
@@ -486,5 +452,42 @@ namespace WOS.Front.Controllers
             return produitsFiltres.ToList();
         }
 
+        protected async Task<string> RenderPartialViewToString(string viewName, object model)
+        {
+            if (string.IsNullOrEmpty(viewName))
+            {
+                viewName = ControllerContext.ActionDescriptor.ActionName;
+            }
+
+            using (var sw = new StringWriter())
+            {
+                var actionContext = new ActionContext(HttpContext, RouteData, new ActionDescriptor());
+
+                var viewResult = _viewEngine.FindView(actionContext, viewName, false);
+
+                if (viewResult.View == null)
+                {
+                    throw new ArgumentNullException($"{viewName} does not match any available view");
+                }
+
+                var viewDictionary = new ViewDataDictionary<object>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+                {
+                    Model = model
+                };
+
+                var viewContext = new ViewContext(
+                    actionContext,
+                    viewResult.View,
+                    viewDictionary,
+                    TempData,
+                    sw,
+                    new HtmlHelperOptions()
+                );
+
+                await viewResult.View.RenderAsync(viewContext);
+
+                return sw.ToString();
+            }
+        }
     }
 }

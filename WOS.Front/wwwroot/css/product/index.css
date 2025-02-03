@@ -35,7 +35,7 @@
     flex-wrap: wrap;
     justify-content: left;
     width: 90%;
-    margin: auto;
+    margin: 0 auto;
 }
 
 .filters-products {
@@ -213,4 +213,74 @@ p {
     display: flex;
     right: 0;
     gap: .5em;
+}
+
+.div-products{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 60vh;
+}
+
+.select-pages{
+    display: flex;
+    position: relative;
+    bottom: 0;
+    left: 50%;
+    width: max-content;
+    gap: .5em;
+    transform: translateX(-50%);
+}
+
+.select-pages a {
+    padding: .5em;
+    border: 1px solid #000;
+    cursor: pointer;
+    /* On fait en sorte que tous les a soient carrés */
+    width: 1em;
+    height: 1em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15%;
+}
+
+    .select-pages a:hover {
+        background: #ccc;
+        color: #fff;
+    }
+
+    .select-pages a.active {
+        background: #000;
+        color: #fff;
+    }
+
+    .select-pages a.disabled{
+        cursor: not-allowed;
+        color: #ccc;
+        border-color: #ccc;
+    }
+
+    .select-pages a.disabled:hover{
+        background: none;
+    }
+
+.no-product-found{
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    margin: auto;
+}
+
+.no-product-found i {
+    font-size: 7.5em;
+    width: max-content;
+    margin: auto;
+}
+
+.no-product-found h3 {
+    font-size: 1.5em;
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
 }
