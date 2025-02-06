@@ -50,6 +50,10 @@ namespace WOS.Dal.Mapping
                 .IsRequired(false)
                 .HasColumnName("binary_etiquette");
 
+            builder.Property(c => c.BinaryFacture)
+                .IsRequired(false)
+                .HasColumnName("binary_facture");
+
             builder.HasOne(c => c.Client)
                 .WithMany(cl => cl.Commandes)
                 .HasForeignKey(c => c.ClientId);

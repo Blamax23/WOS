@@ -44,6 +44,9 @@ namespace WOS.Model
         [Column("binary_etiquette")]
         public byte[]? BinaryEtiquette { get; set; }
 
+        [Column("binary_facture")]
+        public byte[]? BinaryFacture { get; set; }
+
         // Navigation properties
         public virtual Client Client { get; set; }
         public virtual Adresse AdresseLivraison { get; set; }

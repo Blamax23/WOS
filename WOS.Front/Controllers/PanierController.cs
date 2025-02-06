@@ -12,16 +12,17 @@ using Microsoft.EntityFrameworkCore;
 using Stripe;
 using System.Globalization;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Security.Claims;
-using iText.Commons.Actions.Contexts;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf.IO;
 using PdfSharp.Pdf;
 using MigraDocCore.DocumentObjectModel;
-using MigraDocCore.DocumentObjectModel.MigraDoc.DocumentObjectModel.Shapes;
 using MigraDocCore.DocumentObjectModel.Tables;
 using MigraDocCore.Rendering;
+using Ghostscript.NET.Rasterizer;
+using System.Drawing;
+using System.Drawing.Imaging;
+using iText.IO.Image;
+using MigraDocCore.DocumentObjectModel.MigraDoc.DocumentObjectModel.Shapes;
 
 namespace WOS.Front.Controllers
 {
@@ -36,8 +37,9 @@ namespace WOS.Front.Controllers
         private readonly ICommandeSrv _commandeSrv;
         private readonly IGlobalDataSrv _globalDataSrv;
         private readonly IAdresseSrv _adresseSrv;
+        private readonly IWebHostEnvironment _env;
 
-        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv, IModeLivraisonSrv modeLivraisonSrv, ICommandeSrv commandeSrv, IGlobalDataSrv globalDataSrv, IAdresseSrv adresseSrv)
+        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv, IModeLivraisonSrv modeLivraisonSrv, ICommandeSrv commandeSrv, IGlobalDataSrv globalDataSrv, IAdresseSrv adresseSrv, IWebHostEnvironment env)
         {
             _configuration = configuration;
             _produitSrv = produitSrv;
@@ -46,6 +48,7 @@ namespace WOS.Front.Controllers
             _commandeSrv = commandeSrv;
             _globalDataSrv = globalDataSrv;
             _adresseSrv = adresseSrv;
+            _env = env;
         }
 
         [HttpPost]
@@ -361,7 +364,8 @@ namespace WOS.Front.Controllers
             commande.StatutId++;
 
             // On crée la facture
-            //CreateInvoice(commande);
+            byte[] facture = CreateInvoice(commande);
+            commande.BinaryFacture = facture;
 
             if (commande.ModeLivraisonId != null)
             {
@@ -498,7 +502,7 @@ namespace WOS.Front.Controllers
             return year + countOrder + randomNumber.ToString();
         }
 
-        private void CreateInvoice(Commande commande)
+        private byte[] CreateInvoice(Commande commande)
         {
             Client client = _globalDataSrv.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
             Document document = new Document(); 
@@ -507,15 +511,19 @@ namespace WOS.Front.Controllers
 
             // On met deux paragraphLeftes côte à côte
 
-            Paragraph paragraphLeft = section.AddParagraph();
+            Table table = section.AddTable();
+            table.AddColumn("8cm"); // Colonne gauche
+            table.AddColumn("8cm"); // Colonne droite
+
+            Row row = table.AddRow();
+            row.Cells[0].Format.Alignment = ParagraphAlignment.Left;
+            row.Cells[1].Format.Alignment = ParagraphAlignment.Right;
+
+            // Contenu colonne gauche
+            Paragraph paragraphLeft = row.Cells[0].AddParagraph();
             paragraphLeft.Format.Font.Size = 12;
             paragraphLeft.Format.Font.Bold = true;
-            // On ajoute sur la même ligne une image et du texte
-            string cheminImage = "C:\\Users\\Maxim\\source\\repos\\WOS\\WOS.Front\\wwwroot\\src\\WosLogos\\logoWosBlack.png";
-            //string cheminImage = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "src", "WosLogos", "logoWosBlack.png");
-            ImageSource.IImageSource imageSource = ImageSource.FromFile(cheminImage);
-            paragraphLeft.AddImage(imageSource).Width = "3cm";
-            paragraphLeft.AddText("SNEAKERS");
+            paragraphLeft.AddText("WOS SNEAKERS");
             paragraphLeft.AddLineBreak();
             paragraphLeft.AddText("Maxime BAILLY");
             paragraphLeft.AddLineBreak();
@@ -527,31 +535,35 @@ namespace WOS.Front.Controllers
             paragraphLeft.AddLineBreak();
             paragraphLeft.AddText("SIRET : 981 978 281 00013");
 
-            paragraphLeft = section.AddParagraph();
-
-            paragraphLeft.Format.Alignment = ParagraphAlignment.Left;
-
-            Paragraph paragraphRight = section.AddParagraph();
-            paragraphRight.Format.Alignment = ParagraphAlignment.Right;
+            // Contenu colonne droite
+            Paragraph paragraphRight = row.Cells[1].AddParagraph();
             paragraphRight.Format.Font.Size = 12;
-
             paragraphRight.AddText(client.Prenom + " " + client.Nom);
             paragraphRight.AddLineBreak();
             paragraphRight.AddText(client.Adresses.FirstOrDefault(a => a.Principale).Rue);
             paragraphRight.AddLineBreak();
-            paragraphRight.AddText(client.Adresses.FirstOrDefault(a => a.Principale).CodePostal + " " + client.Adresses.FirstOrDefault(a => a.Principale).Ville);
+            paragraphRight.AddText(client.Adresses.FirstOrDefault(a => a.Principale).CodePostal + " " +
+                                   client.Adresses.FirstOrDefault(a => a.Principale).Ville);
             paragraphRight.AddLineBreak();
             paragraphRight.AddText(client.Adresses.FirstOrDefault(a => a.Principale).Pays);
             paragraphRight.AddLineBreak();
+            table.Format.SpaceAfter = "3cm";
 
+            // On saute une ligne 
+            Paragraph paragraph = section.AddParagraph();
+            paragraph.AddText("Facture n°" + commande.NumeroCommande);
+            paragraph.Format.Font.Size = 20;
+            paragraph.Format.Font.Bold = true;
+            paragraph.Format.Alignment = ParagraphAlignment.Center;
 
-            // On ferme la section et on en ouvre une nouvelle
-            section = document.AddSection();
-            section.AddParagraph("Facture n°" + commande.NumeroCommande).Format.Font.Size = 12;
-            section.AddParagraph("Date : " + DateTime.Now.ToString("dd/MM/yyyy")).Format.Font.Size = 12;
-            
+            paragraph = section.AddParagraph();
+            paragraph.AddText("Date : " + DateTime.Now.ToString("dd/MM/yyyy"));
+            paragraph.Format.Font.Size = 15;
+            paragraph.Format.Alignment = ParagraphAlignment.Center;
+            paragraph.Format.SpaceAfter = "2cm";
+
             // On ajoute un tableau
-            var table = section.AddTable();
+            table = section.AddTable();
             table.Borders.Width = 0.75;
             table.Borders.Color = Colors.Black;
             table.Borders.Visible = true;
@@ -564,13 +576,14 @@ namespace WOS.Front.Controllers
             table.AddColumn("3cm");
 
             // On ajoute les en-têtes
-            var row = table.AddRow();
+            row = table.AddRow();
             row.Shading.Color = Colors.LightGray;
+            row.Format.Font.Bold = true;
             row.Cells[0].AddParagraph("DESCRIPTION");
             row.Cells[1].AddParagraph("QUANTITÉ");
-            row.Cells[1].AddParagraph("TAILLE");
-            row.Cells[2].AddParagraph("PRIX UNITAIRE");
-            row.Cells[3].AddParagraph("MONTANT HT");
+            row.Cells[2].AddParagraph("TAILLE");
+            row.Cells[3].AddParagraph("PRIX UNITAIRE");
+            row.Cells[4].AddParagraph("MONTANT HT");
 
             // On ajoute les lignes
             foreach (var ligneCommande in commande.LignesCommande)
@@ -580,9 +593,11 @@ namespace WOS.Front.Controllers
                 row.Cells[0].AddParagraph(produit.Nom);
                 row.Cells[1].AddParagraph(ligneCommande.Quantite.ToString());
                 row.Cells[2].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Taille);
-                row.Cells[3].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix.ToString());
-                row.Cells[4].AddParagraph((ligneCommande.Quantite * produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix).ToString());
+                row.Cells[3].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix.ToString("C"));
+                row.Cells[4].AddParagraph((ligneCommande.Quantite * produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix).ToString("C"));
             }
+
+            
 
             // On récupère le Mode de livraison
             ModeLivraison modeLivraison = _modeLivraisonSrv.GetModeLivraisonById(commande.ModeLivraisonId.Value);
@@ -591,25 +606,179 @@ namespace WOS.Front.Controllers
             decimal prixLivraison = decimal.Parse(modeLivraison.PrixLivraison.ToString(), CultureInfo.InvariantCulture);
 
             // On ajoute le total dans une nouvelle section avec le sous-total qui est le total des produits et que le total HT qui est le total avec frais de port
-            section = document.AddSection();
-            section.AddParagraph("Sous-total : " + commande.MontantTotal + " €").Format.Font.Size = 12;
-            section.AddParagraph("Frais de port : " + prixLivraison + " €").Format.Font.Size = 12;
-            section.AddParagraph("Total HT : " + (commande.MontantTotal + prixLivraison) + " €").Format.Font.Size = 12;
+            paragraph = section.AddParagraph();
+            paragraph.Format.SpaceBefore = "7cm";
+            paragraph.AddText("Sous-total : " + (commande.MontantTotal - prixLivraison).ToString("C"));
+            paragraph.Format.Font.Size = 12;
+            paragraph.Format.Alignment = ParagraphAlignment.Right;
+            paragraph.Format.RightIndent = "1cm";
+            paragraph.AddLineBreak();
+            paragraph.AddText("Frais de port : " + prixLivraison.ToString("C"));
+            paragraph = section.AddParagraph();
+            paragraph.AddText("Total HT* : " + commande.MontantTotal.ToString("C"));
+            paragraph.Format.Font.Size = 15;
+            paragraph.Format.Alignment = ParagraphAlignment.Right;
+            paragraph.Format.RightIndent = "1cm";
+            paragraph.Format.Font.Bold = true;
+            paragraph.Format.Font.Color = Colors.ForestGreen;
 
-            // On ajoute une nouvelle section en bas de page pour la TVA et les coordonnées bancaires
+            // Récupérer correctement les dimensions
+            double pageWidth = section.PageSetup.PageWidth.Point;
+            double leftMargin = section.PageSetup.LeftMargin.Point;
+            double rightMargin = section.PageSetup.RightMargin.Point;
+            double totalWidth = pageWidth - leftMargin - rightMargin; // Largeur totale sans marges
+
             section = document.AddSection();
-            section.AddParagraph("TVA non applicable, art. 293 B du CGI").Format.Font.Size = 12;
-            section.AddParagraph("Règlement par chèque ou virement bancaire").Format.Font.Size = 12;
-            section.AddParagraph("IBAN : FR76 3000 3032 0000 0200 0000 007").Format.Font.Size = 12;
-            section.AddParagraph("BIC : SOGEFRPP").Format.Font.Size = 12;
-            
+            section.PageSetup.LeftMargin = Unit.FromCentimeter(0);
+            section.PageSetup.RightMargin = Unit.FromCentimeter(0);
+            section.PageSetup.TopMargin = Unit.FromCentimeter(0);
+            section.PageSetup.BottomMargin = Unit.FromCentimeter(0);
+
+            // Création du tableau pour le fond gris en bas de page
+            Table footerTable = new Table();
+            footerTable.Borders.Visible = false; // Pas de bordure
+            footerTable.AddColumn(Unit.FromPoint(totalWidth).ToString()); // Largeur totale du document
+
+            Row footerRow = footerTable.AddRow();
+            footerRow.Cells[0].Format.Alignment = ParagraphAlignment.Center;
+            footerRow.Shading.Color = Colors.LightGray;
+
+            // Ajouter le tableau du contenu dans cette cellule
+            Table contentTable = footerRow.Cells[0].Elements.AddTable();
+            contentTable.AddColumn("12cm");
+            contentTable.AddColumn("9cm");
+
+
+            Row contentRow = contentTable.AddRow();
+            contentRow.Cells[0].Format.Alignment = ParagraphAlignment.Left;
+            contentRow.Cells[1].Format.Alignment = ParagraphAlignment.Left;
+            contentRow.Cells[0].Format.LeftIndent = "2,5cm";
+            contentRow.Format.SpaceAfter = "0,5cm";
+
+            Paragraph para = contentRow.Cells[0].AddParagraph();
+            para.Format.Font.Size = 15;
+            para.Format.Font.Bold = true;
+            para.AddText("COORDONNÉES BANCAIRES");
+            para.AddLineBreak();
+            para.AddText("");
+
+            contentRow = contentTable.AddRow();
+            contentRow.Cells[0].Format.Alignment = ParagraphAlignment.Left;
+            contentRow.Cells[1].Format.Alignment = ParagraphAlignment.Left;
+            contentRow.Cells[0].Format.LeftIndent = "2,5cm";
+
+            // Texte à gauche
+            paragraphLeft = contentRow.Cells[0].AddParagraph();
+            paragraphLeft.Format.Font.Size = 10;
+            paragraphLeft.Format.Font.Bold = true;
+            paragraphLeft.AddText("REVOLUT");
+            paragraphLeft.AddLineBreak();
+            paragraphLeft.AddText("Maxime BAILLY");
+            paragraphLeft.AddLineBreak();
+            paragraphLeft.AddText("IBAN : FR76 2823 3000 0103 8177 3737 552");
+            paragraphLeft.AddLineBreak();
+            paragraphLeft.AddText("BIC : REVOFRP2");
+
+            // Texte à droite
+            paragraphRight = contentRow.Cells[1].AddParagraph();
+            paragraphRight.Format.Font.Size = 12;
+            paragraphRight.AddText("Conditions de paiement :");
+            paragraphRight.AddLineBreak();
+            paragraphRight.AddText("    • 100% soit € à payer (Vinted)");
+            paragraphRight.AddLineBreak();
+            paragraphRight.AddText("*TVA non applicable, art. 293 B du CGI");
+
+            // Ajouter le tableau dans le pied de page
+            section.Footers.Primary.Add(footerTable);
+
             // On sauvegarde le document
             PdfDocumentRenderer pdfRenderer = new PdfDocumentRenderer(true);
             pdfRenderer.Document = document;
             pdfRenderer.RenderDocument();
-            pdfRenderer.PdfDocument.Save("C:/Users/Maxim/Downloads/Facture_" + commande.NumeroCommande + ".pdf");
-
+            string tempPath = Path.GetTempPath();
+            string filePath = Path.Combine(tempPath, "Facture_" + commande.NumeroCommande + ".pdf");
+            pdfRenderer.PdfDocument.Save(filePath);
             pdfRenderer.PdfDocument.Close();
+
+            PdfDocument inputDoc = PdfReader.Open(filePath, PdfDocumentOpenMode.Import);
+
+            // Créer un nouveau PDF
+            PdfDocument outputDoc = new PdfDocument();
+
+            // Créer une nouvelle page avec la hauteur totale des 2 pages
+            PdfPage combinedPage = outputDoc.AddPage();
+            combinedPage.Width = inputDoc.Pages[0].Width;
+            combinedPage.Height = inputDoc.Pages[0].Height; // Taille d'une seule page
+
+            // Préparer un XGraphics pour dessiner dessus
+            XGraphics gfx = XGraphics.FromPdfPage(combinedPage);
+
+            using (var rasterizer = new GhostscriptRasterizer())
+            {
+                rasterizer.Open(filePath);
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    Image img = rasterizer.GetPage(120, 2); // 300 DPI, Page 1
+                    img.Save(Path.Combine(Directory.GetCurrentDirectory(), "Facture_" + commande.NumeroCommande + "_1.png"));
+                    img.Save(stream, ImageFormat.Png);
+                    stream.Position = 0; // Important pour lire le stream
+
+                    XImage xImage = XImage.FromStream(stream);
+
+                    gfx.DrawImage(xImage, 0, 0);
+                }
+
+                using (MemoryStream stream1 = new MemoryStream())
+                {
+                    Image img2 = rasterizer.GetPage(120, 1); // Page 2
+                    img2 = MakeBackgroundTransparent(img2);  // Enlever le blanc
+
+                    // Charger la première image déjà dessinée
+                    Image img1 = Image.FromFile(Path.Combine(Directory.GetCurrentDirectory(), "Facture_" + commande.NumeroCommande + "_1.png"));
+
+                    // Fusionner les images pour garder la transparence
+                    Image mergedImage = MergeImages(img1, img2);
+
+                    mergedImage.Save(stream1, ImageFormat.Png);
+                    stream1.Position = 0;
+
+                    XImage xImage2 = XImage.FromStream(stream1);
+                    gfx.DrawImage(xImage2, 0, 0);  // Dessiner l'image fusionnée
+                }
+            }
+
+            // On retourne un tableau de byte
+            MemoryStream ms = new MemoryStream();
+            outputDoc.Save(ms, false);
+            byte[] bytes = ms.ToArray();
+            return bytes;
+        }
+
+        private Image MergeImages(Image background, Image overlay)
+        {
+            Bitmap finalImage = new Bitmap(background.Width, background.Height, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(finalImage))
+            {
+                g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+                g.DrawImage(background, 0, 0); // Dessiner l'image de fond (page 1)
+                g.DrawImage(overlay, 0, 0); // Dessiner l'image de la deuxième page
+            }
+            return finalImage;
+        }
+
+        public Image MakeBackgroundTransparent(Image image)
+        {
+            // Convertir l'image en Image de type ARGB (avec transparence)
+            Bitmap bitmap = new Bitmap(image);
+
+            // Trouver la couleur de fond (blanc)
+            System.Drawing.Color whiteColor = System.Drawing.Color.White;
+
+            // Rendre cette couleur transparente
+            bitmap.MakeTransparent(whiteColor);
+
+            return bitmap;
         }
 
         public class Item
