@@ -12,8 +12,6 @@ namespace WOS.Dal.Interfaces
     {
         public Task<ClaimsPrincipal> LoginAccountClient(Client client);
 
-        public void SendEmail(string email, string subject, string body);
-
         public Task<ClaimsPrincipal> LoginAccountAdmin(Admin admin);
     }
 }

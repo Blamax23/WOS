@@ -30,8 +30,10 @@ namespace WOS.Front.Controllers
         private readonly IMarqueSrv _marqueSrv;
         private readonly IModeLivraisonSrv _modeLivraisonSrv;
         private readonly IGlobalDataSrv _globalDataSrv;
+        private readonly ICookiesSrv _cookiesSrv;
+        private readonly IMailSrv _mailSrv;
 
-        public AccountController(IClientSrv clientSrv, IAdminSrv adminSrv, IConfiguration configuration, IAuthenticationSrv authenticationSrv, IProduitSrv produitSrv, ICommandeSrv commandeSrv, ICategorieSrv categorieSrv, IMarqueSrv marqueSrv, IModeLivraisonSrv modeLivraisonSrv, IGlobalDataSrv globalDataSrv)
+        public AccountController(IClientSrv clientSrv, IAdminSrv adminSrv, IConfiguration configuration, IAuthenticationSrv authenticationSrv, IProduitSrv produitSrv, ICommandeSrv commandeSrv, ICategorieSrv categorieSrv, IMarqueSrv marqueSrv, IModeLivraisonSrv modeLivraisonSrv, IGlobalDataSrv globalDataSrv, ICookiesSrv cookiesSrv, IMailSrv mailSrv)
         {
             _clientSrv = clientSrv;
             _adminSrv = adminSrv;
@@ -43,6 +45,8 @@ namespace WOS.Front.Controllers
             _marqueSrv = marqueSrv;
             _modeLivraisonSrv = modeLivraisonSrv;
             _globalDataSrv = globalDataSrv;
+            _cookiesSrv = cookiesSrv;
+            _mailSrv = mailSrv;
         }
 
         #region Account
@@ -79,6 +83,7 @@ namespace WOS.Front.Controllers
                     accountViewModel.Categories = _globalDataSrv.Categories;
                     accountViewModel.ModeLivraisons = _globalDataSrv.ModeLivraisons;
                     accountViewModel.StatutCommandes = _globalDataSrv.StatutsCommande;
+                    accountViewModel.CodePromo = _globalDataSrv.CodePromos;
                 }
                 else
                 {
@@ -292,7 +297,9 @@ namespace WOS.Front.Controllers
             // On récupère la value du domaine dans le appsettings.json
             string domain = _configuration.GetSection("Site")["Domain"];
             string body = $"Veuillez cliquer sur le lien suivant pour vérifier votre adresse e-mail : <a href='{domain}account/verifyemail?email={email}&token={token}'>Vérifier mon adresse e-mail</a>";
-            _authenticationSrv.SendEmail(email, subject, body);
+            _mailSrv.SendEmail(email, subject, body);
+
+            _mailSrv.SendEmailVerification(client, token);
 
             // On stocke le token dans la base de données
             client.VerificationToken = token;
@@ -300,6 +307,8 @@ namespace WOS.Front.Controllers
             _clientSrv.UpdateClient(client);
 
             _authenticationSrv.LoginAccountClient(client);
+
+            _mailSrv.SendEmailSuccessfulRegistration(client);
 
             // On redirige vers la méthode post de connexion pour se connecter
             return RedirectToAction("SignInSuccess");
@@ -488,10 +497,7 @@ namespace WOS.Front.Controllers
 
             _adminSrv.UpdateAdmin(admin);
 
-            // On envoie le mail
-            string subject = "Code de connexion";
-            string body = $"Votre code de connexion est : {code}";
-            _authenticationSrv.SendEmail(admin.Email, subject, body);
+            _mailSrv.SendCodeAuthentication(admin, code);
 
             var returnUrl = HttpContext.Session.GetString("ReturnUrl");
             return View(admin);
@@ -541,6 +547,40 @@ namespace WOS.Front.Controllers
             // À ce stade, le HttpContext.User sera mis à jour dans les requêtes suivantes
             return RedirectToAction("Index", "Account");
         }
+
+        #endregion
+
+        #region Cookies
+
+        //[HttpPost]
+        //[Route("SaveConsent")]
+        //public ActionResult SaveConsent([FromBody] string consentGiven)
+        //{
+        //    if(consentGiven == null) return BadRequest();
+
+        //    bool.TryParse(consentGiven, out bool result);
+
+        //    string userId = Request.Cookies["userId"] ?? Guid.NewGuid().ToString();
+        //    if (Request.Cookies["userId"] == null)
+        //    {
+        //        Response.Cookies.Append("userId", userId, new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+        //    }
+
+        //    var userIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+        //    var userAgent = Request.Headers["User-Agent"].ToString();
+
+        //    var consent = new UserCookies
+        //    {
+        //        UserId = userId,
+        //        ConsentGiven = result,
+        //        UserIp = userIp,
+        //        UserAgent = userAgent
+        //    };
+
+        //    _cookiesSrv.SaveCookies(consent);
+
+        //    return Ok();
+        //}
 
         #endregion
 

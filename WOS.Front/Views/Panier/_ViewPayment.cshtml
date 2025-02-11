@@ -4,11 +4,8 @@
 
 @{
     decimal totalAmount = 0;
-    foreach (var item in Model.Cart)
-    {
-        totalAmount += item.Quantity * item.Price;
-    }
-    totalAmount += (decimal)Model.ModeLivraison.PrixLivraison;
+    decimal.TryParse(Model.TotalPrice, out decimal totalPrice);
+    totalAmount = totalPrice;
 
     var dateLivraison = DateOnly.FromDateTime(DateTime.Now).AddDays(Model.ModeLivraison.JoursLivraisonMini.Value);
 }

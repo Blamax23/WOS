@@ -41,6 +41,7 @@
                         <li class="linkProducts" data-section="info-products">Produits</li>
                         <li class="linkMarques" data-section="info-marques">Marques</li>
                         <li class="linkLivraison" data-section="info-livraison">Livraison</li>
+                        <li class="linkCodePromo" data-section="info-code-promos">Codes Promo</li>
                     </ul>
                 </div>
             </div>
@@ -196,8 +197,12 @@
                                     <h3>Actions</h3>
                                     <div class="list-actions">
                                         <div class="etiquette" data-commande-id="@commande.NumeroCommande">
-                                            <i class="bi bi-file-earmark-arrow-down"></i>
+                                            <i class="bi bi-send-arrow-down"></i>
                                             <p>Télécharger l'étiquette d'envoi</p>
+                                        </div>
+                                        <div class="facture" data-commande-id="@commande.NumeroCommande">
+                                            <i class="bi bi-file-earmark-arrow-down"></i>
+                                            <p>Télécharger la facture</p>
                                         </div>
                                         <div class="updateStatus open-modal-btn" data-commande-id="@commande.NumeroCommande" data-status-id="@commande.Statut.Id">
                                             <i class="bi bi-pencil-square"></i>
@@ -589,6 +594,76 @@
                         </div>
                     }
                 </div>
+                <div class="info-code-promos">
+                    <div class="head-code-promos">
+                        <h2>Code Promos</h2>
+                        <button type="button" class="add-code-promo confirm-btn">Ajouter un code</button>
+                    </div>
+                    <div class="content-code-promos">
+                        <div class="form hidden">
+                            <div class="form-code-promo">
+                                <div class="nom-code-zone">
+                                    <label for="nom">Nom du code</label>
+                                    <input type="text" name="nom" class="input-nom-code" />
+                                    <p class="error-code error-nom-code"></p>
+                                </div>
+                                <div class="pourcentage-code-zone">
+                                    <label for="pourcentage">Pourcentage de réduction</label>
+                                    <input type="number" name="pourcentage" class="input-pourcentage-code" max="100" min="0" />
+                                    <p class="error-code error-pourcentage-code"></p>
+                                </div>
+                                <div class="date-code-zone">
+                                    <label for="date">Date de fin</label>
+                                    <input type="date" name="date" class="input-date-code" />
+                                    <p class="error-code error-date-code"></p>
+                                </div>
+                                <div class="valid-code-zone">
+                                    <label for="valid">Est ce que le code est valable ?</label>
+                                    <input type="checkbox" name="valid" class="input-valid-code" />
+                                </div>
+                            </div>
+                            <div class="zone-btns">
+                                <button class="cancel-btn cancel-add-code-promo">Annuler</button>
+                                <button type="submit" class="confirm-btn confirm-add-code-promo">Ajouter</button>
+                            </div>
+                        </div>
+                        <div class="list-code-promos">
+                            @if (Model.CodePromo != null)
+                            {
+                                if (Model.CodePromo.Count() == 0)
+                                {
+                                    <h3>Aucun code promo n'a été ajouté pour l'instant.</h3>
+                                }
+                                else
+                                {
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Pourcentage</th>
+                                                <th>Date de fin</th>
+                                                <th>Valable</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="list-code">
+                                            @foreach (var code in Model.CodePromo)
+                                            {
+                                                <tr>
+                                                    <td>@code.Nom</td>
+                                                    <td>@code.Pourcentage %</td>
+                                                    <td>@code.ValidityDate</td>
+                                                    <td><input type="checkbox" @(code.IsValid.Value ? "checked" : "") /></td>
+                                                    <td class="delete-code-promo confirm-btn" data-code-id="@code.Id">Supprimer</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
         }
         else if (client != null)
@@ -882,6 +957,7 @@
                     case item.classList.contains('linkMarques'):
                         console.log('Navigation vers les produits');
                         break;
+
                 }
 
                 // Fermer le menu après la sélection
@@ -1532,7 +1608,7 @@
         });
     });
 
-    $('.confirm-btn').click(function () {
+    $('.table-stock .confirm-btn').click(function () {
         // Trouver la ligne "ajouter" et l'ajouter après la ligne du produit
         var newRow = '<tr><td colspan="5" style="text-align:center;">Nouvelle ligne ajoutée</td></tr>';
 
@@ -1849,6 +1925,46 @@
         }
     });
 
+    let factureCommande = $(".facture");
+    factureCommande.on('click', function () {
+        // on récupère le data-commande-id
+        let commandeId = $(this).data('commande-id');
+
+        // On fait une requête POST ajax vers DownloadEtiquette de PanierController
+        $.ajax({
+            url: `/Panier/GetCommande?numberOrder=${commandeId}`,
+            type: 'POST',
+            success: function (response) {
+                // Décoder la facture Base64 en tableau de bytes
+                const binaryString = atob(response.facture);
+                const byteArray = Uint8Array.from(binaryString, char => char.charCodeAt(0));
+
+                // Créer un Blob pour le PDF
+                const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
+
+                // Créer une URL pour le Blob
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+
+                // Créer un lien pour télécharger le PDF
+                const link = document.createElement("a");
+                link.href = pdfUrl;
+                link.download = `facture_commande_${commandeId}.pdf`;
+
+                // Ajouter le lien, déclencher le clic et le supprimer
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Libérer la mémoire
+                URL.revokeObjectURL(pdfUrl);
+            },
+            error: function (error) {
+                console.error('Erreur lors du téléchargement:', error);
+            }
+        });
+    });
+
+
     // gestionnaire de click sur la div etiquette
     let etiquetteCommande = $(".etiquette");
     etiquetteCommande.on('click', function () {
@@ -1925,7 +2041,7 @@
             const selectInput = $(".modal-status-commande .inputStatut");
             selectInput.empty(); // On vide les options actuelles
 
-            for(var i = 0; i<statusList.length; i++){
+            for (var i = 0; i < statusList.length; i++) {
                 if (statusId[i] >= statutActuelId) {
                     const option = `<option value="${statusId[i]}">${statusList[i]}</option>`;
                     selectInput.append(option);
@@ -1956,4 +2072,132 @@
         });
     });
 
+</script>
+
+<script>
+    $(".add-code-promo").on("click", function () {
+        let formAddCodePromo = $(".form");
+        formAddCodePromo.removeClass('hidden');
+
+        $(".list-code-promos").addClass('hidden');
+    })
+
+    // On fait en sorte que la div .form disparaisse si je clique sur cancel-add-code-promo
+    let cancelAddCodePromo = $(".cancel-add-code-promo");
+    cancelAddCodePromo.on('click', function () {
+        let formAddCodePromo = $(".form");
+        formAddCodePromo.addClass('hidden');
+        $(".list-code-promos").removeClass('hidden');
+    });
+
+    let confirmAddCodePromo = $(".confirm-add-code-promo");
+    confirmAddCodePromo.on('click', function () {
+        // On cache tous les error-code
+        $(".error-code").css("display", "none");
+
+        // On contrôle si le nom du code est rempli
+        let stop = false;
+        let nomCode = $(".input-nom-code").val();
+        if (nomCode === "") {
+            $(".error-nom-code").text("Veuillez remplir le nom du code promo.");
+            $(".error-nom-code").css("display", "block");
+            stop = true;
+        }
+
+        // On contrôle si le pourcentage est rempli
+        let pourcentageCode = $(".input-pourcentage-code").val();
+        if (pourcentageCode === "") {
+            $(".error-pourcentage-code").text("Veuillez remplir le pourcentage du code promo.");
+            $(".error-pourcentage-code").css("display", "block");
+            stop = true;
+        }
+
+        // On regarde si le pourcentage est compris entre 1 et 100
+        if (pourcentageCode < 1 || pourcentageCode > 100) {
+            $(".error-pourcentage-code").text("Le pourcentage doit être compris entre 1 et 100.");
+            $(".error-pourcentage-code").css("display", "block");
+            stop = true;
+        }
+
+        // On contrôle si la date de fin est remplie
+        let dateCode = $(".input-date-code").val();
+        if (dateCode === "") {
+            $(".error-date-code").text("Veuillez remplir la date de fin du code promo.");
+            $(".error-date-code").css("display", "block");
+            stop = true;
+        }
+
+        // On contrôle si la date de fin est supérieure à la date actuelle
+        let dateActuelle = new Date();
+        let dateValidity = new Date(dateCode);
+        if (dateValidity < dateActuelle) {
+            $(".error-date-code").text("La date de fin doit être supérieure à la date actuelle.");
+            $(".error-date-code").css("display", "block");
+            stop = true;
+        }
+
+        if (stop == true) {
+            return;
+        }
+
+        let code = $(".input-nom-code").val();
+        let reduction = $(".input-pourcentage-code").val();
+        let dateFin = $(".input-date-code").val();
+        let isValid = $(".input-valid-code").prop('checked');
+
+        // On effectue une requête AJAX pour ajouter le code promo
+        $.ajax({
+            url: `/Panier/AddCodePromo?code=${code}&reduction=${reduction}&dateFin=${dateFin}&valid=${isValid}`,
+            type: 'POST',
+            success: function (response) {
+                let formAddCodePromo = $(".form");
+                formAddCodePromo.addClass('hidden');
+
+                // On réinitialise les 4 inputs
+                $(".input-nom-code").val('');
+                $(".input-pourcentage-code").val('');
+                $(".input-date-code").val('');
+                $(".input-valid-code").prop('checked', false);
+
+                // On ajoute une ligne à list-code-promo
+                let newRow = `<tr>
+                                    <td>${response.code.nom}</td>
+                                        <td>${response.code.pourcentage}</td>
+                                        <td>${response.code.validtyDate}</td>
+                                        <td>${response.code.isValid}</td>
+                                            <td class="confirm-btn delete-code-promo" data-code-id="${response.id}">Supprimer</td>
+                                </tr>`;
+
+                console.log(newRow);
+
+                $(".list-code").append(newRow);
+                $(".list-code-promos").removeClass('hidden');
+
+
+
+            },
+            error: function (error) {
+                console.error('Erreur lors de l\'ajout:', error);
+                alert('Erreur lors de l\'ajout. Veuillez réessayer.');
+            }
+        });
+    });
+
+    // On ajoute un gestionnaire de clic sur chaque delete-code-promo
+    $(document).on('click', '.delete-code-promo', function () {
+        console.log("delete-code-promo");
+        let codeId = $(this).data('code-id');
+
+        $.ajax({
+            url: `/Panier/DeleteCodePromo?id=${codeId}`,
+            type: 'POST',
+            success: function (response) {
+                $(`.delete-code-promo[data-code-id="${codeId}"]`).closest('tr').remove();
+            },
+            error: function (error) {
+                console.error('Erreur lors de la suppression:', error);
+                alert('Erreur lors de la suppression. Veuillez réessayer.');
+            }
+        });
+    });
 </script>

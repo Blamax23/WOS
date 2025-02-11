@@ -17,5 +17,8 @@ namespace WOS.Dal.Interfaces
         Commande GetCommandeByNumberOrderDelivery(string number);
         void UpdateStatus(int idCommande);
         void UpdateCommande(Commande commande);
+
+        void AddCodePromo(CodePromo codePromo);
+        void DeleteCodePromo(int id);
     }
 }

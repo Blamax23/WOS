@@ -45,6 +45,9 @@
                                 <li class="nav-item">
                                     <a class="nav-link nav-pages text-dark" asp-area="" asp-controller="Contact" asp-action="Index">Contact</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-pages text-dark" asp-area="" asp-controller="Newsletter" asp-action="Index">Mails</a>
+                                </li>
                             </ul>
                         </div>
                         <div class="logo">
@@ -150,6 +153,14 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+@* <div id="cookieModal" class="cookie-modal">
+    <div class="cookie-modal-content">
+        <p>Ce site utilise des cookies pour améliorer votre expérience. Acceptez-vous ?</p>
+        <button onclick="handleCookieConsent(true)">Accepter</button>
+        <button onclick="handleCookieConsent(false)">Refuser</button>
+    </div>
+</div> *@
 
 <script>
     $(".btnSearch").click(function () {
@@ -301,4 +312,37 @@
         });
     });
 
+</script>
+
+<script>
+    // document.addEventListener("DOMContentLoaded", function () {
+    //     if (!getCookie("cookiesAccepted")) {
+    //         document.getElementById("cookieModal").style.display = "flex";
+    //     }
+    // });
+
+    function handleCookieConsent(consent) {
+        setCookie("cookiesAccepted", consent, 365);
+        saveConsent(consent);
+        document.getElementById("cookieModal").style.display = "none";
+    }
+
+    function saveConsent(consent) {
+        fetch("/Account/SaveConsent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(consent.toString())
+        });
+    }
+
+    function setCookie(name, value, days) {
+        let d = new Date();
+        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+        document.cookie = name + "=" + value + "; expires=" + d.toUTCString() + "; path=/";
+    }
+
+    function getCookie(name) {
+        let match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+        return match ? match[2] : null;
+    }
 </script>

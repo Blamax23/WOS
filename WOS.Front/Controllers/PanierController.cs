@@ -18,11 +18,9 @@ using PdfSharp.Pdf;
 using MigraDocCore.DocumentObjectModel;
 using MigraDocCore.DocumentObjectModel.Tables;
 using MigraDocCore.Rendering;
-using Ghostscript.NET.Rasterizer;
 using System.Drawing;
 using System.Drawing.Imaging;
-using iText.IO.Image;
-using MigraDocCore.DocumentObjectModel.MigraDoc.DocumentObjectModel.Shapes;
+using Ghostscript.NET.Rasterizer;
 
 namespace WOS.Front.Controllers
 {
@@ -38,8 +36,9 @@ namespace WOS.Front.Controllers
         private readonly IGlobalDataSrv _globalDataSrv;
         private readonly IAdresseSrv _adresseSrv;
         private readonly IWebHostEnvironment _env;
+        private readonly IMailSrv _mailSrv;
 
-        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv, IModeLivraisonSrv modeLivraisonSrv, ICommandeSrv commandeSrv, IGlobalDataSrv globalDataSrv, IAdresseSrv adresseSrv, IWebHostEnvironment env)
+        public PanierController(IConfiguration configuration, IProduitSrv produitSrv, IMondialRelaySrv mondialRelaySrv, IModeLivraisonSrv modeLivraisonSrv, ICommandeSrv commandeSrv, IGlobalDataSrv globalDataSrv, IAdresseSrv adresseSrv, IWebHostEnvironment env, IMailSrv mailSrv)
         {
             _configuration = configuration;
             _produitSrv = produitSrv;
@@ -49,6 +48,7 @@ namespace WOS.Front.Controllers
             _globalDataSrv = globalDataSrv;
             _adresseSrv = adresseSrv;
             _env = env;
+            _mailSrv = mailSrv;
         }
 
         [HttpPost]
@@ -214,14 +214,22 @@ namespace WOS.Front.Controllers
                 ModeLivraison modeLivraison = _modeLivraisonSrv.GetModeLivraisonByName(deliveryInfoObj.ModeName);
                 viewFinalPurchase.ModeLivraison = modeLivraison;
 
-                // On calcule le prix total
+                // On récupère le cookie totalprice
                 decimal totalPrice = 0;
-                foreach (var item in cartItems)
+                if (Request.Cookies.TryGetValue("totalPrice", out string price))
                 {
-                    totalPrice += item.Price * item.Quantity;
+                    totalPrice = decimal.Parse(price, CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    foreach (var item in cartItems)
+                    {
+                        totalPrice += item.Price * item.Quantity;
+                    }
                 }
                 totalPrice += (decimal)modeLivraison.PrixLivraison;
                 viewFinalPurchase.TotalPrice = totalPrice.ToString();
+
 
 
                 //Int32.TryParse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value, out int clientId);
@@ -262,6 +270,16 @@ namespace WOS.Front.Controllers
                 string numberOrder = GenerateOrderNumber();
 
                 viewFinalPurchase.OrderNumber = numberOrder;
+
+                if (Request.Cookies.TryGetValue("allPrices", out string allPricesJson))
+                {
+                    List<decimal> allPrices = JsonSerializer.Deserialize<List<decimal>>(allPricesJson);
+
+                    for (var i=0; i < viewFinalPurchase.Cart.Count; i++)
+                    {
+                        viewFinalPurchase.Cart[i].Price = allPrices[i];
+                    }
+                }
 
                 // On crée la commande
                 Commande commande = new Commande
@@ -357,6 +375,8 @@ namespace WOS.Front.Controllers
 
             string token = _modeLivraisonSrv.GetAuthUPS().Result;
 
+            _mailSrv.SendDeliveryConfirmation(commande);
+
             // On initialise les variables
             byte[] etiquette = null;
             string trackingNumber = null;
@@ -378,8 +398,8 @@ namespace WOS.Front.Controllers
                         commande.LinkSuivi = "https://www.mondialrelay.fr/suivi-de-colis/?NumeroExpedition=" + trackingNumber;
                         break;
                     case "UPS Standard":
-                        (etiquette, trackingNumber) = _modeLivraisonSrv.GetEtiquetteFromUPS(token).Result;
-                        commande.LinkSuivi = "https://www.ups.com/track?loc=fr_FR&tracknum=" + trackingNumber;
+                        //(etiquette, trackingNumber) = _modeLivraisonSrv.GetEtiquetteFromUPS(token).Result;
+                        //commande.LinkSuivi = "https://www.ups.com/track?loc=fr_FR&tracknum=" + trackingNumber;
                         break;
                 }
 
@@ -400,7 +420,10 @@ namespace WOS.Front.Controllers
             }
 
             // On supprime le panier
-            RemoveAllItemsFromCart(HttpContext);
+            if(redirect_status == "succeeded")
+                RemoveAllItemsFromCart(HttpContext);
+
+            _mailSrv.SendEmailPurchasedConfirmed(commande);
 
             return View(confirmPurchaseModel);
         }
@@ -447,7 +470,7 @@ namespace WOS.Front.Controllers
             {
                 var commande = _commandeSrv.GetCommandeByNumberOrder(numberOrder);
 
-                return Json(new { etiquette = commande.BinaryEtiquette });
+                return Json(new { etiquette = commande.BinaryEtiquette, facture = commande.BinaryFacture });
             }
             catch (Exception e)
             {
@@ -468,6 +491,57 @@ namespace WOS.Front.Controllers
             _commandeSrv.UpdateCommande(commande);
 
             return RedirectToAction("Index", "Account");
+        }
+
+        [HttpPost("SearchCodePromo")]
+        public IActionResult SearchCodePromo(string value, decimal prix)
+        {
+            // On récupère la commande
+            bool isValid = false;
+            decimal newPrice = prix;
+            string errorMessage = "";
+            CodePromo codePromo = _globalDataSrv.CodePromos.FirstOrDefault(c => c.Nom == value);
+
+            if (codePromo == null || codePromo.ValidityDate.Value < DateTime.Now || !codePromo.IsValid.Value)
+            {
+                errorMessage = "Le code promo n'est pas valide.";
+            }
+            else
+            {
+                newPrice = prix - (prix * codePromo.Pourcentage / 100);
+            }
+
+            return Ok(new { prix = newPrice, errorMessage = errorMessage, reduction = codePromo.Pourcentage });
+        }
+
+        [HttpPost("AddCodePromo")]
+        public IActionResult AddCodePromo(string code, string reduction, string dateFin, string valid)
+        {
+            Int32.TryParse(reduction, out int reductionInt);
+            DateTime.TryParse(dateFin, out DateTime date);
+            bool.TryParse(valid, out bool validBool);
+
+            CodePromo codePromo = new CodePromo
+            {
+                Nom = code,
+                Pourcentage = reductionInt,
+                ValidityDate = date,
+                IsValid = validBool
+            };
+
+            _commandeSrv.AddCodePromo(codePromo);
+
+            return Ok(new {code = codePromo});
+        }
+
+        [HttpPost("DeleteCodePromo")]
+        public IActionResult DeleteCodePromo(string id)
+        {
+            Int32.TryParse(id, out int idInt);
+
+            _commandeSrv.DeleteCodePromo(idInt);
+
+            return Ok();
         }
 
         private long CalculateOrderAmount(List<Item> items)
@@ -571,7 +645,7 @@ namespace WOS.Front.Controllers
             // On ajoute les colonnes
             table.AddColumn("5cm");
             table.AddColumn("3cm");
-            table.AddColumn("3cm");
+            table.AddColumn("2cm");
             table.AddColumn("3cm");
             table.AddColumn("3cm");
 
@@ -593,11 +667,17 @@ namespace WOS.Front.Controllers
                 row.Cells[0].AddParagraph(produit.Nom);
                 row.Cells[1].AddParagraph(ligneCommande.Quantite.ToString());
                 row.Cells[2].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Taille);
-                row.Cells[3].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix.ToString("C"));
-                row.Cells[4].AddParagraph((ligneCommande.Quantite * produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix).ToString("C"));
+                if(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).PrixPromo != null)
+                {
+                    row.Cells[3].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).PrixPromo.Value.ToString("C"));
+                    row.Cells[4].AddParagraph((ligneCommande.Quantite * produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).PrixPromo.Value).ToString("C"));
+                }
+                else
+                {
+                    row.Cells[3].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix.ToString("C"));
+                    row.Cells[4].AddParagraph((ligneCommande.Quantite * produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Prix).ToString("C"));
+                }
             }
-
-            
 
             // On récupère le Mode de livraison
             ModeLivraison modeLivraison = _modeLivraisonSrv.GetModeLivraisonById(commande.ModeLivraisonId.Value);
@@ -637,7 +717,9 @@ namespace WOS.Front.Controllers
             // Création du tableau pour le fond gris en bas de page
             Table footerTable = new Table();
             footerTable.Borders.Visible = false; // Pas de bordure
+            footerTable.TopPadding = "25cm";
             footerTable.AddColumn(Unit.FromPoint(totalWidth).ToString()); // Largeur totale du document
+            section.Add(footerTable);
 
             Row footerRow = footerTable.AddRow();
             footerRow.Cells[0].Format.Alignment = ParagraphAlignment.Center;
@@ -654,6 +736,9 @@ namespace WOS.Front.Controllers
             contentRow.Cells[1].Format.Alignment = ParagraphAlignment.Left;
             contentRow.Cells[0].Format.LeftIndent = "2,5cm";
             contentRow.Format.SpaceAfter = "0,5cm";
+            contentRow.Cells[0].Shading.Color = Colors.LightGray;
+            contentRow.Cells[1].Shading.Color = Colors.LightGray; 
+            contentRow.Format.SpaceBefore = "1cm";
 
             Paragraph para = contentRow.Cells[0].AddParagraph();
             para.Format.Font.Size = 15;
@@ -666,6 +751,9 @@ namespace WOS.Front.Controllers
             contentRow.Cells[0].Format.Alignment = ParagraphAlignment.Left;
             contentRow.Cells[1].Format.Alignment = ParagraphAlignment.Left;
             contentRow.Cells[0].Format.LeftIndent = "2,5cm";
+            contentRow.Cells[0].Shading.Color = Colors.LightGray;
+            contentRow.Cells[1].Shading.Color = Colors.LightGray;
+            contentRow.Format.SpaceAfter = "1cm";
 
             // Texte à gauche
             paragraphLeft = contentRow.Cells[0].AddParagraph();
@@ -688,8 +776,7 @@ namespace WOS.Front.Controllers
             paragraphRight.AddLineBreak();
             paragraphRight.AddText("*TVA non applicable, art. 293 B du CGI");
 
-            // Ajouter le tableau dans le pied de page
-            section.Footers.Primary.Add(footerTable);
+
 
             // On sauvegarde le document
             PdfDocumentRenderer pdfRenderer = new PdfDocumentRenderer(true);
@@ -727,6 +814,8 @@ namespace WOS.Front.Controllers
                     XImage xImage = XImage.FromStream(stream);
 
                     gfx.DrawImage(xImage, 0, 0);
+
+                    xImage.Dispose();
                 }
 
                 using (MemoryStream stream1 = new MemoryStream())
@@ -745,8 +834,15 @@ namespace WOS.Front.Controllers
 
                     XImage xImage2 = XImage.FromStream(stream1);
                     gfx.DrawImage(xImage2, 0, 0);  // Dessiner l'image fusionnée
+                    mergedImage.Dispose();
+                    xImage2.Dispose();
+                    img1.Dispose();
                 }
+                
             }
+
+            // On supprime l'image téléchargée
+            System.IO.File.Delete(Path.Combine(Directory.GetCurrentDirectory(), "Facture_" + commande.NumeroCommande + "_1.png"));
 
             // On retourne un tableau de byte
             MemoryStream ms = new MemoryStream();

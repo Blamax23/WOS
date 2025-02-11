@@ -27,5 +27,7 @@ namespace WOS.Dal.Interfaces
         public List<Admin> Admins { get; set; }
         public List<Question> Questions { get; set; }
         public List<ModeLivraison> ModeLivraisons { get; set; }
+        public List<UserCookies> UserCookies { get; set; }
+        public List<CodePromo> CodePromos { get; set; }
     }
 }

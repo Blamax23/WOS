@@ -30,6 +30,8 @@ namespace WOS.Dal.Context
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<ModeLivraison> ModeLivraisons { get; set; }
+        public DbSet<UserCookies> UserCookies { get; set; }
+        public DbSet<CodePromo> CodePromos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,6 +50,8 @@ namespace WOS.Dal.Context
             modelBuilder.ApplyConfiguration(new AdminMap());
             modelBuilder.ApplyConfiguration(new QuestionMap());
             modelBuilder.ApplyConfiguration(new ModeLivraisonMap());
+            modelBuilder.ApplyConfiguration(new UserCookiesMap());
+            modelBuilder.ApplyConfiguration(new CodePromoMap());
         }
     }
 }

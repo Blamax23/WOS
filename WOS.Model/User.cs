@@ -25,6 +25,8 @@ namespace WOS.Model
         public List<ModeLivraison> ModeLivraisons { get; set; }
 
         public List<StatutCommande> StatutCommandes { get; set; }
+
+        public List<CodePromo> CodePromo { get; set; } = new List<CodePromo>();
     }
 
     public class HomeViewModel

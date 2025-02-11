@@ -58,6 +58,8 @@ builder.Services.AddScoped<IModeLivraisonSrv, ModeLivraisonSrv>();
 builder.Services.AddScoped<IAdresseSrv, AdresseSrv>();
 builder.Services.AddSingleton<IGlobalDataSrv, GlobalDataSrv>();
 builder.Services.AddScoped<GlobalDataInitializer>();
+builder.Services.AddScoped<IMailSrv, MailSrv>();
+builder.Services.AddScoped<ICookiesSrv, CookiesSrv>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

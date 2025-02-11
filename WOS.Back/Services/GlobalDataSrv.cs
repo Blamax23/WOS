@@ -29,6 +29,8 @@ namespace WOS.Back.Services
         public List<Admin> Admins { get; set; }
         public List<Question> Questions { get; set; }
         public List<ModeLivraison> ModeLivraisons { get; set; }
+        public List<UserCookies> UserCookies { get; set; }
+        public List<CodePromo> CodePromos { get; set; }
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -47,6 +49,11 @@ namespace WOS.Back.Services
             ProduitTailles = new List<ProduitTaille>();
             ProduitCouleurs = new List<ProduitCouleur>();
             ProduitImages = new List<ProduitImage>();
+            StatutsCommande = new List<StatutCommande>();
+            Adresses = new List<Adresse>();
+            LignesCommande = new List<LigneCommande>();
+            UserCookies = new List<UserCookies>();
+            CodePromos = new List<CodePromo>();
             _serviceProvider = serviceProvider;
         }
 
@@ -124,6 +131,18 @@ namespace WOS.Back.Services
                 {
                     LignesCommande = await context.LignesCommande.ToListAsync();
                 }
+                else if (type == typeof(StatutCommande))
+                {
+                    StatutsCommande = await context.StatutsCommande.ToListAsync();
+                }
+                else if (type == typeof(UserCookies))
+                {
+                    UserCookies = await context.UserCookies.ToListAsync();
+                }
+                else if (type == typeof(CodePromo))
+                {
+                    CodePromos = await context.CodePromos.ToListAsync();
+                }
             }
         }
 
@@ -160,6 +179,8 @@ namespace WOS.Back.Services
                 Questions = await context.Questions.ToListAsync();
                 StatutsCommande = await context.StatutsCommande.ToListAsync();
                 LignesCommande = await context.LignesCommande.ToListAsync();
+                UserCookies = await context.UserCookies.ToListAsync();
+                CodePromos = await context.CodePromos.ToListAsync();
             }
         }
 
@@ -199,6 +220,8 @@ namespace WOS.Back.Services
             _globalDataSrv.LignesCommande = GetLignesCommande();
             _globalDataSrv.StatutsCommande = _context.StatutsCommande.ToList();
             _globalDataSrv.Adresses = _context.Adresses.ToList();
+            _globalDataSrv.UserCookies = _context.UserCookies.ToList();
+            _globalDataSrv.CodePromos = _context.CodePromos.ToList();
         }
 
         public List<Admin> GetAllAdmins()

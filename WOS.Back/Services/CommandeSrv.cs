@@ -94,6 +94,7 @@ namespace WOS.Back.Services
 
             _context.SaveChanges();
             _globalDataSrv.RefreshCacheAsync(typeof(LigneCommande));
+            _globalDataSrv.RefreshCacheAsync(typeof(Adresse));
         }
 
         public void UpdateStatus(int idCommande)
@@ -116,10 +117,29 @@ namespace WOS.Back.Services
             commandeToUpdate.LinkSuivi = commande.LinkSuivi;
             commandeToUpdate.ModeLivraisonId = commande.ModeLivraisonId;
             commandeToUpdate.BinaryEtiquette = commande.BinaryEtiquette;
+            commandeToUpdate.BinaryFacture = commande.BinaryFacture;
 
             _context.SaveChanges();
 
             _globalDataSrv.RefreshCacheAsync(typeof(Commande));
+        }
+
+        public void AddCodePromo(CodePromo codePromo)
+        {
+            _context.CodePromos.Add(codePromo);
+            _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(CodePromo));
+        }
+
+        public void DeleteCodePromo(int id)
+        {
+            CodePromo codePromo = _context.CodePromos.FirstOrDefault(c => c.Id == id);
+
+            _context.CodePromos.Remove(codePromo);
+            _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(CodePromo));
         }
     }
 }

@@ -46,10 +46,21 @@
                     </div>
                 </div>
             }
-
+            <div class="code-promo">
+                <div class="input-code-zone">
+                    <input type="text" placeholder="Code promo" name="codepromo" />
+                    <button class="btn confirm-btn search-code-promo">Appliquer</button>
+                </div>
+                <div class="error-zone">
+                    <p></p>
+                </div>
+            </div>
             <div class="total">
                 <h2>Total</h2>
-                <h2 class="price">@Model.Sum(x => x.Price * x.Quantity).ToString("C")</h2>
+                <div class="prix-total">
+                    <h2 class="old-price">@Model.Sum(x => x.Price * x.Quantity).ToString("C")</h2>
+                    <h2 class="final-price">@Model.Sum(x => x.Price * x.Quantity).ToString("C")</h2>
+                </div>
             </div>
             <div class="btn-actions">
                 <button class="btn cancel-btn step-to-never">Annuler</button>
@@ -60,8 +71,24 @@
 </div>
 
 <script>
+    function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            let date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + value.replace("€", "") + "; path=/" + expires;
+    }
+
     // Click sur le bouton step-1-to-2
     $(".step-1-to-2").click(function () {
+        // On set le prix total dans un cookie
+        setCookie("totalPrice", $(".final-price").text().replace(" €", ""), 1);
+
+        // On vérifie que le cookie est bien enregistré
+        console.log("Cookie totalPrice:", document.cookie);
+
         // On fait une requête ajax
         localStorage.setItem('currentStep', 1);
         $.ajax({
@@ -78,4 +105,48 @@
             }
         });
     });
+
+    $(".search-code-promo").click(function () {
+        var value = $("input[name='codepromo']").val();
+
+        console.log("Requête envoyée avec value:", value);
+
+        $.ajax({
+            url: "/Panier/SearchCodePromo",
+            type: "POST",
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8", // Ajout du contentType
+            data: {
+                value: value,
+                prix: parseFloat($(".old-price").text().replace("€", "").trim()) // Récupérer le prix depuis le HTML
+            },
+            success: function (data) {
+                if (data.errorMessage && data.errorMessage !== "") {
+                    $(".error-zone p").text(data.errorMessage);
+                    $(".error-zone").css("display", "block");
+                } else {
+                    $(".final-price").text(data.prix.toFixed(2) + "€");
+                    $(".old-price").css("display", "block");
+
+                    // On calcule le prix avec le code promo pour chaque élément du Model
+                    let allPrices = []
+                    $(".itemPanier").each(function (index, element) {
+                        var price = parseFloat($(element).find(".price").text().replace("€", "").trim());
+                        var quantity = parseInt($(element).find(".item-quantity p").text());
+                        var newPrice = price - (price * data.reduction /100);
+                        allPrices.push(newPrice);
+                    });
+
+                    // On stocke allPrices dans les cookies
+                    setCookie("allPrices", JSON.stringify(allPrices), 1);
+
+
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Erreur Ajax :", error);
+                console.error("Réponse serveur :", xhr.responseText);
+            }
+        });
+    });
+
 </script>
