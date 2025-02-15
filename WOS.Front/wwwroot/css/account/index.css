@@ -266,6 +266,10 @@
 /* ========================== Partie Commandes ========================= */
 /* ===================================================================== */
 
+.info-commandes p{
+    margin-left: 5vw;
+}
+
 .head-commandes h2 {
     font-size: 2em;
     margin: 5vh 5vw;

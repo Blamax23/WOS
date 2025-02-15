@@ -14,10 +14,20 @@
 </div>
 
 <script>
+    function getCookie(name) {
+        var values = document.cookie.split(';');
+        for (var i = 0; i < values.length; i++) {
+            var cookie = values[i].split('=');
+            if (cookie[0].trim() == name) {
+                return cookie[1];
+            }
+        }
+    }
+
     $(document).ready(function () {
-        var currentStep = localStorage.getItem('currentStep');
-        console.log(localStorage);
-        console.log(currentStep);
+        console.log(document.cookie);
+        var currentStep = getCookie("CartStep");
+        console.log(currentStep); // Devrait afficher "1"
         // if (currentStep) {
         //     console.log("je suis dans le if");
         //     $.ajax({
@@ -39,14 +49,48 @@
         //     });
         // }
 
-        $.ajax({
-            url: "/Panier/NextStepPurchase",
-            type: "POST",
-            data: { actualStep: 0 },
-            success: function (data) {
-                $(".content").html(data);
-            }
-        });
+        if (currentStep == null) {
+            const cartItems = $('.cart-item').map(function () {
+                let productId = $(this).data('product-id').replace('item-', '');
+                let size = $(this).data('size');
+                let quantity = $(this).find('.quantity-input').val();
+
+                productId = parseInt(productId);
+                quantity = parseInt(quantity);
+                size = size.toString();
+
+                return {
+                    productId: productId,
+                    size: size,
+                    quantity: quantity
+                };
+            }).get();
+
+            console.log(cartItems);
+
+            $.ajax({
+                url: '/Panier/ViewCart',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(cartItems),
+                success: function (response) {
+                    // Redirige vers une autre page ou affiche les données
+                    window.location.href = '/Panier/Display';
+                },
+                error: function (err) {
+                    console.error('Error:', err);
+                }
+            });
+        }else{
+            $.ajax({
+                url: "/Panier/NextStepPurchase",
+                type: "POST",
+                data: { actualStep: 0 },
+                success: function (data) {
+                    $(".content").html(data);
+                }
+            });
+        }
     });
 </script>
 
@@ -71,16 +115,6 @@
         }
     });
 
-    function getCookie(name) {
-        var values = document.cookie.split(';');
-        for (var i = 0; i < values.length; i++) {
-            var cookie = values[i].split('=');
-            if (cookie[0].trim() == name) {
-                return cookie[1];
-            }
-        }
-    }
-
     function deleteCookie(name) {
         var values = document.cookie.split(';');
         for (var i = 0; i < values.length; i++) {
@@ -96,6 +130,13 @@
         document.cookie = name;
     }
 
+    let isConnected = @User.Identity.IsAuthenticated.ToString().ToLower();
+
+    if (isConnected) {
+        // On clique sur le bouton .cart-footer .confirm-btn pour voir le panier
+        $(".cart-footer .confirm-btn").click();
+
+    }
     
 
     // Click sur le bouton step-2-to-3
@@ -110,10 +151,5 @@
                 $(".content").html(data);
             }
         });
-    });
-
-    // Click sur le bouton step-to-never
-    $(".step-to-never").click(function () {
-        window.history.back();
     });
 </script>

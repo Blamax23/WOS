@@ -283,14 +283,19 @@
 
 .delivery-mode {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 1em;
+    margin-bottom: 2vh;
 }
 
 .home-delivery, .relay-delivery {
     border: 2px solid black;
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bi-box-seam-fill{
+    font-size: 3em;
 }
 
 .modes-home, .modes-relay {
@@ -356,6 +361,11 @@
     .mode p {
         margin: 0;
     }
+
+.mode-MainPropre {
+    display: none;
+}
+
 
 .selected {
     /*Couleur bleu ciel très clair*/

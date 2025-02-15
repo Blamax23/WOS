@@ -13,6 +13,9 @@
 </head>
 
 @using WOS.Model;
+@using WOS.Dal.Interfaces;
+@inject IGlobalDataSrv _globalDataSrv;
+@inject IConfiguration _configuration;
 @{
     var cartCookie = Context.Request.Cookies["Cart"];
     var cartItemCount = 0;
@@ -22,6 +25,20 @@
     {
         cartItems = System.Text.Json.JsonSerializer.Deserialize<List<CartItem>>(cartCookie);
         cartItemCount = cartItems.Sum(item => item.Quantity);
+    }
+
+    string linkTiktok = _configuration.GetSection("LinksSocialMedia")["Tiktok"];
+    string linkInstagram = _configuration.GetSection("LinksSocialMedia")["Instagram"];
+    string linkTwitter = _configuration.GetSection("LinksSocialMedia")["Twitter"];
+    string linkSnapchat = _configuration.GetSection("LinksSocialMedia")["Snapchat"];
+
+    if (User.Identity.IsAuthenticated)
+    {
+        Context.Response.Cookies.Append("isConnected", "true");
+    }
+    else
+    {
+        Context.Response.Cookies.Append("isConnected", "false");
     }
 }
 
@@ -45,9 +62,6 @@
                                 <li class="nav-item">
                                     <a class="nav-link nav-pages text-dark" asp-area="" asp-controller="Contact" asp-action="Index">Contact</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link nav-pages text-dark" asp-area="" asp-controller="Newsletter" asp-action="Index">Mails</a>
-                                </li>
                             </ul>
                         </div>
                         <div class="logo">
@@ -56,15 +70,6 @@
                     </div>
                     <div class="user-space">
                         <ul class="user-nav navbar-nav flex-grow-1">
-                            <li class="nav-item">
-                                <form method="post" class="formSearch" asp-controller="Chaussure" asp-action="SearchSneakers">
-                                    <input type="search" name="search" class="searchSneakers" id="search" placeholder="Rechercher" />
-                                    <a class="nav-link btnSearch"><i class="bi iconSearch bi-search"></i></a>
-                                </form>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="bi bi-heart"></i></a>
-                            </li>
                             <li class="nav-item">
                                 <a id="cart-icon" class="nav-link text-dark">
                                     <i class="bi bi-bag"></i>
@@ -96,18 +101,21 @@
                     {
                         foreach (var item in cartItems)
                         {
+                            var productStock = _globalDataSrv.ProduitTailles.FirstOrDefault(pt => pt.ProduitId == item.ProductId && pt.Taille == item.Size).Stock;
+
                             <div class="cart-item" data-product-id="item-@item.ProductId" data-size="@item.Size">
-                                <img src="@Url.Content(@item.ImageUrl)" alt="@item.Name" class="cart-item-image" />
+                                <img src="@Url.Content(item.ImageUrl)" alt="@item.Name" class="cart-item-image" />
                                 <div class="cart-item-details">
                                     <p class="cart-item-name">@item.Name</p>
                                     <div class="item-infos">
-                                        <p class="cart-item-price">Taille: @item.Size</p>
+                                        <p class="cart-item-price">Taille: <span style="font-weight: 500;">@item.Size</span></p>
                                     </div>
                                     <div class="cart-item-quantity">
                                         <div class="quantity-zone">
                                             <label for="quantity-@item.ProductId">Quantité :</label>
                                             <select id=" quantity-@item.ProductId" data-size="@item.Size" data-product-id="@item.ProductId" class="quantity-input">
-                                                @for (int i = 0; i <= 15; i++)
+
+                                                @for (int i = 1; i <= Math.Min(productStock, 15); i++)
                                                 {
                                                     @if (i == 1)
                                                     {
@@ -124,7 +132,7 @@
                                                 }
                                             </select>
                                         </div>
-                                        <p class="cart-item-price">@item.Price.ToString("C")</p>
+                                        <p class="cart-item-price"><span style="font-weight: 500;">@item.Price.ToString("C")</span></p>
                                     </div>
                                 </div>
                                 <i class="bi bi-trash remove-btn" data-product-id="@item.ProductId" data-size="@item.Size"></i>
@@ -143,24 +151,58 @@
         </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - WOS.Front - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-section">
+                <h5>Liens Utiles</h5>
+                <ul>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Accueil</a></li>
+                    <li><a asp-area="" asp-controller="Product" asp-action="Index">Nos Produits</a></li>
+                    <li><a asp-area="" asp-controller="Question" asp-action="Index">FAQ</a></li>
+                    <li><a asp-area="" asp-controller="Contact" asp-action="Index">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h5>Informations Légales</h5>
+                <ul>
+                    <li><a asp-area="" asp-controller="Home" asp-action="CGV">Conditions Générales de Vente</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="MentionsLegales">Mentions Légales</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Privacy">Politique de Confidentialité</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Retour">Politique de Retour</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Cookies">Gestion des Cookies</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h5>Suivez-nous</h5>
+                <div class="social-links">
+                    <a href="@linkSnapchat"><i class="bi bi-snapchat"></i></a>
+                    <a href="@linkInstagram"><i class="bi bi-instagram"></i></a>
+                    <a href="@linkTwitter"><i class="bi bi-twitter"></i></a>
+                    <a href="@linkTiktok"><i class="bi bi-tiktok"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h5>Newsletter</h5>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Votre email" required />
+                    <button type="submit">S'inscrire</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; @DateTime.Now.Year - WOS Sneakers. Tous droits réservés.</p>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-
-@* <div id="cookieModal" class="cookie-modal">
-    <div class="cookie-modal-content">
-        <p>Ce site utilise des cookies pour améliorer votre expérience. Acceptez-vous ?</p>
-        <button onclick="handleCookieConsent(true)">Accepter</button>
-        <button onclick="handleCookieConsent(false)">Refuser</button>
-    </div>
-</div> *@
 
 <script>
     $(".btnSearch").click(function () {
@@ -229,8 +271,11 @@
                     success: function () {
                         $(`[data-product-id="item-${productId}"][data-size="${size}"]`).remove();
 
-                        // On compte le nombre de produits restant
-                        const cartItemCount = $('.cart-item').length;
+                        // On additionne les quantités de chaque item
+                        const cartItemCount = $('.cart-item').map(function () {
+                            return parseInt($(this).find('.quantity-input').val());
+                        }).get().reduce((a, b) => a + b, 0);
+
                         $('#cart-count').text(cartItemCount);
                     },
                     error: function () {
@@ -244,9 +289,11 @@
                     type: 'POST',
                     data: { productId: productId, size: size, quantity: newQuantity },
                     success: function () {
+                        // On additionne les quantités de chaque item
+                        const cartItemCount = $('.cart-item').map(function () {
+                            return parseInt($(this).find('.quantity-input').val());
+                        }).get().reduce((a, b) => a + b, 0);
 
-                        // On compte le nombre de produits restant
-                        const cartItemCount = $('.cart-item').length;
                         $('#cart-count').text(cartItemCount);
                     },
                     error: function () {
@@ -296,19 +343,31 @@
                 };
             }).get();
 
-            $.ajax({
-                url: '/Panier/ViewCart',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(cartItems),
-                success: function (response) {
-                    // Redirige vers une autre page ou affiche les données
-                    window.location.href = '/Panier/Display';
-                },
-                error: function (err) {
-                    console.error('Error:', err);
-                }
-            });
+            // On stocke dans la session les items du panier
+            document.cookie = "CartItems=" + encodeURIComponent(JSON.stringify(cartItems)) + "; path=/";
+
+            // Dans document.cookie, on récupère le cookie isConnected et sa valeur
+            // let isConnected = document.cookie.split(';').find(cookie => cookie.includes('isConnected')).split('=')[1];
+            let isConnected = @User.Identity.IsAuthenticated.ToString().ToLower();
+            // Dans document.cookie, on stocke ReturnUrl
+            if (!isConnected) {
+                document.cookie = "RedirectUrl=/Panier/Display; path=/";
+                window.location.href = '/Account/Login';
+            } else {
+                $.ajax({
+                    url: '/Panier/ViewCart',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(cartItems),
+                    success: function (response) {
+                        // Redirige vers une autre page ou affiche les données
+                        window.location.href = '/Panier/Display';
+                    },
+                    error: function (err) {
+                        console.error('Error:', err);
+                    }
+                });
+            }
         });
     });
 

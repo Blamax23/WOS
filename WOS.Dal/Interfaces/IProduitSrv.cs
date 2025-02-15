@@ -20,5 +20,9 @@ namespace WOS.Dal.Interfaces
         public void UpdateActiveProduit(int id, bool actif);
         public void UpdateTendanceProduit(int id, bool tendance);
         void DeleteProduit(int id);
+        void AddAvis(Avis avis);
+        void AddProduitTaille(ProduitTaille produitTaille, int idProduit);
+        void UpdateProduitTaille(ProduitTaille produitTaille);
+        ProduitTaille GetProduitTailleById(int id);
     }
 }

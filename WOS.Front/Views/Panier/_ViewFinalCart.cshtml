@@ -71,6 +71,9 @@
 </div>
 
 <script>
+    // On supprime RedirectURl des cookies
+    document.cookie = "RedirectUrl=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
     function setCookie(name, value, days) {
         let expires = "";
         if (days) {
@@ -127,17 +130,22 @@
                     $(".final-price").text(data.prix.toFixed(2) + "€");
                     $(".old-price").css("display", "block");
 
-                    // On calcule le prix avec le code promo pour chaque élément du Model
-                    let allPrices = []
+                    let allPrices = [];
                     $(".itemPanier").each(function (index, element) {
                         var price = parseFloat($(element).find(".price").text().replace("€", "").trim());
+                        console.log("price", price);
                         var quantity = parseInt($(element).find(".item-quantity p").text());
-                        var newPrice = price - (price * data.reduction /100);
+                        var newPrice = price - (price * data.reduction / 100);
+                        console.log("newPrice", newPrice);
                         allPrices.push(newPrice);
                     });
 
-                    // On stocke allPrices dans les cookies
-                    setCookie("allPrices", JSON.stringify(allPrices), 1);
+                    // Sérialiser le tableau de prix et l'encoder pour le cookie
+                    let encodedPrices = encodeURIComponent(JSON.stringify(allPrices));
+
+                    // Stocker le cookie
+                    console.log(encodedPrices);  // Pour vérifier ce qui est stocké dans le cookie
+                    setCookie("allPrices", encodedPrices, 1);
 
 
                 }
@@ -147,6 +155,11 @@
                 console.error("Réponse serveur :", xhr.responseText);
             }
         });
+    });
+
+    // Click sur le bouton step-to-never
+    $(".step-to-never").click(function () {
+        window.history.back();
     });
 
 </script>

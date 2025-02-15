@@ -20,5 +20,6 @@ namespace WOS.Dal.Interfaces
 
         void AddCodePromo(CodePromo codePromo);
         void DeleteCodePromo(int id);
+        void UpdateCodePromo(int id, bool validity);
     }
 }

@@ -7,7 +7,6 @@ using WOS.Model;
 
 namespace WOS.Front.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [Route("[controller]")]
     public class QuestionController : Controller
     {

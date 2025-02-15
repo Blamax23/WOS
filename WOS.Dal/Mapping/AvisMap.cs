@@ -29,6 +29,10 @@ namespace WOS.Dal.Mapping
                 .IsRequired(false)
                 .HasColumnName("commentaire");
 
+            builder.Property(a => a.CodeAvis)
+                .HasColumnName("code_avis")
+                .IsRequired();
+
             builder.Property(a => a.DateAvis)
                 .HasDefaultValue(DateTime.Now)
                 .HasColumnName("date_avis");

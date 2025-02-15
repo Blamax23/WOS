@@ -29,22 +29,29 @@
             </div>
             <h3>Tailles</h3>
             <div class="grid-taille">
-                @foreach (var stock in Model.ProduitTailles.Where(t => t.Stock > 0).OrderBy(t => t.Taille))
+                @if (Model.ProduitTailles.Where(t => t.Stock > 0).Count() == 0)
                 {
-                    <div class="taille-element">
-                        <p><strong>@stock.Taille EUR</strong></p>
-                        @if (stock.PrixPromo != null)
-                        {
-                            <p>
-                                <span class="promo-price">@stock.PrixPromo.Value.ToString("C")</span>
-                                <span class="old-price">@stock.Prix.ToString("C")</span>
-                            </p>
-                        }
-                        else
-                        {
-                            <p><span class="price">@stock.Prix.ToString("C")</span></p>
-                        }
-                    </div>
+                    <p>Aucune taille disponible.</p>
+                }
+                else
+                {
+                    foreach (var stock in Model.ProduitTailles.Where(t => t.Stock > 0).OrderBy(t => t.Taille))
+                    {
+                        <div class="taille-element">
+                            <p><strong>@stock.Taille EUR</strong></p>
+                            @if (stock.PrixPromo != null)
+                            {
+                                <p>
+                                    <span class="promo-price">@stock.PrixPromo.Value.ToString("C")</span>
+                                    <span class="old-price">@stock.Prix.ToString("C")</span>
+                                </p>
+                            }
+                            else
+                            {
+                                <p><span class="price">@stock.Prix.ToString("C")</span></p>
+                            }
+                        </div>
+                    }
                 }
             </div>
             <div class="add-to-cart">
@@ -65,7 +72,7 @@
                     <i class="bi bi-chevron-right"></i>
                 </div>
                 <div class="carousel-avis">
-                    @if(Model.Avis.Count > 0)
+                    @if (Model.Avis.Count > 0)
                     {
                         <p class="arrow left" onclick="prevSlide()"><i class="bi bi-caret-left-fill"></i></p>
                         <div class="list-avis">
@@ -100,7 +107,14 @@
                                             </div>
                                         </div>
                                         <div class="content-avis">
-                                            <p>@avis.Commentaire</p>
+                                            @if (string.IsNullOrWhiteSpace(avis.Commentaire) == false)
+                                            {
+                                                <p>@avis.Commentaire</p>
+                                            }
+                                            else
+                                            {
+                                                <p style="font-style: italic;">Aucun commentaire.</p>
+                                            }
                                         </div>
                                         <p class="date-avis">@avis.DateAvis.ToShortDateString()</p>
                                     </div>
@@ -206,29 +220,29 @@
                 response.forEach(item => {
                     console.log(item);
                     $(".cart-items").append(`
-                                <div class="cart-item"  data-product-id="item-${item.productId}" data-size="${item.size}">
-                                    <img src="${item.url}" alt="${item.name}" class="cart-item-image" />
-                                    <div class="cart-item-details">
-                                        <p class="cart-item-name">${item.name}</p>
-                                        <div class="item-infos">
-                                            <p class="cart-item-price">Taille: ${item.size}</p>
-                                        </div>
-                                        <div class="cart-item-quantity">
-                                            <div class="quantity-zone">
-                                                <label for="quantity-${item.productId}">Quantité :</label>
-                                                <!-- Dropdown pour la quantité -->
-                                                    <select id="quantity-${item.productId}" class="quantity-input" data-size="${item.size}" data-product-id="${item.productId}"">
-                                                    ${[...Array(16).keys()].map(i => `
-                                                        <option value="${i}" ${i === item.quantity ? "selected" : ""}>${i}</option>
-                                                    `).join('')}
-                                                </select>
+                                    <div class="cart-item"  data-product-id="item-${item.productId}" data-size="${item.size}">
+                                        <img src="${item.url}" alt="${item.name}" class="cart-item-image" />
+                                        <div class="cart-item-details">
+                                            <p class="cart-item-name">${item.name}</p>
+                                            <div class="item-infos">
+                                                <p class="cart-item-price">Taille: ${item.size}</p>
                                             </div>
-                                            <p class="cart-item-price">${item.price} €</p>
+                                            <div class="cart-item-quantity">
+                                                <div class="quantity-zone">
+                                                    <label for="quantity-${item.productId}">Quantité :</label>
+                                                    <!-- Dropdown pour la quantité -->
+                                                        <select id="quantity-${item.productId}" class="quantity-input" data-size="${item.size}" data-product-id="${item.productId}"">
+                                                        ${[...Array(16).keys()].map(i => `
+                                                            <option value="${i}" ${i === item.quantity ? "selected" : ""}>${i}</option>
+                                                        `).join('')}
+                                                    </select>
+                                                </div>
+                                                <p class="cart-item-price">${item.price} €</p>
+                                            </div>
                                         </div>
+                                        <i class="bi bi-trash remove-btn" data-product-id="${item.productId}" data-size="${item.size}"></i>
                                     </div>
-                                    <i class="bi bi-trash remove-btn" data-product-id="${item.productId}" data-size="${item.size}"></i>
-                                </div>
-                            `);
+                                `);
                 });
 
                 // On ouvre le modal
@@ -258,38 +272,26 @@
         if (currentSlide < slidesCount - 1) {
             currentSlide++;
         } else {
-            currentSlide = 0;
+            currentSlide = 0; // Revenir à la première slide
         }
 
-        console.log(currentSlide);
-
-        // On affiche la valeur de la translationX
-        console.log(-100/ slidesCount);
-
-        if(currentSlide == 0){
-            $(".list-inner").css("transform", `translateX(0%)`);
-        }else{
-            $(".list-inner").css("transform", `translateX(-${100 / slidesCount}%)`);
-        }
-        
-
-        // On affiche le css transform actuel
-        console.log($(".list-inner").css("transform"));
+        // Calcul de la translation correcte pour la slide suivante
+        const slideWidth = 100 / slidesCount;
+        const translateX = -currentSlide * slideWidth;
+        $(".list-inner").css("transform", `translateX(${translateX}%)`);
     }
 
     function prevSlide() {
         if (currentSlide > 0) {
             currentSlide--;
         } else {
-            currentSlide = slidesCount - 1;
+            currentSlide = slidesCount - 1; // Aller à la dernière slide
         }
 
-        if (currentSlide == 0) {
-            $(".list-inner").css("transform", `translateX(0%)`);
-        }else{
-            $(".list-inner").css("transform", `translateX(-${100 / slidesCount}%)`);
-        }
-
+        // Calcul de la translation correcte pour la slide précédente
+        const slideWidth = 100 / slidesCount;
+        const translateX = -currentSlide * slideWidth;
+        $(".list-inner").css("transform", `translateX(${translateX}%)`);
     }
 
     $(".head-list-avis").click(function () {

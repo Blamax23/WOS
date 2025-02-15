@@ -9,53 +9,103 @@
 <link rel="stylesheet" href="~/css/panier/confirmPurchase.css" asp-append-version="true" />
 
 <div class="content">
-    <div class="complete-zone">
-        <h1>Votre commande a été prise en compte !</h1>
-        <p>Vous recevrez un mail de confirmation dans quelques instants.</p>
-        <p>Vous pouvez suivre l'avancement de votre commande dans la rubrique "Mes commandes" sur votre espace.</p>
-        
-        <p>Suivre mon colis : <a href="@Model.Commande.LinkSuivi" target="_blank">@Model.Commande.NumeroCommandeLivreur</a></p>
-        <div class="products-purchased">
-            @foreach(var ligne in Model.Commande.LignesCommande)
-            {
-                var produit = Model.Produits.FirstOrDefault(p => p.Id == ligne.ProduitId);
-                <div class="itemPanier">
-                    <div class="item-image">
-                        <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url)" alt="@produit.Nom" />
-                    </div>
-                    <div class="item-infos">
-                        <div class="item-title">
-                            <h2>@produit.Nom</h2>
-                            @if (produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).PrixPromo != null)
-                            {
-                                <h2 class="price">@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).PrixPromo.Value.ToString("C")</h2>
-                            }
-                            else
-                            {
-                                <h2 class="price">@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).Prix.ToString("C")</h2>
-                            }
+    @if (Model.IsSuccess)
+    {
+        <div class="complete-zone">
+            <h1>Votre commande a été prise en compte !</h1>
+            <p>Vous recevrez un mail de confirmation dans quelques instants.</p>
+            <p>Vous pouvez suivre l'avancement de votre commande dans la rubrique "Mes commandes" sur votre espace.</p>
+
+            <p>Suivre mon colis : <a href="@Model.Commande.LinkSuivi" target="_blank">@Model.Commande.NumeroCommandeLivreur</a></p>
+            <div class="products-purchased">
+                @foreach (var ligne in Model.Commande.LignesCommande)
+                {
+                    var produit = Model.Produits.FirstOrDefault(p => p.Id == ligne.ProduitId);
+                    <div class="itemPanier">
+                        <div class="item-image">
+                            <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url)" alt="@produit.Nom" />
                         </div>
-                        <div class="item-details">
-                            <div class="item-size">
-                                <h3>Taille</h3>
-                                <p>@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).Taille</p>
+                        <div class="item-infos">
+                            <div class="item-title">
+                                <h2>@produit.Nom</h2>
+                                @if (produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).PrixPromo != null)
+                                {
+                                    <h2 class="price">@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).PrixPromo.Value.ToString("C")</h2>
+                                }
+                                else
+                                {
+                                    <h2 class="price">@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).Prix.ToString("C")</h2>
+                                }
                             </div>
-                            <div class="item-quantity">
-                                <h3>Quantité</h3>
-                                <p>@ligne.Quantite</p>
+                            <div class="item-details">
+                                <div class="item-size">
+                                    <h3>Taille</h3>
+                                    <p>@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).Taille</p>
+                                </div>
+                                <div class="item-quantity">
+                                    <h3>Quantité</h3>
+                                    <p>@ligne.Quantite</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
+            <a class="confirm-btn btn-to-commande" href="@Url.Action("Index", "Account", new { section = "info-commandes" })">Mes Commandes</a>
+            <a href="@Url.Action("Index", "Home")" class="confirm-btn btn-to-home" class>Retour à l'accueil</a>
         </div>
-        <a class="confirm-btn btn-to-commande" href="@Url.Action("Index", "Account", new { section = "info-commandes" })">Mes Commandes</a>
-        <a href="@Url.Action("Index", "Home")" class="confirm-btn btn-to-home" class>Retour à l'accueil</a>
-    </div>
+    }
+    else
+    {
+        <div class="fail-zone">
+            <i class="bi bi-emoji-grimace"></i>
+            <h1>Toutes nos excuses ! On dirait que quelque chose n'a pas fonctionné...</h1>
+            <p>Veuillez réessayer.<br />Si le problème persiste, veuillez nous contacter</p>
+
+            <div class="products-purchased">
+                @foreach (var ligne in Model.Commande.LignesCommande)
+                {
+                    var produit = Model.Produits.FirstOrDefault(p => p.Id == ligne.ProduitId);
+                    <div class="itemPanier">
+                        <div class="item-image">
+                            <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url)" alt="@produit.Nom" />
+                        </div>
+                        <div class="item-infos">
+                            <div class="item-title">
+                                <h2>@produit.Nom</h2>
+                                @if (produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).PrixPromo != null)
+                                {
+                                    <h2 class="price">@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).PrixPromo.Value.ToString("C")</h2>
+                                }
+                                else
+                                {
+                                    <h2 class="price">@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).Prix.ToString("C")</h2>
+                                }
+                            </div>
+                            <div class="item-details">
+                                <div class="item-size">
+                                    <h3>Taille</h3>
+                                    <p>@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == ligne.ProduitTailleId).Taille</p>
+                                </div>
+                                <div class="item-quantity">
+                                    <h3>Quantité</h3>
+                                    <p>@ligne.Quantite</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="cart-footer">
+                <a class="confirm-btn btn-to-commande" href="@Url.Action("Index", "Account", new { section = "info-commandes" })">Voir mon panier</a>
+            </div>
+            <a href="@Url.Action("Index", "Contact")" class="confirm-btn btn-to-home" class>Contact</a>
+        </div>
+    }
 </div>
 
 <script>
     // On vide le panier
 
 </script>
-    
+

@@ -105,10 +105,11 @@
 .quantity-input {
     width: 3vw;
     text-align: center;
+    border: 2px solid black;
 }
 
 .remove-btn {
-    background-color: white;
+    background-color: transparent;
     color: red;
     border: none;
     padding: 5px 10px;

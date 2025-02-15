@@ -14,10 +14,11 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Security.Claims;
+using System.Globalization;
 
 namespace WOS.Front.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [Route("[controller]")]
     public class ProductController : Controller
     {
@@ -41,7 +42,7 @@ namespace WOS.Front.Controllers
         }
         // GET: ProductController
 
-        [Route("")]
+        [Route("list")]
         [HttpGet]
         public ActionResult Index([FromQuery] string pageSeen = "1")
         {
@@ -123,8 +124,13 @@ namespace WOS.Front.Controllers
             {
                 if (source != null && source.Length > 0)
                 {
-                    var chemin = "~/uploads/" + source.FileName;
-                    var cheminCopy = "wwwroot/uploads/" + source.FileName;
+                    // On enlève les accents du FileName
+                    var fileName = source.FileName.Normalize(NormalizationForm.FormD);
+                    var chars = fileName.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).ToArray();
+                    fileName = new string(chars).Normalize(NormalizationForm.FormC);
+
+                    var chemin = "~/uploads/" + fileName;
+                    var cheminCopy = "wwwroot/uploads/" + fileName;
                     // On regarde si le fichier existe déjà 
                     if (System.IO.File.Exists(cheminCopy))
                     {
@@ -193,17 +199,50 @@ namespace WOS.Front.Controllers
 
             var item = JsonSerializer.Deserialize<StockItem>(stockData);
 
+            decimal? promoPrice = null;
+            if ((item.PriceProm != null && item.PriceProm != ""))
+            {
+                promoPrice = decimal.Parse(item.PriceProm);
+            }
+
             ProduitTaille produitTaille = produit.ProduitTailles.FirstOrDefault(pt => pt.Taille == item.Size);
             if (produitTaille != null)
             {
                 produitTaille.Stock = int.Parse(item.Quantity);
                 produitTaille.Prix = decimal.Parse(item.Price);
-                produitTaille.PrixPromo = decimal.Parse(item.PriceProm);
+                produitTaille.PrixPromo = promoPrice;
             }
 
-            _produitSrv.UpdateProduit(produit);
+            _produitSrv.UpdateProduitTaille(produitTaille);
 
             return RedirectToAction("Index", "Account");
+        }
+
+        [HttpPost]
+        [Route("AddRowTableStock")]
+        public ActionResult AddRowTableStock(string id, string taille, string quantite, string prix, string promo)
+        {
+            Produit produit = _produitSrv.GetProduitById(int.Parse(id));
+
+            Int32.TryParse(quantite, out int stock);
+            decimal price = decimal.Parse(prix);
+            decimal? promoPrice = null;
+            if (promo != null)
+            {
+                promoPrice = decimal.Parse(promo);
+            }
+
+            ProduitTaille produitTaille = new ProduitTaille
+            {
+                Taille = taille,
+                Stock = stock,
+                Prix = price,
+                PrixPromo = promoPrice
+            };
+
+            _produitSrv.AddProduitTaille(produitTaille, produit.Id);
+
+            return Ok();
         }
 
         [HttpPost]
@@ -343,17 +382,6 @@ namespace WOS.Front.Controllers
         }
 
         [HttpPost]
-
-        public void SaveCartToCookies(HttpContext context, List<CartItem> cart)
-        {
-            var jsonCart = JsonSerializer.Serialize(cart);
-            context.Response.Cookies.Append("Cart", jsonCart, new CookieOptions
-            {
-                Expires = DateTimeOffset.Now.AddDays(7)
-            });
-        }
-
-        [HttpPost]
         [Route("UpdateProductActive")]
         public ActionResult UpdateActive(string id, string active)
         {
@@ -402,54 +430,134 @@ namespace WOS.Front.Controllers
     int page,
     int pageSize)
         {
-            var produitsFiltres = produits.AsQueryable();
-
-            // Filtrage
-            if (marques.Any())
-                produitsFiltres = produitsFiltres.Where(p => marques.Contains(p.MarqueId.Value));
-
-            if (categories.Any())
-                produitsFiltres = produitsFiltres.Where(p => categories.Contains(p.CategorieId.Value));
-
-            if (couleurs.Any())
-                produitsFiltres = produitsFiltres.Where(p => p.ProduitCouleurs.Any(pc => couleurs.Contains(pc.Couleur)));
-
-            if (prixMin.HasValue)
-                produitsFiltres = produitsFiltres.Where(p => p.ProduitTailles.Any(pt => pt.Prix >= prixMin.Value));
-
-            if (prixMax.HasValue)
-                produitsFiltres = produitsFiltres.Where(p => p.ProduitTailles.Any(pt => pt.Prix <= prixMax.Value));
-
-            // Tri
-            switch (tri)
+            try
             {
-                case "ascending-alphabet":
-                    produitsFiltres = produitsFiltres.OrderBy(p => p.Nom);
-                    break;
-                case "descending-alphabet":
-                    produitsFiltres = produitsFiltres.OrderByDescending(p => p.Nom);
-                    break;
-                case "ascending-price":
-                    produitsFiltres = produitsFiltres.OrderBy(p => p.ProduitTailles.Min(pt => pt.Prix));
-                    break;
-                case "descending-price":
-                    produitsFiltres = produitsFiltres.OrderByDescending(p => p.ProduitTailles.Min(pt => pt.Prix));
-                    break;
-                case "tendances":
-                default:
-                    var tendances = _globalDataSrv.LignesCommande
-                        .GroupBy(l => l.ProduitId)
-                        .OrderByDescending(g => g.Count())
-                        .Select(g => g.Key)
-                        .ToList();
+                var produitsFiltres = produits.AsQueryable();
 
-                    produitsFiltres = produitsFiltres
-                        .OrderBy(p => tendances.IndexOf(p.Id)); // Trier selon l'ordre des tendances
-                    break;
+                // Filtrage
+                if (marques.Any())
+                    produitsFiltres = produitsFiltres.Where(p => marques.Contains(p.MarqueId.Value));
+
+                if (categories.Any())
+                    produitsFiltres = produitsFiltres.Where(p => categories.Contains(p.CategorieId.Value));
+
+                if (couleurs.Any())
+                    produitsFiltres = produitsFiltres.Where(p => p.ProduitCouleurs.Any(pc => couleurs.Contains(pc.Couleur)));
+
+                if (prixMin.HasValue)
+                    produitsFiltres = produitsFiltres.Where(p => p.ProduitTailles.Any(pt => pt.Prix >= prixMin.Value));
+
+                if (prixMax.HasValue)
+                    produitsFiltres = produitsFiltres.Where(p => p.ProduitTailles.Any(pt => pt.Prix <= prixMax.Value));
+
+                // Tri
+                switch (tri)
+                {
+                    case "ascending-alphabet":
+                        produitsFiltres = produitsFiltres.OrderBy(p => p.Nom);
+                        break;
+                    case "descending-alphabet":
+                        produitsFiltres = produitsFiltres.OrderByDescending(p => p.Nom);
+                        break;
+                    case "ascending-price":
+                        produitsFiltres = produitsFiltres.OrderBy(p => p.ProduitTailles.Min(pt => pt.Prix));
+                        break;
+                    case "descending-price":
+                        produitsFiltres = produitsFiltres.OrderByDescending(p => p.ProduitTailles.Min(pt => pt.Prix));
+                        break;
+                    case "tendances":
+                    default:
+                        var tendances = _globalDataSrv.LignesCommande
+                            .GroupBy(l => l.ProduitId)
+                            .OrderByDescending(g => g.Count())
+                            .Select(g => g.Key)
+                            .ToList();
+
+                        produitsFiltres = produitsFiltres
+                            .OrderBy(p => tendances.IndexOf(p.Id)); // Trier selon l'ordre des tendances
+                        break;
+                }
+
+                // Pagination
+                return produitsFiltres.ToList();
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
 
-            // Pagination
-            return produitsFiltres.ToList();
+        }
+
+        [HttpGet]
+        [Route("AddAvisProduct")]
+        public ActionResult AddAvisProduct(string idProduit, string code)
+        {
+            try
+            {
+                AvisViewModel avisViewModel = new AvisViewModel();
+                var produitIds = idProduit.Split(',').Select(int.Parse).ToList();
+                foreach (var id in produitIds)
+                {
+                    Produit produit = _produitSrv.GetProduitById(id);
+                    avisViewModel.Produits.Add(produit);
+                }
+
+                // On recherche dans les avis si le client a déjà donné son avis avec le code
+                var avis = _globalDataSrv.Avis.FirstOrDefault(a => a.CodeAvis == code);
+                if (avis != null)
+                {
+                    avisViewModel.IsPosted = true;
+                }
+                avisViewModel.CodeAvis = code;
+
+                return View(avisViewModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost]
+        [Route("SubmitAvis")]
+        public ActionResult AddAvis(string produitIds = null, string avisText = null, int note = 0, string codeCommande = null)
+        {
+            try
+            {
+                foreach (var produitId in produitIds.Split(',').Select(int.Parse))
+                {
+                    // On récupère le client avec le claimstype.Email
+                    int id = 0;
+                    Client client = _globalDataSrv.Clients.FirstOrDefault(c => c.Email == User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email).Value);
+                    Admin admin = new Admin();
+                    if (client == null)
+                    {
+                        admin = _globalDataSrv.Admins.FirstOrDefault(a => a.Email == User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email).Value);
+                        id = admin.Id;
+                    }
+                    else
+                    {
+                        id = client.Id;
+                    }
+                    Avis avis = new Avis
+                    {
+                        ClientId = id,
+                        ProduitId = produitId,
+                        Commentaire = avisText,
+                        Note = note,
+                        DateAvis = DateTime.Now,
+                        CodeAvis = codeCommande
+                    };
+
+                    _produitSrv.AddAvis(avis);
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         protected async Task<string> RenderPartialViewToString(string viewName, object model)

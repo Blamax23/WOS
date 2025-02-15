@@ -404,7 +404,7 @@
                                                         </thead>
                                                         <tbody data-id-produit="@produit.Id">
 
-                                                            @foreach (var stock in produit.ProduitTailles)
+                                                            @foreach (var stock in produit.ProduitTailles.OrderBy(pt => pt.Taille))
                                                             {
                                                                 <tr data-id-produit="@stock.ProduitId" data-id-taille="@stock.Taille">
                                                                     <td>@stock.Taille</td>
@@ -653,7 +653,7 @@
                                                     <td>@code.Nom</td>
                                                     <td>@code.Pourcentage %</td>
                                                     <td>@code.ValidityDate</td>
-                                                    <td><input type="checkbox" @(code.IsValid.Value ? "checked" : "") /></td>
+                                                    <td><input type="checkbox" class="inputValidity" @(code.IsValid.Value ? "checked" : "") /></td>
                                                     <td class="delete-code-promo confirm-btn" data-code-id="@code.Id">Supprimer</td>
                                                 </tr>
                                             }
@@ -668,7 +668,188 @@
         }
         else if (client != null)
         {
+            <div class="side-nav" id="sideNav">
+                <div class="nav-account">
+                    <ul>
+                        <li class="linkProfile" data-section="info-account">Profil</li>
+                        <li class="linkCommande" data-section="info-commandes">Commandes</li>
+                    </ul>
+                </div>
+            </div>
 
+            <div class="toggle-btn" id="toggleNav">
+                <i class="bi bi-caret-right-fill"></i>
+            </div>
+
+            <div class="info-sections">
+                <div class="info-account">
+                    <div class="formUpdateInfo">
+                        <div class="head-profile">
+                            <h2>Profil</h2>
+                            <div class="whenForm hidden">
+                                <button type="button" class="cancel-btn">Annuler</button>
+                                <button type="submit" class="user-actions confirm-btn confirm-update-profile">Modifier</button>
+                            </div>
+                            <div class="whenInfos">
+                                <button type="button" class="user-actions">Modifier</button>
+                            </div>
+                        </div>
+                        <div class="user-zone">
+                            <div class="name-zone">
+                                <p><strong>Nom :</strong> <p id="displayNom">@client.Nom</p></p>
+                                <p><strong>Prénom :</strong>  <p id="displayPrenom">@client.Prenom</p></p>
+                            </div>
+                            <div class="email-zone">
+                                <p><strong>Email :</strong>  <p id="displayEmail">@client.Email</p></p>
+                            </div>
+                        </div>
+                        <div class="form-zone hidden">
+                            <div class="consignes">
+                                <p class="errorUpdateProfil"></p>
+                                <p>Vous pouvez modifier vos informations personnelles ici. <br />Si vous souhaitez changer vos informations publiques, renseignez seulement le mot de passe actuel.<br /> Si vous souhaitez changer de mot de passe, renseignez le mot de passe actuel ainsi que le nouveau.</p>
+                            </div>
+                            <div class="inputs">
+                                <div class="zone-input name-zone">
+                                    <div class="input name-input">
+                                        <label for="nom">Nom : </label>
+                                        <input type="text" name="nom" id="nom" />
+                                    </div>
+                                    <div class="input firstname-input">
+                                        <label for="prenom">Prénom : </label>
+                                        <input type="text" name="prenom" id="prenom" />
+                                    </div>
+                                </div>
+                                <div class="zone-input email-zone">
+                                    <div class="input email-input">
+                                        <label for="email">Email : </label>
+                                        <input type="text" name="email" id="email" />
+                                    </div>
+                                </div>
+                                <div class="zone-input password-zone">
+                                    <div class="input password-input">
+                                        <label for="password">Mot de passe actuel : </label>
+                                        <input type="password" name="password" id="password" />
+                                    </div>
+                                    <div class="input newPassword-input">
+                                        <label for="newPassword">Nouveau mot de passe : </label>
+                                        <input type="password" name="newPassword" id="newPassword" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-commandes">
+                    <div class="head-commandes">
+                        <h2>Commandes</h2>
+                    </div>
+                    @if (Model.Commandes.Count > 0)
+                    {
+                        @foreach (var commande in Model.Commandes.OrderByDescending(c => c.DateCommande))
+                        {
+                            <div class="commande">
+                                <div class="head-informations">
+                                    <div class="picture-zone-commande">
+                                        @if (commande.LignesCommande.Count() > 0)
+                                        {
+                                            Produit produit = Model.Produits.FirstOrDefault(p => p.Id == commande.LignesCommande.FirstOrDefault().ProduitId);
+                                            <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url)" class="imagePresCommande" />
+                                        }
+                                    </div>
+                                    <div class="info-zone-commande">
+                                        <div class="title-zone-info">
+                                            @* @if (commande.LignesCommande.Count() > 0)
+                                {
+                                Produit produit = Model.Produits.FirstOrDefault(p => p.Id == commande.LignesCommande.FirstOrDefault().ProduitId);
+                                <h3>@produit.Nom</h3>
+                                } *@
+                                            <h3>Commande n°@commande.NumeroCommande</h3>
+                                        </div>
+                                        <div class="detail-zone-info">
+                                            <div class="date-commande">
+                                                <p><strong>Date : </strong></p>
+                                                @commande.DateCommande
+                                            </div>
+                                            <div class="statut-commande">
+                                                <p><strong>Statut : </strong></p>
+                                                <p>@commande.Statut.Libelle</p>
+                                            </div>
+                                            <div class="total-commande">
+                                                <p><strong>Total : </strong></p>
+                                                <p>@commande.MontantTotal.ToString("C")</p>
+                                            </div>
+                                            <div class="livraison-estimee">
+                                                <p><strong>Date de livraison estimée : </strong></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="btns-commande">
+                                    <button class="showMoreCommande confirm-btn">Voir détails</button>
+                                    <button class="showActions confirm-btn">Voir actions</button>
+                                </div>
+                                <div class="details-commande hidden">
+                                    <h3>Détails</h3>
+                                    <div class="list-produits-commande">
+                                        @if (commande.LignesCommande.Count() > 0)
+                                        {
+                                            @foreach (var itemCommande in commande.LignesCommande)
+                                            {
+                                                Produit produit = Model.Produits.FirstOrDefault(p => p.Id == itemCommande.ProduitId);
+                                                <div class="produit-commande">
+                                                    <div class="picture-zone-item">
+                                                        <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(p => p.Principale == true).Url)" class="imagePresCommande" />
+                                                    </div>
+                                                    <div class="info-zone-item">
+                                                        <div class="title-zone-item">
+                                                            <h3>@produit.Nom</h3>
+                                                        </div>
+                                                        <div class="detail-zone-item">
+                                                            <div class="taille-item">
+                                                                <p><strong>Taille : </strong></p>
+                                                                <p>@produit.ProduitTailles.FirstOrDefault(pt => pt.Id == itemCommande.ProduitTailleId).Taille</p>
+                                                            </div>
+                                                            <div class="quantite-item">
+                                                                <p><strong>Quantité : </strong></p>
+                                                                <p>@itemCommande.Quantite</p>
+                                                            </div>
+                                                            <div class="prix-item">
+                                                                <p><strong>Prix : </strong></p>
+                                                                <p>@((itemCommande.PrixUnitaire * itemCommande.Quantite).ToString("C"))</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <div class="actions-commande hidden">
+                                    <h3>Actions</h3>
+                                    <div class="list-actions">
+                                        <div class="etiquette" data-commande-id="@commande.NumeroCommande">
+                                            <i class="bi bi-send-arrow-down"></i>
+                                            <p>Télécharger l'étiquette d'envoi</p>
+                                        </div>
+                                        <div class="facture" data-commande-id="@commande.NumeroCommande">
+                                            <i class="bi bi-file-earmark-arrow-down"></i>
+                                            <p>Télécharger la facture</p>
+                                        </div>
+                                        <div class="updateStatus open-modal-btn" data-commande-id="@commande.NumeroCommande" data-status-id="@commande.Statut.Id">
+                                            <i class="bi bi-pencil-square"></i>
+                                            <p>Modifier le statut</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>Vous n'avez pas encore de commandes.</p>
+                    }
+                </div>
+            </div>
         }
     </div>
 </div>
@@ -1608,13 +1789,89 @@
         });
     });
 
+    function getSelectOptionsHtml(){
+        // On fait le select allant de 36 à 48 avec un pas de 0.5
+        let options = '';
+        for (let i = 36; i <= 48; i += 0.5) {
+            options += `<option value="${i}">${i}</option>`;
+        }
+        return options;
+    }
+
     $('.table-stock .confirm-btn').click(function () {
-        // Trouver la ligne "ajouter" et l'ajouter après la ligne du produit
-        var newRow = '<tr><td colspan="5" style="text-align:center;">Nouvelle ligne ajoutée</td></tr>';
+        // Trouver la ligne "ajouter" et ajouter une nouvelle ligne avec des input pour la taille, la quantité, le prix et le prix en promo et un bouton valider après la ligne du produit
+        var newRow = "";
+        newRow += `<tr><td><select class="input-size">${getSelectOptionsHtml()}</select></td>`;
+        newRow += `
+            <td><input type="number" class="form-control" name="quantite" placeholder="Quantité" min="0"></td>
+            <td><input type="number" class="form-control" name="prix" placeholder="Prix" step="0.01" min="0"></td>
+            <td><input type="number" class="form-control" name="promo" placeholder="Promotion" step="0.01" min="0"></td>
+            <td class="btn btn-success confirm-btn addRowTableStock" style="border-radius: 0px;">Confirmer</td>
+        `;
+        newRow += "</tr>";
 
         // Ajoute la nouvelle ligne sous chaque ligne de produit
         $(this).closest('tr').before(newRow);
     });
+
+    $(document).on("click", ".addRowTableStock", function () {
+        // On récupère les valeurs des inputs qui sont dans le tr de "addRowButton"
+        const row = $(this).parent();
+        const taille = row.find('select').val();
+        const quantite = row.find('input[name="quantite"]').val();
+        const prix = row.find('input[name="prix"]').val();
+        const promo = row.find('input[name="promo"]').val();
+
+        // On récupère l'id du produit
+        const productId = row.parent().data("id-produit");
+
+        console.log("Taille:", taille, "Quantité:", quantite, "Prix:", prix, "Promo:", promo, "ProductId:", productId);
+
+        // Vérifier que les valeurs ne sont pas vides avant l'ajax
+        if (!taille || !quantite || !prix) {
+            alert("Veuillez remplir tous les champs obligatoires !");
+            return;
+        }
+
+        // On fait une requête ajax pour ajouter la nouvelle ligne en bdd
+        $.ajax({
+            url: '/Product/AddRowTableStock', // Mets bien l'URL complète
+            type: 'POST',
+            data: {
+                id: productId,
+                taille: taille,
+                quantite: quantite,
+                prix: prix,
+                promo: promo
+            },
+            success: function (response) {
+                console.log("Réponse AJAX:", response);
+
+                // On crée une nouvelle ligne avec les valeurs récupérées
+                const newRow = `
+                    <tr>
+                        <td>${taille}</td>
+                        <td>${quantite}</td>
+                        <td>${prix}</td>
+                        <td>${promo}</td>
+                        <td class="updatePriceRow">Modifier</td>
+                    </tr>
+                `;
+
+                // On ajoute la nouvelle ligne au tableau au dessus du bouton "Ajouter"
+                row.before(newRow);
+
+
+                // Supprime la ligne d'ajout
+                row.remove();
+            },
+            error: function (error) {
+                console.error("Erreur AJAX:", error);
+                alert("Erreur lors de l'ajout du stock !");
+            }
+        });
+    });
+
 
     let deroulesStock = $(".showMoreStock");
     // On affiche les stocks quand on clique sur le bouton
@@ -2075,6 +2332,19 @@
 </script>
 
 <script>
+    function formatDate(dateString) {
+        let date = new Date(dateString);
+
+        let day = String(date.getDate()).padStart(2, '0'); // Jour (avec zéro devant si < 10)
+        let month = String(date.getMonth() + 1).padStart(2, '0'); // Mois (commence à 0, donc +1)
+        let year = date.getFullYear(); // Année
+        let hours = String(date.getHours()).padStart(2, '0'); // Heures
+        let minutes = String(date.getMinutes()).padStart(2, '0'); // Minutes
+        let seconds = String(date.getSeconds()).padStart(2, '0'); // Secondes
+
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+
     $(".add-code-promo").on("click", function () {
         let formAddCodePromo = $(".form");
         formAddCodePromo.removeClass('hidden');
@@ -2160,13 +2430,20 @@
                 $(".input-valid-code").prop('checked', false);
 
                 // On ajoute une ligne à list-code-promo
-                let newRow = `<tr>
-                                    <td>${response.code.nom}</td>
-                                        <td>${response.code.pourcentage}</td>
-                                        <td>${response.code.validtyDate}</td>
-                                        <td>${response.code.isValid}</td>
-                                            <td class="confirm-btn delete-code-promo" data-code-id="${response.id}">Supprimer</td>
-                                </tr>`;
+                let newRow = `
+                    <tr>
+                        <td>${response.code.nom}</td>
+                        <td>${response.code.pourcentage}</td>
+                        <td>${formatDate(response.code.validityDate)}</td>
+                        <td>
+                            <input type="checkbox" class="inputValidity" ${response.code.isValid ? 'checked' : ''} />
+                        </td>
+                        <td class="confirm-btn delete-code-promo" data-code-id="${response.id}">
+                            Supprimer
+                        </td>
+                    </tr>
+                `;
+
 
                 console.log(newRow);
 
@@ -2183,9 +2460,9 @@
         });
     });
 
+
     // On ajoute un gestionnaire de clic sur chaque delete-code-promo
     $(document).on('click', '.delete-code-promo', function () {
-        console.log("delete-code-promo");
         let codeId = $(this).data('code-id');
 
         $.ajax({
@@ -2197,6 +2474,27 @@
             error: function (error) {
                 console.error('Erreur lors de la suppression:', error);
                 alert('Erreur lors de la suppression. Veuillez réessayer.');
+            }
+        });
+    });
+
+    // On met un gestionnaire d'événement quand inputValidity change
+    $(document).on('change', '.inputValidity', function () {
+        // On récupère le delete-code-promo le plus proche
+        let deleteItem = $(this).closest('tr').find('.delete-code-promo');
+        let codeId = deleteItem.data('code-id');
+        
+        let isValid = $(this).prop('checked');
+
+        $.ajax({
+            url: `/Panier/UpdateCodePromo?id=${codeId}&valid=${isValid}`,
+            type: 'POST',
+            success: function (response) {
+                console.log('Code promo mis à jour:', response);
+            },
+            error: function (error) {
+                console.error('Erreur lors de la mise à jour:', error);
+                alert('Erreur lors de la mise à jour. Veuillez réessayer.');
             }
         });
     });

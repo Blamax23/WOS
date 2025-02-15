@@ -24,7 +24,6 @@ using Ghostscript.NET.Rasterizer;
 
 namespace WOS.Front.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [Route("[controller]")]
     public class PanierController : Controller
     {
@@ -61,14 +60,16 @@ namespace WOS.Front.Controllers
                 Produit produit = _produitSrv.GetProduitById(item.ProductId);
                 item.ImageUrl = produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url;
                 item.Name = produit.Nom;
-                item.Price = produit.ProduitTailles.FirstOrDefault(t => t.Taille == item.Size).Prix;
+                item.Price = produit.ProduitTailles
+                    .FirstOrDefault(t => t.Taille == item.Size) is { } taille
+                    ? (taille.PrixPromo ?? taille.Prix)
+                    : 0;
 
             }
 
-
-
             var cartItemsJson = JsonSerializer.Serialize(cartItems);
-            HttpContext.Session.Set("CartItems", System.Text.Encoding.UTF8.GetBytes(cartItemsJson));
+            // On stocke dans les cookies
+            HttpContext.Response.Cookies.Append("CartItems", cartItemsJson);
 
             return Ok();
         }
@@ -77,17 +78,18 @@ namespace WOS.Front.Controllers
         [Route("Display")]
         public ActionResult DisplayCart()
         {
-            var cartItemsBytes = HttpContext.Session.Get("CartItems");
+            var cartItemsCookie = HttpContext.Request.Cookies["CartItems"];
 
-            if (cartItemsBytes == null)
+            if (string.IsNullOrEmpty(cartItemsCookie))
                 return View(new List<CartItem>()); // Retourne une liste vide si rien n'est stocké
 
-            // Convertir les bytes en chaîne et désérialiser en liste
-            var cartItemsJson = System.Text.Encoding.UTF8.GetString(cartItemsBytes);
-            var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson);
+            // On convertir cartItemsCookie en bytes
+            var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsCookie);
 
             // On stocke qu'on reidirge vers l'étape 1 dans les cookies
             HttpContext.Response.Cookies.Append("CartStep", "1");
+            
+            HttpContext.Session.Set("CartStep", Array.Empty<byte>());
 
             return View(cartItems);
         }
@@ -275,7 +277,7 @@ namespace WOS.Front.Controllers
                 {
                     List<decimal> allPrices = JsonSerializer.Deserialize<List<decimal>>(allPricesJson);
 
-                    for (var i=0; i < viewFinalPurchase.Cart.Count; i++)
+                    for (var i = 0; i < viewFinalPurchase.Cart.Count; i++)
                     {
                         viewFinalPurchase.Cart[i].Price = allPrices[i];
                     }
@@ -304,6 +306,11 @@ namespace WOS.Front.Controllers
                         ProduitCouleurId = produit.ProduitCouleurs.FirstOrDefault().Id,
                         ProduitTailleId = produit.ProduitTailles.FirstOrDefault().Id
                     });
+
+                    // On soustrait la quantité du stock
+                    ProduitTaille produitTaille = _produitSrv.GetProduitTailleById(produit.ProduitTailles.FirstOrDefault().Id);
+                    produitTaille.Stock -= item.Quantity;
+                    _produitSrv.UpdateProduitTaille(produitTaille);
                 }
                 _adresseSrv.ChangeAdressePrincipale();
                 _commandeSrv.AddCommande(commande);
@@ -315,9 +322,21 @@ namespace WOS.Front.Controllers
             else
             {
                 // On récupère ce qui est dans le panier
-                var cartItemsBytes = HttpContext.Session.Get("CartItems");
-                var cartItemsJson = System.Text.Encoding.UTF8.GetString(cartItemsBytes);
-                var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson);
+                var cartItemsCookie = HttpContext.Request.Cookies["CartItems"];
+                var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsCookie);
+
+                foreach (var item in cartItems)
+                {
+                    Produit produit = _produitSrv.GetProduitById(item.ProductId);
+                    item.ImageUrl = produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url;
+                    item.Name = produit.Nom;
+                    item.Price = produit.ProduitTailles
+                        .FirstOrDefault(t => t.Taille == item.Size) is { } taille
+                        ? (taille.PrixPromo ?? taille.Prix)
+                        : 0;
+
+                }
+
                 return PartialView("_ViewFinalCart", cartItems);
             }
         }
@@ -333,9 +352,8 @@ namespace WOS.Front.Controllers
             if (actualStep == 2)
             {
                 // On récupère ce qui est dans le panier
-                var cartItemsBytes = HttpContext.Session.Get("CartItems");
-                var cartItemsJson = System.Text.Encoding.UTF8.GetString(cartItemsBytes);
-                var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson);
+                var cartItemsCookie = HttpContext.Request.Cookies["CartItems"];
+                var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsCookie);
                 return PartialView("_ViewFinalCart", cartItems);
             }
             else if (actualStep == 3)
@@ -413,6 +431,8 @@ namespace WOS.Front.Controllers
             // On récupère tous les produits de la commande
             ConfirmPurchaseModel confirmPurchaseModel = new ConfirmPurchaseModel() { Commande = commande };
 
+            confirmPurchaseModel.IsSuccess = redirect_status == "succeeded";
+
             foreach (var ligneCommande in commande.LignesCommande)
             {
                 Produit produit = _produitSrv.GetProduitById(ligneCommande.ProduitId);
@@ -420,7 +440,7 @@ namespace WOS.Front.Controllers
             }
 
             // On supprime le panier
-            if(redirect_status == "succeeded")
+            if (redirect_status == "succeeded")
                 RemoveAllItemsFromCart(HttpContext);
 
             _mailSrv.SendEmailPurchasedConfirmed(commande);
@@ -511,7 +531,10 @@ namespace WOS.Front.Controllers
                 newPrice = prix - (prix * codePromo.Pourcentage / 100);
             }
 
-            return Ok(new { prix = newPrice, errorMessage = errorMessage, reduction = codePromo.Pourcentage });
+            if (codePromo != null)
+                return Ok(new { prix = newPrice, errorMessage = errorMessage, reduction = codePromo.Pourcentage });
+            else
+                return Ok(new { prix = newPrice, errorMessage = errorMessage });
         }
 
         [HttpPost("AddCodePromo")]
@@ -520,6 +543,9 @@ namespace WOS.Front.Controllers
             Int32.TryParse(reduction, out int reductionInt);
             DateTime.TryParse(dateFin, out DateTime date);
             bool.TryParse(valid, out bool validBool);
+
+            // On supprime les espaces et les tirets et on met tout en majuscule
+            code = code.Replace(" ", "").Replace("-", "").ToUpper();
 
             CodePromo codePromo = new CodePromo
             {
@@ -531,7 +557,10 @@ namespace WOS.Front.Controllers
 
             _commandeSrv.AddCodePromo(codePromo);
 
-            return Ok(new {code = codePromo});
+            // On récupère l'id du code promo
+            codePromo.Id = _globalDataSrv.CodePromos.FirstOrDefault(c => c.Nom == code).Id;
+
+            return Ok(new { code = codePromo });
         }
 
         [HttpPost("DeleteCodePromo")]
@@ -540,6 +569,17 @@ namespace WOS.Front.Controllers
             Int32.TryParse(id, out int idInt);
 
             _commandeSrv.DeleteCodePromo(idInt);
+
+            return Ok();
+        }
+
+        [HttpPost("UpdateCodePromo")]
+        public IActionResult UpdateCodePromo(string id, string valid)
+        {
+            Int32.TryParse(id, out int idInt);
+            bool.TryParse(valid, out bool validBool);
+
+            _commandeSrv.UpdateCodePromo(idInt, validBool);
 
             return Ok();
         }
@@ -579,7 +619,7 @@ namespace WOS.Front.Controllers
         private byte[] CreateInvoice(Commande commande)
         {
             Client client = _globalDataSrv.Clients.FirstOrDefault(c => c.Id == commande.ClientId);
-            Document document = new Document(); 
+            Document document = new Document();
 
             Section section = document.AddSection();
 
@@ -667,7 +707,7 @@ namespace WOS.Front.Controllers
                 row.Cells[0].AddParagraph(produit.Nom);
                 row.Cells[1].AddParagraph(ligneCommande.Quantite.ToString());
                 row.Cells[2].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).Taille);
-                if(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).PrixPromo != null)
+                if (produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).PrixPromo != null)
                 {
                     row.Cells[3].AddParagraph(produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).PrixPromo.Value.ToString("C"));
                     row.Cells[4].AddParagraph((ligneCommande.Quantite * produit.ProduitTailles.FirstOrDefault(t => t.Id == ligneCommande.ProduitTailleId).PrixPromo.Value).ToString("C"));
@@ -737,7 +777,7 @@ namespace WOS.Front.Controllers
             contentRow.Cells[0].Format.LeftIndent = "2,5cm";
             contentRow.Format.SpaceAfter = "0,5cm";
             contentRow.Cells[0].Shading.Color = Colors.LightGray;
-            contentRow.Cells[1].Shading.Color = Colors.LightGray; 
+            contentRow.Cells[1].Shading.Color = Colors.LightGray;
             contentRow.Format.SpaceBefore = "1cm";
 
             Paragraph para = contentRow.Cells[0].AddParagraph();
@@ -838,7 +878,7 @@ namespace WOS.Front.Controllers
                     xImage2.Dispose();
                     img1.Dispose();
                 }
-                
+
             }
 
             // On supprime l'image téléchargée

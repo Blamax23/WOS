@@ -4,6 +4,7 @@
 
 @{
     ViewData["Title"] = "Accueil WOS";
+    bool first = true;
 }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -29,41 +30,53 @@
                 <div class="tendance-product-zone">
                     <h2>@row.Name</h2>
                     <div class="tendance-product-row">
+                        @if (row.Produits.Count() > 3)
+                        {
+                            <button class="carousel-arrow left-arrow">&#10094;</button>
+                        }
                         <div class="shoe-carousel-container">
                             <div class="shoe-carousel">
                                 @if (row.Produits.Count() > 0)
                                 {
-                                    @foreach (var produit in row.Produits)
+                                    if(first && row.Produits.Count() > 3)
                                     {
-                                        @if (produit.ProduitTailles.Any(pt => pt.Stock > 0) && produit.Actif)
+                                        first = false;
+                                        
+                                    }
+                                    @for (var i = 0; i < 8; i++)
+                                    {
+                                        @if(i < row.Produits.Count())
                                         {
-                                            ProduitTaille productWithPromo = new ProduitTaille();
-                                            if (produit.ProduitTailles.Where(t => t.PrixPromo != null).Count() > 0)
+                                            @if (row.Produits[i].ProduitTailles.Any(pt => pt.Stock > 0) && row.Produits[i].Actif)
                                             {
-                                                productWithPromo = produit.ProduitTailles.Where(t => t.PrixPromo != null).OrderBy(t => t.PrixPromo).First();
-                                            }
-                                            else
-                                            {
-                                                productWithPromo = produit.ProduitTailles.OrderBy(t => t.Prix).First();
-                                            }
-                                            <a href="@Url.Action("ViewProduct", "Product", new { id = produit.Id })" class="product">
-                                                <div class="product-img">
-                                                    <img src="@Url.Content(produit.ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@produit.Nom" />
-                                                </div>
-                                                <div class="product-info">
-                                                    <p class="product-name">@produit.Nom</p>
-                                                    <div class="prices">
-                                                        @if (productWithPromo.PrixPromo != null)
-                                                        {
-                                                            <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
-                                                        }
-                                                        else
-                                                        {
-                                                            <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
-                                                        }
+                                                ProduitTaille productWithPromo = new ProduitTaille();
+                                                if (row.Produits[i].ProduitTailles.Where(t => t.PrixPromo != null).Count() > 0)
+                                                {
+                                                    productWithPromo = row.Produits[i].ProduitTailles.Where(t => t.PrixPromo != null).OrderBy(t => t.PrixPromo).First();
+                                                }
+                                                else
+                                                {
+                                                    productWithPromo = row.Produits[i].ProduitTailles.OrderBy(t => t.Prix).First();
+                                                }
+                                                <a href="@Url.Action("ViewProduct", "Product", new { id = row.Produits[i].Id })" class="product">
+                                                    <div class="product-img">
+                                                        <img src="@Url.Content(row.Produits[i].ProduitImages.FirstOrDefault(i => i.Principale)?.Url ?? "~/images/default.jpg")" alt="@row.Produits[i].Nom" />
                                                     </div>
-                                                </div>
-                                            </a>
+                                                    <div class="product-info">
+                                                        <p class="product-name">@row.Produits[i].Nom</p>
+                                                        <div class="prices">
+                                                            @if (productWithPromo.PrixPromo != null)
+                                                            {
+                                                                <p>à partir de <span class="price">@productWithPromo.PrixPromo.Value.ToString("C")</span> <span class="old-price">@productWithPromo.Prix.ToString("C")</span></p>
+                                                            }
+                                                            else
+                                                            {
+                                                                <p>à partir de <span class="price">@productWithPromo.Prix.ToString("C")</span></p>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            }
                                         }
                                     }
                                 }
@@ -73,10 +86,38 @@
                                 }
                             </div>
                         </div>
+                        @if(row.Produits.Count() > 3)
+                        {
+                            <button class="carousel-arrow right-arrow">&#10095;</button>
+                        }
                     </div>
                 </div>
+
             }
         }
+
+        <div class="atouts">
+            <div class="atout">
+                <i class="bi bi-truck"></i>
+                <h3>Livraison rapide et soignée</h3>
+                <p>Nous livrons dans les plus courts délais et toujours bien emballé. </p>
+            </div>
+            <div class="atout">
+                <i class="bi bi-patch-check"></i>
+                <h3>Produits authentiques</h3>
+                <p>Nous contrôlons chaque produit afin de garantir son authenticité.</p>
+            </div>
+            <div class="atout">
+                <i class="bi bi-credit-card"></i>
+                <h3>Paiement sécurisé</h3>
+                <p>Nous utilisons des moyens de paiement sécurisés pour garantir la sécurité de vos données.</p>
+            </div>
+            <div class="atout">
+                <i class="bi bi-arrow-repeat"></i>
+                <h3>Retour facile</h3>
+                <p>Vous avez jusqu'à 14 jours pour être satisfait ou remboursé.</p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -87,61 +128,113 @@
 
 <script>
     $(document).ready(function () {
-        // Pour chaque carousel trouvé
-        $('.shoe-carousel').each(function () {
-            const $carousel = $(this); // Le carousel actuel
-            let isDown = false;
-            let startX;
-            let scrollLeft;
+        $('.shoe-carousel-container').each(function () {
+            const $container = $(this);
+            const $carousel = $container.find('.shoe-carousel');
+            const $leftArrow = $container.parent().find('.left-arrow');
+            const $rightArrow = $container.parent().find('.right-arrow');
 
-            // Empêche la sélection sur le carousel actuel
-            $carousel.on('selectstart', function (e) {
-                e.preventDefault();
-            });
+            // On récupère les éléments originaux
+            const $originalItems = $carousel.find('.product');
+            const itemWidth = $originalItems.first().outerWidth(true);
+            const scrollDistance = itemWidth + 20;
+            const itemsCount = $originalItems.length;
+            const totalWidth = itemWidth * itemsCount;
 
-            // Quand on clique dans le carousel
-            $carousel.on('mousedown', function (e) {
-                e.preventDefault();
-                isDown = true;
-                $carousel.addClass('active');
-                startX = e.pageX - $carousel.offset().left;
-                scrollLeft = $carousel.scrollLeft();
-            });
+            let currentPosition = -totalWidth; // On commence à la deuxième ligne
+            let isAnimating = false;
 
-            // Quand on bouge la souris
-            $carousel.on('mousemove', function (e) {
-                if (!isDown) return;
-                e.preventDefault();
+            // Fonction d'initialisation
+            function initCarousel() {
+                // On clone deux fois la ligne complète si la largeur du container divisée par la largeur d'un élément +20 est supérieure à 3
+                if ($container.width() / (itemWidth + 20) > 3) {
+                    const $clonedItems1 = $originalItems.clone();
+                    const $clonedItems2 = $originalItems.clone();
 
-                const x = e.pageX - $carousel.offset().left;
-                const walk = (x - startX) * 2; // Ajuste la vitesse ici si nécessaire
-                $carousel.scrollLeft(scrollLeft - walk);
-            });
 
-            // Quand on relâche ou quitte le carousel
-            $carousel.on('mouseup mouseleave', function () {
-                if (!isDown) return;
-                isDown = false;
-                $carousel.removeClass('active');
+                    // On ajoute les clones avant et après les éléments originaux
+                    $carousel.prepend($clonedItems1);
+                    $carousel.append($clonedItems2);
 
-                // Trouver la carte la plus proche après le défilement
-                const cardWidth = $carousel.find('.shoe-card').first().outerWidth(true); // Inclure la marge
-                const scrollPos = $carousel.scrollLeft();
+                    // On définit la largeur totale du carousel pour contenir les trois lignes
+                    $carousel.css({
+                        'width': (totalWidth * 3) + 'px',
+                        'transform': `translateX(${currentPosition}px)`
+                    });
+                }
+            }
 
-                // Calculer l'index de la carte la plus proche
-                const closestCardIndex = Math.round(scrollPos / cardWidth);
+            // Fonction pour mettre à jour la position avec animation
+            function updatePosition(instant = false) {
+                $carousel.css({
+                    'transition': instant ? 'none' : 'transform 0.5s ease-in-out',
+                    'transform': `translateX(${currentPosition}px)`
+                });
+            }
 
-                // Scroller à la position de la carte la plus proche
-                $carousel.animate({
-                    scrollLeft: closestCardIndex * cardWidth
-                }, 200);
-            });
+            // Fonction pour vérifier et réinitialiser la position si nécessaire
+            function checkAndResetPosition() {
+                setTimeout(() => {
+                    if (currentPosition <= -(totalWidth * 2)) {
+                        // Si on est allé trop à droite, on revient à la ligne du milieu
+                        currentPosition = -totalWidth;
+                        updatePosition(true);
+                    } else if (currentPosition >= 0) {
+                        // Si on est allé trop à gauche, on revient à la ligne du milieu
+                        currentPosition = -totalWidth;
+                        updatePosition(true);
+                    }
+                    isAnimating = false;
+                }, 500);
+            }
 
-            // Empêche le drag des images dans ce carousel
-            $carousel.find('img').on('dragstart', function (e) {
-                e.preventDefault();
+            // Gestion du défilement vers la droite
+            function slideRight() {
+                if (isAnimating) return;
+                isAnimating = true;
+
+                currentPosition -= scrollDistance;
+                updatePosition();
+                checkAndResetPosition();
+            }
+
+            // Gestion du défilement vers la gauche
+            function slideLeft() {
+                if (isAnimating) return;
+                isAnimating = true;
+
+                currentPosition += scrollDistance;
+                updatePosition();
+                checkAndResetPosition();
+            }
+
+            // Initialisation
+            if ($originalItems.length > 0) {
+                initCarousel();
+            }
+
+            // Écouteurs d'événements pour les flèches
+            $leftArrow.on('click', slideLeft);
+            $rightArrow.on('click', slideRight);
+
+            // Gestion du redimensionnement
+            $(window).on('resize', function () {
+                const newItemWidth = $originalItems.first().outerWidth(true);
+                const newScrollDistance = newItemWidth + 20;
+                const newTotalWidth = newItemWidth * itemsCount;
+
+                // Mettre à jour les dimensions
+                currentPosition = -newTotalWidth; // Revenir à la ligne du milieu
+
+                // Mettre à jour la largeur du carousel
+                $carousel.css({
+                    'width': (newTotalWidth * 3) + 'px',
+                    'transition': 'none',
+                    'transform': `translateX(${currentPosition}px)`
+                });
             });
         });
     });
-
 </script>
+
+

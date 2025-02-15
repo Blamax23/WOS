@@ -27,8 +27,11 @@ html {
 
 body {
     margin: 0;
-    margin-bottom: 60px;
     font-family: "Montserrat", sans-serif;
+}
+
+main {
+    padding-bottom: 100px;
 }
 
 .container {
@@ -83,6 +86,14 @@ body {
     list-style: none;
     padding: 0;
 }
+
+.user-nav {
+    justify-content: right;
+}
+
+    .user-nav .nav-item {
+        margin: 0 .5vw;
+    }
 
 .nav-item{
     display: flex;
@@ -277,4 +288,114 @@ body {
     border-radius: 5px;
     text-align: center;
 }
+.footer {
+    background-color: #000;
+    color: white;
+    padding: 40px 0;
+    font-size: 14px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #000;
+}
+
+.footer-section {
+    width: 23%;
+    min-width: 180px;
+}
+
+    .footer-section h5 {
+        font-size: 16px;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .footer-section ul {
+        list-style: none;
+        padding: 0;
+    }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+            .footer-section ul li a {
+                color: white;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+
+                .footer-section ul li a:hover {
+                    color: #9D9598;
+                }
+
+.social-links a {
+    color: white;
+    font-size: 20px;
+    margin-right: 10px;
+    transition: color 0.3s ease;
+}
+
+    .social-links a:hover {
+        color: #bbb;
+    }
+
+.newsletter-form {
+    display: flex;
+}
+
+    .newsletter-form input {
+        padding: 8px;
+        flex: 1;
+        border: none;
+        border-radius: 3px;
+        margin-right: 10px;
+    }
+
+    .newsletter-form button {
+        padding: 8px 15px;
+        background-color: #f8b400;
+        border: none;
+        color: white;
+        cursor: pointer;
+        border-radius: 3px;
+        transition: background 0.3s ease;
+    }
+
+        .newsletter-form button:hover {
+            background-color: #d89a00;
+        }
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 20px;
+    border-top: 1px solid #444;
+    padding-top: 15px;
+}
+
+.bi-instagram:hover {
+    color: #E4405F;
+}
+
+.bi-twitter:hover {
+    color: #1DA1F2;
+}
+
+.bi-snapchat:hover {
+    color: #FFFC00;
+}
+
+.bi-tiktok:hover {
+    /* On met la couleur rouge de tiktok */
+    color: #FF0000;
+}
+
 

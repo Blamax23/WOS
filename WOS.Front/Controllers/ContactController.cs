@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace WOS.Front.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [Route("[controller]")]
     public class ContactController : Controller
     {
@@ -21,7 +20,7 @@ namespace WOS.Front.Controllers
         }
         // GET: ContactController
         [HttpGet]
-        [Route("")]
+        [Route("contactus")]
         public ActionResult Index()
         {
             return View();

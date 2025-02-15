@@ -1,0 +1,106 @@
+.content {
+    padding: 5vh 5vw;
+    min-height: 70vh;
+}
+
+h1 {
+    margin: 0;
+}
+
+.container-avis {
+    width: 60%;
+    margin: auto;
+    margin-top: 5vh;
+}
+
+.produit-commande {
+    display: flex;
+    align-items: center;
+    border: 3px solid black;
+    padding: 2vh;
+    border-radius: 15px;
+    width: 73%;
+    margin: auto;
+    margin-bottom: 3vh;
+}
+
+.produit-commande h3{
+    margin: 0;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.form-add-avis {
+    display: flex;
+    flex-direction: column;
+    width: 75%;
+    margin: auto;
+    margin-top: 5vh;
+}
+
+    .form-add-avis h3 {
+        margin: 0;
+        font-size: 1em;
+        font-weight: bold;
+    }
+
+.avis-content {
+    /*On empêche le resize */
+    resize: none;
+    width: 100%;
+    height: 20vh;
+    padding: .5em;
+}
+
+.confirm-btn {
+    width: 50%;
+    margin: auto;
+    margin-top: 2vh;
+}
+
+.rating {
+    display: flex;
+    flex-direction: row;
+    gap: .5em;
+    justify-content: center;
+}
+
+    .rating i {
+        font-size: 2.5em;
+        cursor: pointer;
+        color: #f1c40f;
+    }
+
+.mt-2 {
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+.hidden {
+    display: none;
+}
+
+.container-thanks{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    margin: auto;
+    text-align: center;
+    align-content: center;
+    justify-content: center;
+}
+
+.thanks i{
+    font-size: 10em;
+}
+
+.redirect{
+    margin-top: 5vh;
+}
+
+.count-words p{
+    margin: 0;
+    font-size: 0.6em;
+    color: grey;
+}

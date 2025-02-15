@@ -1,0 +1,224 @@
+﻿@using WOS.Model;
+
+@model AvisViewModel;
+
+@{
+    ViewData["Title"] = "Ajouter un avis";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="~/css/product/addAvisProduct.css" asp-append-version="true" />
+</head>
+<body style="margin:0; padding:0; background-color:#f4f4f4;">
+    @if (Model.IsPosted)
+    {
+        <div class="content">
+            <div class="container-thanks">
+                <div class="thanks">
+                    <i class="bi bi-emoji-wink"></i>
+                    <h1>Merci d'avoir laissé votre avis !</h1>
+                </div>
+                <div class="redirect">
+                    <a href="@Url.Action("Index", "Account")"><button class="confirm-btn">Profil</button></a>
+                    <a href="@Url.Action("Index", "Home")"><button class="confirm-btn">Accueil</button></a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="content">
+            <div class="head-page">
+                <h1>Ajouter un avis</h1>
+            </div>
+            <div class="container-avis">
+                <div class="produit-commande">
+                    @foreach (var item in Model.Produits)
+                    {
+                        <div class="produit">
+                            <img src="@Url.Content(item.ProduitImages.FirstOrDefault(pi => pi.Principale).Url)" style="width: 30%; border-radius: 15px;" alt="@item.Nom" />
+                            <div style="margin: 0 1vw;">
+                                <h3 style="margin: 0 0 .5em 0;">@item.Nom</h3>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="form-add-avis">
+                    <input type="hidden" id="produitId" value="@string.Join(",", Model.Produits.Select(p => p.Id))" />
+                    <h3>Faites nous part de votre avis :</h3>
+                    <div class="rating">
+                        <div class="stars-1" data-value="1">
+                            <i class="bi bi-star"></i>
+                            <i class="bi bi-star-half hidden"></i>
+                            <i class="bi bi-star-fill hidden"></i>
+                        </div>
+                        <div class="stars-2" data-value="2">
+                            <i class="bi bi-star"></i>
+                            <i class="bi bi-star-half hidden"></i>
+                            <i class="bi bi-star-fill hidden"></i>
+                        </div>
+                        <div class="stars-3" data-value="3">
+                            <i class="bi bi-star"></i>
+                            <i class="bi bi-star-half hidden"></i>
+                            <i class="bi bi-star-fill hidden"></i>
+                        </div>
+                        <div class="stars-4" data-value="4">
+                            <i class="bi bi-star"></i>
+                            <i class="bi bi-star-half hidden"></i>
+                            <i class="bi bi-star-fill hidden"></i>
+                        </div>
+                        <div class="stars-5" data-value="5">
+                            <i class="bi bi-star"></i>
+                            <i class="bi bi-star-half hidden"></i>
+                            <i class="bi bi-star-fill hidden"></i>
+                        </div>
+                    </div>
+                    <div class="count-words">
+                        <p><span id="counter-words">0</span>/150</p>
+                    </div>
+                    <textarea class="avis-content" name="avis"></textarea>
+                    <button class="confirm-btn">Confirmer</button>
+                </div>
+            </div>
+        </div>
+    }
+</body>
+</html>
+
+<script>
+    let sideMouse = "";
+    let selectedValue = 0;
+
+    $(document).ready(function () {
+        // Gestionnaire d'événement sur le changement du textarea
+        $(".avis-content").on('input', function () {
+            // On met à jour le compteur de mots
+            $("#counter-words").text($(".avis-content").val().length);
+            // On vérifie que le commentaire fait moins de 150 caractères
+            if ($(".avis-content").val().length > 150) {
+                $(this).css("border", "2px solid red");
+            }
+        });
+        $(".confirm-btn").click(function () {
+            // On verifie qu'une note a bien été attribuée
+            if (selectedValue === 0) {
+                // on colore tous les i en rouge
+                $(".stars-1 i, .stars-2 i, .stars-3 i, .stars-4 i, .stars-5 i").css("color", "red");
+                return;
+            }
+
+            // On vérifie que le commentaire fait moins de 150 caractères
+            if ($(".avis-content").val().length > 150) {
+                // On colore le textarea en rouge
+                $(".avis-content").css("border", "2px solid red");
+                return;
+            }
+
+            var avis = $(".avis-content").val();
+            var produitIds = $("#produitId").val();
+            console.log(selectedValue);
+
+            $.ajax({
+                url: "/Product/SubmitAvis",
+                type: "POST",
+                data: {
+                    avisText: avis,
+                    produitIds: produitIds,
+                    note: selectedValue,
+                    codeCommande: "@Model.CodeAvis"
+                },
+                success: function (data) {
+                    // On recharge la page
+                    location.reload();
+                },
+                error: function (data) {
+                    // On redirige vers la page d'erreur
+                    window.location.href = "/Home/Error";
+                }
+            });
+        });
+    });
+
+    $('.star').mousemove(function (event) {
+        var iconRect = this.getBoundingClientRect();
+        var mouseX = event.clientX;
+
+        var centerX = iconRect.left + iconRect.width / 2;
+
+        if (mouseX < centerX) {
+            sideMouse = "left";
+        } else {
+            sideMouse = "right";
+        }
+    });
+
+    $('.stars-1, .stars-2, .stars-3, .stars-4, .stars-5').mousemove(function (event) {
+        var iconRect = this.getBoundingClientRect();
+        var mouseX = event.clientX;
+
+        var centerX = iconRect.left + iconRect.width / 2;
+
+        // Déterminer si la souris est à gauche ou à droite de l'étoile
+        if (mouseX < centerX) {
+            sideMouse = "left";
+        } else {
+            sideMouse = "right";
+        }
+
+        // Récupérer la valeur de l'étoile
+        var starValue = $(this).data('value');
+
+        // Mettre à jour les étoiles en fonction de la souris
+        updateStars(starValue, sideMouse);
+    });
+
+    // Fonction pour mettre à jour les étoiles
+    function updateStars(value, side) {
+        $('.stars-1, .stars-2, .stars-3, .stars-4, .stars-5').each(function (index) {
+            var starValue = $(this).data('value');
+            var icons = $(this).find('i');
+            console.log("Star value :", starValue);
+            console.log("Value :", value);
+            // On réinitialise toutes les étoiles
+            icons.removeClass('bi-star-fill bi-star-half bi-star');
+
+            // On applique la classe selon la position de la souris (gauche ou droite)
+            console.log(side);
+            console.log(starValue < value);
+            console.log(starValue === value || (starValue - 0.5) === value);
+            console.log((starValue === value || (starValue - 0.5) === value) && side === "right");
+            if (starValue < value || ((starValue === value || (starValue - 0.5) === value) && side === "right")) {
+                icons.addClass('bi-star-fill'); // étoile pleine
+            } else if ((starValue === value || (starValue - 0.5) === value) && side === "left") {
+                icons.addClass('bi-star-half'); // demi-étoile
+                value = value - 0.5;
+            } else {
+                icons.addClass('bi-star'); // étoile vide
+            }
+        });
+
+        // Mettre à jour la note affichée pendant le mouvement
+        $('#rating-value').text(value);
+    }
+
+    // Ajouter un écouteur d'événement pour la sélection de la note au clic
+    $('.stars-1, .stars-2, .stars-3, .stars-4, .stars-5').click(function () {
+        // on colore tous les i en doré
+        $(".stars-1 i, .stars-2 i, .stars-3 i, .stars-4 i, .stars-5 i").css("color", "gold");
+        selectedValue = $(this).data('value');
+        if (sideMouse === "left") {
+            selectedValue -= 0.5; // Demi-étoile si la souris est à droite
+        }
+        $('#rating-value').text(selectedValue);
+        updateStars(selectedValue, sideMouse); // Met à jour l'affichage avec la valeur cliquée
+    });
+
+    $('.rating').mouseleave(function () {
+        updateStars(selectedValue, sideMouse); // Restaure la dernière note cliquée
+    });
+</script>
+

@@ -46,6 +46,10 @@ namespace WOS.Dal.Mapping
                 .HasMaxLength(100)
                 .HasColumnName("prenom");
 
+            builder.Property(c => c.Telephone)
+                .IsRequired()
+                .HasColumnName("numero_telephone");
+
             builder.Property(c => c.DateInscription)
                 .HasDefaultValue(DateTime.Now)
                 .HasColumnName("date_inscription");

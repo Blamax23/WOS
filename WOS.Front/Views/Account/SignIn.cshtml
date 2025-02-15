@@ -35,6 +35,11 @@
                     <input class="input" type="email" name="email" id="email" value="@(Model.Client.Email != null ? Model.Client.Email : "")" />
                     <p class="error error-email" style="display:@(ViewData["ErrorEmail"] != null ? "block" : "none");">L'email est obligatoire.</p>
                 </div>
+                <div class="input-zone input-phone">
+                    <label for="password">Téléphone</label>
+                    <input class="input" type="text" name="telephone" id="phone" value="@(Model.Client.Telephone != null ? Model.Client.Telephone : "")" />
+                    <p class="error error-password" style="display:@(ViewData["ErrorPhone"] != null ? "block" : "none");">@ViewData["ErrorPhone"]</p>
+                </div>
                 <div class="input-zone input-password">
                     <label for="password">Mot de passe</label>
                     <input class="input" type="password" name="password" id="password" value="@(Model.Client.MotDePasse != null ? Model.Client.MotDePasse : "")" />

@@ -32,6 +32,8 @@ namespace WOS.Model
     public class HomeViewModel
     {
         public List<RowHomeModel> RowHome { get; set; } = new List<RowHomeModel>();
+
+        public CodePromo CodePromo { get; set; } = new CodePromo();
     }
 
     public class RowHomeModel

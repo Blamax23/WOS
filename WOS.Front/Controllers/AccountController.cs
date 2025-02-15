@@ -88,8 +88,10 @@ namespace WOS.Front.Controllers
                 else
                 {
                     Client clientView = _clientSrv.GetClientByEmail(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email).Value.ToString());
+                    accountViewModel.Produits = _globalDataSrv.Produits;
                     accountViewModel.User = clientView;
                     accountViewModel.Commandes = _commandeSrv.GetCommandesByClientId(clientView.Id);
+                    accountViewModel.StatutCommandes = _globalDataSrv.StatutsCommande;
                 }
             }
 
@@ -220,7 +222,7 @@ namespace WOS.Front.Controllers
         [Route("signin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SignInPost(string nom, string prenom, string email, string password)
+        public async Task<IActionResult> SignInPost(string nom, string prenom, string email, string password, string telephone)
         {
             bool clientWithSameEmail = _clientSrv.ClientExists(email);
 
@@ -230,7 +232,8 @@ namespace WOS.Front.Controllers
                 Prenom = prenom,
                 Email = email,
                 MotDePasse = password,
-                AncienMotDePasse = password
+                AncienMotDePasse = password,
+                Telephone = telephone
             };
 
             SignInViewModel signInViewModel = new SignInViewModel
@@ -245,7 +248,7 @@ namespace WOS.Front.Controllers
             }
 
             // On controle les champs
-            if (nom == null || prenom == null || email == null || password == null)
+            if (nom == null || prenom == null || email == null || password == null || telephone == null)
             {
                 if (string.IsNullOrEmpty(nom))
                 {
@@ -283,6 +286,14 @@ namespace WOS.Front.Controllers
                     ViewData["ErrorPassword"] = "Le mot de passe doit contenir au minimum 8 caractères";
                 }
 
+                if (string.IsNullOrEmpty(telephone))
+                {
+                    ViewData["ErrorPhone"] = "Le téléphone est obligatoire.";
+                }else if(telephone.Length != 10)
+                {
+                    ViewData["ErrorPhone"] = "Le téléphone doit contenir 10 chiffres.";
+                }
+
                 return View("SignIn", signInViewModel);
             }
 
@@ -293,11 +304,6 @@ namespace WOS.Front.Controllers
 
             // On envoie le mail de vérification d'email
             string token = GenerateSecureToken();
-            string subject = "Vérification de votre adresse e-mail";
-            // On récupère la value du domaine dans le appsettings.json
-            string domain = _configuration.GetSection("Site")["Domain"];
-            string body = $"Veuillez cliquer sur le lien suivant pour vérifier votre adresse e-mail : <a href='{domain}account/verifyemail?email={email}&token={token}'>Vérifier mon adresse e-mail</a>";
-            _mailSrv.SendEmail(email, subject, body);
 
             _mailSrv.SendEmailVerification(client, token);
 
@@ -306,12 +312,35 @@ namespace WOS.Front.Controllers
             client.TokenExpiryDate = DateTime.Now.AddHours(24);
             _clientSrv.UpdateClient(client);
 
-            _authenticationSrv.LoginAccountClient(client);
+            var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Sid, client.Id.ToString()),
+                    new Claim(ClaimTypes.Name, client.Nom),
+                    new Claim(ClaimTypes.Email, client.Email),
+                    new Claim(ClaimTypes.Role, "Client")
+                };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true // Pour rendre l'authentification persistante
+            };
+
+            // SignInAsync va créer le cookie d'authentification
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
 
             _mailSrv.SendEmailSuccessfulRegistration(client);
 
-            // On redirige vers la méthode post de connexion pour se connecter
-            return RedirectToAction("SignInSuccess");
+            // Si returnUrl n'est pas null on redirige vers ça
+            var returnUrl = HttpContext.Session.GetString("ReturnUrl");
+
+            if (returnUrl != null && !returnUrl.Equals(HttpContext.Request.Path))
+                return Redirect(returnUrl);
+            else
+                return RedirectToAction("SignInSuccess");
         }
 
         [Route("signinsuccess")]
@@ -465,7 +494,10 @@ namespace WOS.Front.Controllers
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
 
-            var returnUrl = HttpContext.Session.GetString("ReturnUrl");
+            // On modifie le cookie isConnected
+            HttpContext.Response.Cookies.Append("isConnected", "true");
+
+            string returnUrl = Request.Cookies["RedirectUrl"];
 
             if (returnUrl != null && !returnUrl.Equals(HttpContext.Request.Path))
                 return Redirect(returnUrl);

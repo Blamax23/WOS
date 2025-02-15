@@ -33,6 +33,9 @@ namespace WOS.Model
         [StringLength(100)]
         public string Prenom { get; set; }
 
+        [Required]
+        public string? Telephone { get; set; }
+
         public string? VerificationToken { get; set; }
 
         public DateTime? TokenExpiryDate { get; set; }

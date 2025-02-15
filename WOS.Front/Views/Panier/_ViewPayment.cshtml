@@ -58,7 +58,14 @@
         <div class="mode-livraison-final">
             <h3>Mode de livraison</h3>
             <div class="delivery-mode">
-                <img src="@Url.Content(Model.ModeLivraison.PathLogo)" />
+                @if(Model.ModeLivraison.Nom == "Main Propre")
+                {
+                    <i class="bi bi-box-seam-fill"></i>
+                }
+                else
+                {
+                    <img src="@Url.Content(Model.ModeLivraison.PathLogo)" />
+                }
                 <div class="info-delivery">
                     <h3 class="name-delivery-mode">@Model.ModeLivraison.Nom</h3>
                     <p>Date de livraison estimée : @dateLivraison</p>

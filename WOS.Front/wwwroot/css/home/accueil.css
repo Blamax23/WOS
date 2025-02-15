@@ -1,4 +1,4 @@
-.homescreen{
+.homescreen {
     width: 100%;
     height: 86.5vh;
     background-color: black;
@@ -6,25 +6,24 @@
     justify-content: center;
 }
 
-.logoWos{
+.logoWos {
     width: 100%;
     display: flex;
     justify-content: space-between;
-
 }
 
-.logoWos img{
-    width: 40vw;
-    position: absolute;
-    margin: 0 30vw; 
-}
+    .logoWos img {
+        width: 40vw;
+        position: absolute;
+        margin: 0 30vw;
+    }
 
-.tendance-product-zone{
+.tendance-product-zone {
     width: 90%;
     margin: auto;
 }
 
-    .tendance-product-zone h2{
+    .tendance-product-zone h2 {
         text-align: center;
         font-size: 2.5em;
         box-sizing: unset;
@@ -95,10 +94,10 @@
     text-align: left;
 }
 
-.shoe-details h3{
-    height: 5vh;
-    font-weight: normal;
-}
+    .shoe-details h3 {
+        height: 5vh;
+        font-weight: normal;
+    }
 
 .price-product-zone {
     display: flex;
@@ -116,4 +115,72 @@
 
 .promoPrice {
     color: red;
+}
+
+.carousel-arrow {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px 15px;
+    font-size: 24px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    transition: background 0.3s;
+}
+
+    .carousel-arrow:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+.left-arrow {
+    left: 10px;
+}
+
+.right-arrow {
+    right: 10px;
+}
+
+.tendance-product-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.atouts {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin: auto;
+    margin-top: 5em;
+    width: 90%;
+}
+
+.atout{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 30%;
+}
+
+.atout * {
+    margin: 0;
+}
+
+.atout i{
+    font-size: 5em;
+    min-height: 1.1em;
+}
+
+    .atout i:before{
+        margin: 0;
+        height: min-content;
+    }
+
+.bi-credit-card{
+    margin-top: 0.25em;
 }

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace WOS.Front.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -94,16 +93,35 @@ namespace WOS.Front.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
         [Route("erreur")]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(/*new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier }*/);
+        }
+
+        [HttpGet("privacy-policy")]
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [HttpGet("cgv")]
+        public IActionResult CGV()
+        {
+            return View();
+        }
+
+        [HttpGet("mentions-legales")]
+        public IActionResult MentionsLegales()
+        {
+            return View();
+        }
+
+        [HttpGet("retour")]
+        public IActionResult Retour()
+        {
+            return View();
         }
 
         public static string HashPassword(string password)

@@ -126,6 +126,12 @@ namespace WOS.Back.Services
 
         public void AddCodePromo(CodePromo codePromo)
         {
+            // On vérifie que le code promo n'existe pas déjà
+            if (_context.CodePromos.Any(c => c.Nom == codePromo.Nom))
+            {
+                throw new Exception("Code promo déjà existant");
+            }
+
             _context.CodePromos.Add(codePromo);
             _context.SaveChanges();
 
@@ -137,6 +143,17 @@ namespace WOS.Back.Services
             CodePromo codePromo = _context.CodePromos.FirstOrDefault(c => c.Id == id);
 
             _context.CodePromos.Remove(codePromo);
+            _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(CodePromo));
+        }
+
+        public void UpdateCodePromo(int id, bool validity)
+        {
+            CodePromo codePromoToUpdate = _context.CodePromos.FirstOrDefault(c => c.Id == id);
+
+            codePromoToUpdate.IsValid = validity;
+
             _context.SaveChanges();
 
             _globalDataSrv.RefreshCacheAsync(typeof(CodePromo));

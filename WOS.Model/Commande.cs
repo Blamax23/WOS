@@ -125,5 +125,6 @@ namespace WOS.Model
     {
         public Commande Commande { get; set; }
         public List<Produit> Produits { get; set; } = new List<Produit>();
+        public bool IsSuccess { get; set; }
     }
 }

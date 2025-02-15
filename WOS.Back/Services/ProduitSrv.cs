@@ -151,6 +151,43 @@ namespace WOS.Back.Services
             produitToUpdate = null;
         }
 
+        public void UpdateProduitTaille(ProduitTaille produitTaille)
+        {
+            ProduitTaille produitTailleToUpdate = _context.ProduitTailles.FirstOrDefault(pt => pt.Id == produitTaille.Id);
+
+            if (produitTailleToUpdate == null)
+                throw new Exception("ProduitTaille introuvable");
+
+            produitTailleToUpdate.Taille = produitTaille.Taille;
+            produitTailleToUpdate.Stock = produitTaille.Stock;
+            produitTailleToUpdate.Prix = produitTaille.Prix;
+            produitTailleToUpdate.PrixPromo = produitTaille.PrixPromo;
+
+            _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(ProduitTaille));
+        }
+
+        public void AddProduitTaille(ProduitTaille produitTaille, int idProduit)
+        {
+            Produit produit = _context.Produits.FirstOrDefault(p => p.Id == idProduit);
+
+            if (produit == null)
+                throw new Exception("Produit introuvable");
+
+            produitTaille.ProduitId = idProduit;
+
+            _context.ProduitTailles.Add(produitTaille);
+            _context.SaveChanges();
+            _globalDataSrv.RefreshCacheAsync(typeof(Produit));
+        }
+
+        public ProduitTaille GetProduitTailleById(int id)
+        {
+            ProduitTaille produitTaille = _globalDataSrv.ProduitTailles.FirstOrDefault(pt => pt.Id == id);
+
+            return produitTaille;
+        }
+
         public void UpdateActiveProduit(int id, bool actif)
         {
             Produit produit = _context.Produits.FirstOrDefault(p => p.Id == id);
@@ -162,6 +199,7 @@ namespace WOS.Back.Services
 
             _context.SaveChanges();
             _globalDataSrv.RefreshCacheAsync(typeof(Produit));
+            _globalDataSrv.RefreshCacheAsync(typeof(ProduitTaille));
         }
 
         public void UpdateTendanceProduit(int id, bool tendance)
@@ -189,6 +227,14 @@ namespace WOS.Back.Services
             _context.Produits.Remove(produit);
             _context.SaveChanges();
             _globalDataSrv.RefreshCacheAsync(typeof(Produit));
+        }
+
+        public void AddAvis(Avis avis)
+        {
+            _context.Avis.Add(avis);
+            _context.SaveChanges();
+
+            _globalDataSrv.RefreshCacheAsync(typeof(Avis));
         }
     }
 }

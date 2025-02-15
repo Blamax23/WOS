@@ -58,44 +58,63 @@
             <div class="error-delivery"><p>Veuillez sélectionner un mode de livraison.</p></div>
             <div class="domicile-mode">
                 <div class="delivery-mode">
-                    <div class="home-delivery">
-                        <div class="home-accordion">
-                            <h3>A domicile</h3>
-                            <i class="bi bi-caret-right-fill"></i>
-                        </div>
-                        <div class="modes-home collapsed">
-                            @foreach (var mode in Model)
-                            {
-                                if (new[] { "UPS", "Colissimo" }.Any(substring => mode.Nom.Contains(substring, StringComparison.OrdinalIgnoreCase)))
+                    @foreach (var mode in Model)
+                    {
+                        if (new[] { "UPS", "Colissimo", "Mondial Relay", "Main Propre" }.Any(substring => mode.Nom.Contains(substring, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            <div class="mode mode-@mode.Nom.Replace(" ", "")" data-name-mode="@mode.Nom">
+                                @if (mode.Nom == "Main Propre")
                                 {
-                                    <div class="mode" data-name-mode="@mode.Nom">
-                                        <img src="@Url.Content(mode.PathLogo)" />
-                                        <p><strong>@mode.Nom</strong></p>
-                                        <p>+@mode.PrixLivraison.ToString("C")</p>
-                                    </div>
+                                    <i class="bi bi-box-seam-fill"></i>
                                 }
-                            }
-                        </div>
+                                else
+                                {
+
+                                    <img src="@Url.Content(mode.PathLogo)" />
+                                }
+                                <p><strong>@mode.Nom</strong></p>
+                                <p>+@mode.PrixLivraison.ToString("C")</p>
+                            </div>
+                        }
+                    }
+                    @* <div class="home-delivery">
+                    <div class="home-accordion">
+                    <h3>A domicile</h3>
+                    <i class="bi bi-caret-right-fill"></i>
+                    </div>
+                    <div class="modes-home collapsed">
+                    @foreach (var mode in Model)
+                    {
+                    if (new[] { "UPS", "Colissimo" }.Any(substring => mode.Nom.Contains(substring, StringComparison.OrdinalIgnoreCase)))
+                    {
+                    <div class="mode" data-name-mode="@mode.Nom">
+                    <img src="@Url.Content(mode.PathLogo)" />
+                    <p><strong>@mode.Nom</strong></p>
+                    <p>+@mode.PrixLivraison.ToString("C")</p>
+                    </div>
+                    }
+                    }
+                    </div>
                     </div>
                     <div class="relay-delivery">
-                        <div class="relay-accordion">
-                            <h3>En point-relais</h3>
-                            <i class="bi bi-caret-right-fill"></i>
-                        </div>
-                        <div class="modes-relay collapsed">
-                            @foreach (var mode in Model)
-                            {
-                                if (!new[] { "UPS", "Colissimo" }.Any(substring => mode.Nom.Contains(substring, StringComparison.OrdinalIgnoreCase)))
-                                {
-                                    <div class="mode" data-name-mode="@mode.Nom">
-                                        <img src="@Url.Content(mode.PathLogo)" />
-                                        <p><strong>@mode.Nom</strong></p>
-                                        <p>+@mode.PrixLivraison.ToString("C")</p>
-                                    </div>
-                                }
-                            }
-                        </div>
+                    <div class="relay-accordion">
+                    <h3>En point-relais</h3>
+                    <i class="bi bi-caret-right-fill"></i>
                     </div>
+                    <div class="modes-relay collapsed">
+                    @foreach (var mode in Model)
+                    {
+                    if (!new[] { "UPS", "Colissimo" }.Any(substring => mode.Nom.Contains(substring, StringComparison.OrdinalIgnoreCase)))
+                    {
+                    <div class="mode" data-name-mode="@mode.Nom">
+                    <img src="@Url.Content(mode.PathLogo)" />
+                    <p><strong>@mode.Nom</strong></p>
+                    <p>+@mode.PrixLivraison.ToString("C")</p>
+                    </div>
+                    }
+                    }
+                    </div>
+                    </div> *@
                 </div>
             </div>
             <div class="relay-mode">
@@ -124,6 +143,16 @@
 </div>
 
 <script>
+    // On met un gestionnaire d'événement quand l'input de la ville change
+    $('#city').on('change', function () {
+        // Si l'input contient "Bourg" "en" et "Bresse", on affiche mode-MainPropre
+        console.log($(this).val().toLowerCase());
+        if ($(this).val().toLowerCase().includes('bourg') && $(this).val().toLowerCase().includes('en') && $(this).val().toLowerCase().includes('bresse')) {
+            $('.mode-MainPropre').css("display", "flex");
+        } else {
+            $('.mode-MainPropre').css("display", "none");
+        }
+    });
     let deliveryModeHome = true;
     $.ajax({
         url: 'https://restcountries.com/v3.1/all',
@@ -179,7 +208,7 @@
         if ($('.mode.selected').length === 0) {
             $('.error-delivery').show();
             stop = true;
-        }else{
+        } else {
             // On regarde si la div mode choisie est celle de Mondial Relay, si oui on contrôle qu'un point relais ait été choisi
             if ($('.mode.selected').data('name-mode').toLowerCase().includes('mondial relay') && $('#Target_Widget').val() === "") {
                 $('.error-relais').show();
